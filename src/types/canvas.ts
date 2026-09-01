@@ -1,4 +1,12 @@
-export type NodeType = 'watcher' | 'condition' | 'note' | 'alert' | 'action';
+export type NodeType =
+  | 'watcher'
+  | 'condition'
+  | 'note'
+  | 'alert'
+  | 'action'
+  | 'text'
+  | 'image'
+  | 'sticker';
 
 export interface WatcherConfig {
   symbol: string;         // e.g. "BBCA", "BBRI", "BMRI"
@@ -11,7 +19,7 @@ export interface ConditionConfig {
 }
 
 export interface NoteConfig {
-  content: string;        // Text / markdown content
+  content: string;        // Text content
   template?: string;      // e.g. "${symbol} surged ${price_change}% at ${timestamp}"
   color?: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple';
 }
@@ -26,12 +34,33 @@ export interface ActionConfig {
   params?: Record<string, any>;
 }
 
+export interface TextConfig {
+  text: string;
+  fontSize?: 'small' | 'medium' | 'large';
+  color?: string;
+}
+
+export interface ImageConfig {
+  url: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+}
+
+export interface StickerConfig {
+  stickerType: 'bullish' | 'bearish' | 'rocket' | 'target' | 'star' | 'warning' | 'approved';
+  size?: number;
+}
+
 export type NodeConfig =
   | WatcherConfig
   | ConditionConfig
   | NoteConfig
   | AlertConfig
-  | ActionConfig;
+  | ActionConfig
+  | TextConfig
+  | ImageConfig
+  | StickerConfig;
 
 export interface CanvasNodeData {
   id: string;

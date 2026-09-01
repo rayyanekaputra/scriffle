@@ -11,6 +11,7 @@
         "clsx": "^2.1.1",
         "expr-eval": "^2.0.2",
         "lucide-react": "^1.38.0",
+        "mingcute_icon": "^2.9.72",
         "next": "16.3.4",
         "react": "19.2.8",
         "react-dom": "19.2.8",
@@ -749,6 +750,8 @@
     "mime-db": ["mime-db@1.52.0", "", {}, "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg=="],
 
     "mime-types": ["mime-types@2.1.35", "", { "dependencies": { "mime-db": "1.52.0" } }, "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw=="],
+
+    "mingcute_icon": ["mingcute_icon@2.9.72", "", {}, "sha512-pOw6b1tzQ1JXJP7XefmGhK3nh6GHRaQzi6YjcIu5VfAfr3lN70C6Hc9tC1v/+aNRL9RvbDMaciP18q71HklQgQ=="],
 
     "minimatch": ["minimatch@3.1.5", "", { "dependencies": { "brace-expansion": "^1.1.7" } }, "sha512-VgjWUsnnT6n+NUk6eZq77zeFdpW2LWDzP6zFGrCbHXiYNul5Dzqk2HHQ5uFH2DNW5Xbp8+jVzaeNt94ssEEl4w=="],
 

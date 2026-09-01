@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -13,6 +13,7 @@ import {
   Edge,
   Node,
   BackgroundVariant,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -21,14 +22,31 @@ import { ConditionNode } from './nodes/ConditionNode';
 import { NoteNode } from './nodes/NoteNode';
 import { AlertNode } from './nodes/AlertNode';
 import { ActionNode } from './nodes/ActionNode';
-import { CanvasData } from '@/types/canvas';
+import { TextNode } from './nodes/TextNode';
+import { ImageNode } from './nodes/ImageNode';
+import { StickerNode } from './nodes/StickerNode';
+import { ContextMenu } from './ContextMenu';
+import { CanvasData, NodeType } from '@/types/canvas';
 
 interface MarketCanvasProps {
   canvasData?: CanvasData;
   onRefresh?: () => void;
+  onEditNode?: (nodeId: string) => void;
+  onAddNodeAtPosition?: (type: NodeType, position: { x: number; y: number }, extraConfig?: any) => void;
+  onDeleteNode?: (nodeId: string) => void;
+  onChangeNodeColor?: (nodeId: string, color: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple') => void;
 }
 
-export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefresh }) => {
+export const MarketCanvas: React.FC<MarketCanvasProps> = ({
+  canvasData,
+  onRefresh,
+  onEditNode,
+  onAddNodeAtPosition,
+  onDeleteNode,
+  onChangeNodeColor,
+}) => {
+  const { screenToFlowPosition } = useReactFlow();
+
   const nodeTypes = useMemo(
     () => ({
       watcher: WatcherNode,
@@ -36,6 +54,9 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
       note: NoteNode,
       alert: AlertNode,
       action: ActionNode,
+      text: TextNode,
+      image: ImageNode,
+      sticker: StickerNode,
     }),
     []
   );
@@ -67,7 +88,16 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // Sync state when SWR background poll returns fresh data from backend
+  // Context Menu State
+  const [menu, setMenu] = useState<{
+    x: number;
+    y: number;
+    flowX: number;
+    flowY: number;
+    nodeId: string | null;
+  } | null>(null);
+
+  // Sync state when backend updates
   useEffect(() => {
     if (canvasData?.nodes) {
       setNodes((currentNodes) => {
@@ -76,7 +106,6 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
           return {
             id: serverNode.id,
             type: serverNode.type,
-            // Preserve user's local drag position if currently dragging
             position: existing?.position || serverNode.position,
             data: {
               config: serverNode.config,
@@ -124,7 +153,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
     [canvasData?.id, onRefresh, setEdges]
   );
 
-  // Node position drag stop -> Persist to DB
+  // Node position drag stop
   const onNodeDragStop = useCallback(
     async (_event: any, node: Node) => {
       try {
@@ -142,8 +171,78 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
     []
   );
 
+  // Double click on node -> Edit Mode
+  const onNodeDoubleClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      onEditNode?.(node.id);
+    },
+    [onEditNode]
+  );
+
+  // Right click on canvas
+  const onPaneContextMenu = useCallback(
+    (event: any) => {
+      event.preventDefault();
+      const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      setMenu({
+        x: event.clientX,
+        y: event.clientY,
+        flowX: flowPos.x,
+        flowY: flowPos.y,
+        nodeId: null,
+      });
+    },
+    [screenToFlowPosition]
+  );
+
+  // Right click on specific node
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      event.preventDefault();
+      const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      setMenu({
+        x: event.clientX,
+        y: event.clientY,
+        flowX: flowPos.x,
+        flowY: flowPos.y,
+        nodeId: node.id,
+      });
+    },
+    [screenToFlowPosition]
+  );
+
+  // Drag and drop image files onto canvas
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const dataUrl = e.target?.result as string;
+            const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+            onAddNodeAtPosition?.('image', flowPos, { url: dataUrl, caption: file.name });
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    },
+    [screenToFlowPosition, onAddNodeAtPosition]
+  );
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  }, []);
+
   return (
-    <div className="h-full w-full bg-[#F8F9FC]">
+    <div
+      className="h-full w-full bg-[#F8F9FC]"
+      onDrop={onDrop}
+      onDragOver={onDragOver}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -151,6 +250,9 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeDragStop={onNodeDragStop}
+        onNodeDoubleClick={onNodeDoubleClick}
+        onPaneContextMenu={onPaneContextMenu}
+        onNodeContextMenu={onNodeContextMenu}
         nodeTypes={nodeTypes}
         fitView
         colorMode="light"
@@ -158,13 +260,29 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
         maxZoom={2}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#CBD5E1" />
-        <Controls className="!border-slate-200 !bg-white !fill-slate-700 !shadow-sm !rounded-xl" />
+        <Controls className="!border-2 !border-slate-300 !bg-white !fill-slate-700 !rounded-xl" />
         <MiniMap
           nodeColor="#0050FF"
           maskColor="rgba(241, 245, 249, 0.7)"
-          className="!border-slate-200 !bg-white !rounded-xl !shadow-sm"
+          className="!border-2 !border-slate-300 !bg-white !rounded-xl"
         />
       </ReactFlow>
+
+      {/* Right-Click Context Menu */}
+      {menu && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          targetNodeId={menu.nodeId}
+          onClose={() => setMenu(null)}
+          onAddElement={(type, extraConfig) =>
+            onAddNodeAtPosition?.(type, { x: menu.flowX, y: menu.flowY }, extraConfig)
+          }
+          onEditElement={(nodeId) => onEditNode?.(nodeId)}
+          onChangeColor={(nodeId, color) => onChangeNodeColor?.(nodeId, color)}
+          onDeleteElement={(nodeId) => onDeleteNode?.(nodeId)}
+        />
+      )}
     </div>
   );
 };

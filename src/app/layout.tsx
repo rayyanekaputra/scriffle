@@ -20,8 +20,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Stack+Sans+Text:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <link rel="stylesheet" href="/mingcute/Mingcute.css" />
       </head>
-      <body className="antialiased bg-slate-50 text-slate-900 selection:bg-yellow-200">
+      <body className="antialiased bg-[#F8F9FC] text-slate-900 selection:bg-yellow-200">
         {children}
       </body>
     </html>
