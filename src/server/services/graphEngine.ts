@@ -1,0 +1,251 @@
+import { prisma } from '@/lib/prisma';
+import { MarketEvent } from '@/types/canvas';
+import { evaluateCondition } from './dslEngine';
+
+export interface GraphExecutionResult {
+  triggeredNodes: string[];
+  mutationsCount: number;
+  logs: string[];
+}
+
+/**
+ * Interpolates string templates like "${symbol} surged ${price_change}% at ${timestamp}"
+ */
+function interpolateTemplate(template: string, event: MarketEvent): string {
+  return template.replace(/\$\{(\w+)\}/g, (match, key) => {
+    if (key in event) {
+      const val = (event as any)[key];
+      return typeof val === 'number' ? (Number.isInteger(val) ? val.toString() : val.toFixed(2)) : String(val);
+    }
+    return match;
+  });
+}
+
+/**
+ * Executes graph traversal and canvas mutations for a given MarketEvent.
+ */
+export async function executeGraphForEvent(
+  canvasId: string,
+  event: MarketEvent
+): Promise<GraphExecutionResult> {
+  const triggeredNodes: string[] = [];
+  const logs: string[] = [];
+  let mutationsCount = 0;
+
+  // 1. Fetch all nodes and edges for the canvas
+  const canvas = await prisma.canvas.findUnique({
+    where: { id: canvasId },
+    include: {
+      nodes: true,
+      edges: true,
+    },
+  });
+
+  if (!canvas) {
+    throw new Error(`Canvas with ID ${canvasId} not found`);
+  }
+
+  // 2. Identify active Watcher nodes matching event symbol
+  const matchingWatchers = canvas.nodes.filter((node) => {
+    if (node.type !== 'watcher') return false;
+    try {
+      const cfg = JSON.parse(node.configJson);
+      return cfg.symbol?.toUpperCase() === event.symbol.toUpperCase();
+    } catch {
+      return false;
+    }
+  });
+
+  if (matchingWatchers.length === 0) {
+    return { triggeredNodes, mutationsCount, logs };
+  }
+
+  // BFS Queue: [currentNodeId, currentContextEvent]
+  const queue: Array<{ nodeId: string; event: MarketEvent }> = [];
+  const visited = new Set<string>();
+
+  // Mark watchers as triggered and enqueue their children
+  for (const watcher of matchingWatchers) {
+    triggeredNodes.push(watcher.id);
+    visited.add(watcher.id);
+
+    // Update watcher state
+    await prisma.node.update({
+      where: { id: watcher.id },
+      data: {
+        stateJson: JSON.stringify({
+          status: 'passed',
+          lastValue: event,
+          lastTriggeredAt: event.timestamp || new Date().toISOString(),
+        }),
+      },
+    });
+
+    const outgoing = canvas.edges.filter((e) => e.fromId === watcher.id);
+    for (const edge of outgoing) {
+      queue.push({ nodeId: edge.toId, event });
+    }
+  }
+
+  // 3. Process BFS queue
+  while (queue.length > 0) {
+    const { nodeId, event: curEvent } = queue.shift()!;
+    if (visited.has(nodeId)) continue;
+    visited.add(nodeId);
+
+    const node = canvas.nodes.find((n) => n.id === nodeId);
+    if (!node) continue;
+
+    let branchShouldContinue = true;
+    let nodeConfig: any = {};
+    try {
+      nodeConfig = JSON.parse(node.configJson);
+    } catch {
+      nodeConfig = {};
+    }
+
+    if (node.type === 'condition') {
+      const passed = evaluateCondition(nodeConfig.rule || '', curEvent);
+      await prisma.node.update({
+        where: { id: node.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: passed ? 'passed' : 'failed',
+            lastValue: curEvent,
+            lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+          }),
+        },
+      });
+
+      if (passed) {
+        triggeredNodes.push(node.id);
+        logs.push(`Condition matched: [${nodeConfig.rule}] for ${curEvent.symbol}`);
+      } else {
+        branchShouldContinue = false;
+        logs.push(`Condition not met: [${nodeConfig.rule}] for ${curEvent.symbol}`);
+      }
+    } else if (node.type === 'note') {
+      triggeredNodes.push(node.id);
+      let updatedContent = nodeConfig.content || '';
+      if (nodeConfig.template) {
+        updatedContent = interpolateTemplate(nodeConfig.template, curEvent);
+      } else {
+        updatedContent = `${curEvent.symbol} triggered update at ${curEvent.timestamp}`;
+      }
+
+      await prisma.node.update({
+        where: { id: node.id },
+        data: {
+          configJson: JSON.stringify({
+            ...nodeConfig,
+            content: updatedContent,
+          }),
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+          }),
+        },
+      });
+      mutationsCount++;
+      logs.push(`Note updated: "${updatedContent.slice(0, 50)}..."`);
+    } else if (node.type === 'alert') {
+      triggeredNodes.push(node.id);
+      const alertMsg = nodeConfig.messageTemplate
+        ? interpolateTemplate(nodeConfig.messageTemplate, curEvent)
+        : `Alert fired for ${curEvent.symbol} (${curEvent.price_change}%)`;
+
+      await prisma.node.update({
+        where: { id: node.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+          }),
+        },
+      });
+
+      await prisma.log.create({
+        data: {
+          canvasId,
+          eventSummary: alertMsg,
+          triggeredNodes: JSON.stringify([node.id]),
+          detailsJson: JSON.stringify(curEvent),
+        },
+      });
+      logs.push(`Alert dispatched: ${alertMsg}`);
+    } else if (node.type === 'action') {
+      triggeredNodes.push(node.id);
+      await prisma.node.update({
+        where: { id: node.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+          }),
+        },
+      });
+
+      if (nodeConfig.action === 'create_note') {
+        const rawContent = nodeConfig.params?.template || 'Auto-generated note from action node';
+        const noteContent = interpolateTemplate(rawContent, curEvent);
+        
+        // Offset position to right of action node
+        const newX = node.positionX + 260;
+        const newY = node.positionY + 30;
+
+        const newNode = await prisma.node.create({
+          data: {
+            canvasId,
+            type: 'note',
+            positionX: newX,
+            positionY: newY,
+            configJson: JSON.stringify({
+              content: noteContent,
+            }),
+            stateJson: JSON.stringify({
+              status: 'passed',
+              lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+            }),
+          },
+        });
+
+        await prisma.edge.create({
+          data: {
+            canvasId,
+            fromId: node.id,
+            toId: newNode.id,
+          },
+        });
+
+        mutationsCount++;
+        logs.push(`Self-mutation executed: Created child Note node ${newNode.id}`);
+      }
+    }
+
+    // If branch continues, enqueue downstream children
+    if (branchShouldContinue) {
+      const outgoing = canvas.edges.filter((e) => e.fromId === node.id);
+      for (const edge of outgoing) {
+        queue.push({ nodeId: edge.toId, event: curEvent });
+      }
+    }
+  }
+
+  // Record main execution log
+  if (triggeredNodes.length > 0) {
+    await prisma.log.create({
+      data: {
+        canvasId,
+        eventSummary: `Market event for ${event.symbol} (${event.price_change > 0 ? '+' : ''}${event.price_change}%) executed across ${triggeredNodes.length} nodes`,
+        triggeredNodes: JSON.stringify(triggeredNodes),
+        detailsJson: JSON.stringify({ event, logs }),
+      },
+    });
+  }
+
+  return {
+    triggeredNodes,
+    mutationsCount,
+    logs,
+  };
+}

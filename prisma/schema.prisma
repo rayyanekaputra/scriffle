@@ -1,0 +1,70 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Canvas {
+  id        String   @id @default(uuid())
+  name      String   @default("My Market Canvas")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  nodes     Node[]
+  edges     Edge[]
+  logs      Log[]
+}
+
+model Node {
+  id         String   @id @default(uuid())
+  canvasId   String
+  canvas     Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  type       String   // "watcher" | "condition" | "note" | "alert" | "action"
+  positionX  Float    @default(0)
+  positionY  Float    @default(0)
+  configJson String   // JSON stringified node configuration
+  stateJson  String?  // JSON stringified runtime state (e.g., last evaluated value, status)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  outgoingEdges Edge[] @relation("FromNode")
+  incomingEdges Edge[] @relation("ToNode")
+}
+
+model Edge {
+  id        String   @id @default(uuid())
+  canvasId  String
+  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  fromId    String
+  toId      String
+  fromNode  Node     @relation("FromNode", fields: [fromId], references: [id], onDelete: Cascade)
+  toNode    Node     @relation("ToNode", fields: [toId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([fromId, toId])
+}
+
+model MarketSnapshot {
+  id          String   @id @default(uuid())
+  symbol      String   @unique
+  price       Float
+  prevPrice   Float?
+  priceChange Float?   // Percentage change (e.g. 5.2 for +5.2%)
+  volume      Float?
+  avgVolume   Float?
+  rank        Int?
+  rawJson     String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Log {
+  id             String   @id @default(uuid())
+  canvasId       String
+  canvas         Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  eventSummary   String
+  triggeredNodes String   // JSON array of node IDs executed
+  detailsJson    String?  // Context, payload, outcome
+  createdAt      DateTime @default(now())
+}
