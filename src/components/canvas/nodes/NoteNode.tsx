@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect, useRef } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { NoteConfig } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
@@ -13,12 +13,38 @@ const COLOR_STYLES = {
   purple: 'bg-[#F3E8FF] border-[#C084FC] text-purple-950',
 };
 
-export const NoteNode = memo(({ data, selected }: NodeProps) => {
+export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
   const config = (data.config || {}) as NoteConfig;
   const state = (data.state || {}) as any;
   const isPassed = state.status === 'passed';
   const colorKey = config.color || 'yellow';
   const colorClass = COLOR_STYLES[colorKey] || COLOR_STYLES.yellow;
+
+  const [content, setContent] = useState(config.content || '');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setContent(config.content || '');
+  }, [config.content]);
+
+  const handleBlur = async () => {
+    if (content !== config.content) {
+      try {
+        await fetch(`/api/canvas/nodes/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            config: {
+              ...config,
+              content,
+            },
+          }),
+        });
+      } catch (err) {
+        console.error('Failed to update note content:', err);
+      }
+    }
+  };
 
   return (
     <div
@@ -50,9 +76,17 @@ export const NoteNode = memo(({ data, selected }: NodeProps) => {
         )}
       </div>
 
-      {/* Note Content */}
-      <div className="mt-2.5 min-h-[72px] text-xs leading-relaxed font-medium">
-        {config.content || 'Awaiting market triggers to populate commentary...'}
+      {/* Inline Direct Editable Note Textarea */}
+      <div className="mt-2.5">
+        <textarea
+          ref={textareaRef}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onBlur={handleBlur}
+          placeholder="Click here to type note commentary directly..."
+          rows={3}
+          className="w-full resize-none bg-transparent text-xs font-medium leading-relaxed text-inherit placeholder:opacity-50 focus:outline-none nodrag nowheel"
+        />
       </div>
     </div>
   );

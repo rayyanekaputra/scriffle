@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useEffect, useState, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -46,6 +46,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   onChangeNodeColor,
 }) => {
   const { screenToFlowPosition } = useReactFlow();
+  const mousePosRef = useRef<{ x: number; y: number }>({ x: 500, y: 300 });
 
   const nodeTypes = useMemo(
     () => ({
@@ -96,6 +97,56 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     flowY: number;
     nodeId: string | null;
   } | null>(null);
+
+  // Track global mouse coordinates for paste placement safely on client
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      mousePosRef.current = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Global Clipboard Paste Listener (Ctrl+V / Cmd+V)
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT')) {
+        return;
+      }
+
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const dataUrl = e.target?.result as string;
+              const flowPos = screenToFlowPosition(mousePosRef.current);
+              onAddNodeAtPosition?.('image', flowPos, {
+                url: dataUrl,
+                isTransparent: file.type.includes('png'),
+              });
+            };
+            reader.readAsDataURL(file);
+          }
+          event.preventDefault();
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [screenToFlowPosition, onAddNodeAtPosition]);
 
   // Sync state when backend updates
   useEffect(() => {
@@ -223,7 +274,11 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           reader.onload = (e) => {
             const dataUrl = e.target?.result as string;
             const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
-            onAddNodeAtPosition?.('image', flowPos, { url: dataUrl, caption: file.name });
+            onAddNodeAtPosition?.('image', flowPos, {
+              url: dataUrl,
+              caption: file.name,
+              isTransparent: file.type.includes('png'),
+            });
           };
           reader.readAsDataURL(file);
         }

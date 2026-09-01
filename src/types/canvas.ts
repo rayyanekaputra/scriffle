@@ -45,6 +45,7 @@ export interface ImageConfig {
   caption?: string;
   width?: number;
   height?: number;
+  isTransparent?: boolean;
 }
 
 export interface StickerConfig {

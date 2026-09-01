@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { NodeType } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 
@@ -11,6 +11,24 @@ interface TopNavProps {
 
 export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
   const [showStickerMenu, setShowStickerMenu] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        onAddNode('image', {
+          url: dataUrl,
+          caption: file.name,
+          isTransparent: file.type.includes('png'),
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
@@ -41,6 +59,22 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
           <MingIcon name="font_size_line" size={16} />
           <span>Text</span>
         </button>
+
+        {/* Upload Image Button */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-300 hover:bg-slate-100 transition-all active:scale-95"
+        >
+          <MingIcon name="pic_line" size={16} />
+          <span>Image</span>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileUpload}
+        />
 
         <button
           onClick={() => onAddNode('watcher', { symbol: 'BBCA', metric: 'price_change', interval: 300 })}

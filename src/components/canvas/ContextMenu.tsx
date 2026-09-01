@@ -26,8 +26,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onDeleteElement,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Close when clicking outside
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -37,6 +37,23 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     window.addEventListener('mousedown', handleClick);
     return () => window.removeEventListener('mousedown', handleClick);
   }, [onClose]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        onAddElement('image', {
+          url: dataUrl,
+          caption: file.name,
+          isTransparent: file.type.includes('png'),
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div
@@ -113,6 +130,29 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
           <button
             onClick={() => {
+              onAddElement('text', { text: 'Type anything here...' });
+              onClose();
+            }}
+            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 hover:bg-slate-100 transition"
+          >
+            <MingIcon name="font_size_line" size={16} className="text-slate-600" />
+            <span>Free text</span>
+          </button>
+
+          {/* Upload Image Option */}
+          <button
+            onClick={() => {
+              fileInputRef.current?.click();
+              onClose();
+            }}
+            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 hover:bg-slate-100 transition"
+          >
+            <MingIcon name="pic_line" size={16} className="text-slate-600" />
+            <span>Upload picture</span>
+          </button>
+
+          <button
+            onClick={() => {
               onAddElement('watcher', { symbol: 'BBCA' });
               onClose();
             }}
@@ -131,17 +171,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             <MingIcon name="filter_line" size={16} className="text-amber-600" />
             <span>Condition rule</span>
-          </button>
-
-          <button
-            onClick={() => {
-              onAddElement('text', { text: 'Type anything here...' });
-              onClose();
-            }}
-            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 hover:bg-slate-100 transition"
-          >
-            <MingIcon name="font_size_line" size={16} className="text-slate-600" />
-            <span>Free text</span>
           </button>
 
           <button
@@ -191,6 +220,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           </button>
         </div>
       )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
     </div>
   );
 };

@@ -57,9 +57,10 @@ export default function Home() {
     }
   };
 
+  // Only open modal for structured configuration nodes (watcher, condition, alert, action)
   const handleEditNode = (nodeId: string) => {
     const found = canvas?.nodes.find((n) => n.id === nodeId);
-    if (found) {
+    if (found && (found.type === 'watcher' || found.type === 'condition' || found.type === 'alert' || found.type === 'action')) {
       setEditingNode(found);
     }
   };
@@ -124,7 +125,7 @@ export default function Home() {
       />
 
       <div className="relative flex flex-1 overflow-hidden">
-        {/* Main React Flow Canvas wrapped with ReactFlowProvider for screenToFlowPosition */}
+        {/* Main React Flow Canvas */}
         <div className="flex-1 h-full">
           <ReactFlowProvider>
             <MarketCanvas
@@ -145,7 +146,7 @@ export default function Home() {
       {/* Floating FigJam Presenter Simulation Dock */}
       <SimulationBar onSimulateSuccess={handleRefresh} />
 
-      {/* Double-Click Inline Edit Modal */}
+      {/* Configuration Modal (Only for Watcher / Condition / Alert / Action) */}
       <EditNodeModal
         isOpen={Boolean(editingNode)}
         node={editingNode}
