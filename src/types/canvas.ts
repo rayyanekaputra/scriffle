@@ -13,6 +13,7 @@ export interface ConditionConfig {
 export interface NoteConfig {
   content: string;        // Text / markdown content
   template?: string;      // e.g. "${symbol} surged ${price_change}% at ${timestamp}"
+  color?: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple';
 }
 
 export interface AlertConfig {
@@ -39,6 +40,7 @@ export interface CanvasNodeData {
   position: { x: number; y: number };
   config: NodeConfig;
   state?: {
+    cycleCount?: number;
     lastTriggeredAt?: string;
     lastValue?: any;
     status?: 'idle' | 'running' | 'passed' | 'failed' | 'error';

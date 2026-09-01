@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Eye, GitBranch, FileText, Bell, Zap, Sparkles } from 'lucide-react';
 import { NodeType } from '@/types/canvas';
 
 interface TopNavProps {
@@ -11,54 +10,54 @@ interface TopNavProps {
 
 export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
   return (
-    <header className="flex h-14 items-center justify-between border-b border-slate-800 bg-slate-950/90 px-5 backdrop-blur-md z-30">
+    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-6 backdrop-blur-md z-30">
       {/* Brand & Canvas Title */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-2.5 py-1 text-white shadow-md shadow-purple-500/20">
-          <Sparkles className="h-4 w-4" />
-          <span className="font-mono text-xs font-bold tracking-wider">SCRIFFLE</span>
+        <div className="flex items-center gap-2 rounded-xl bg-[#0050FF] px-3 py-1.5 text-white shadow-md shadow-[#0050FF]/20">
+          <span className="text-base">✨</span>
+          <span className="text-sm font-bold tracking-tight">Scriffle</span>
         </div>
-        <div className="h-4 w-[1px] bg-slate-800" />
-        <h1 className="text-sm font-semibold text-slate-200">{canvasName}</h1>
+        <div className="h-5 w-[1px] bg-slate-200" />
+        <h1 className="text-sm font-semibold text-slate-700">{canvasName}</h1>
       </div>
 
-      {/* Add Node Toolset */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs font-medium text-slate-400 mr-1.5">Insert:</span>
+      {/* FigJam Floating Insert Toolbar */}
+      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1.5 shadow-sm">
+        <span className="text-xs font-medium text-slate-400 pl-2 pr-1">Add to board:</span>
+
+        <button
+          onClick={() => onAddNode('note')}
+          className="flex items-center gap-1.5 rounded-xl bg-[#FEF9C3] px-3 py-1.5 text-xs font-bold text-amber-900 hover:bg-[#FDE047] border border-amber-200 transition-all active:scale-95"
+        >
+          <span>📝</span> Sticky Note
+        </button>
 
         <button
           onClick={() => onAddNode('watcher')}
-          className="flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-xs font-medium text-purple-300 hover:bg-purple-500/20 transition"
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#0050FF] hover:bg-blue-50 border border-slate-200 transition-all active:scale-95"
         >
-          <Eye className="h-3.5 w-3.5" /> Watcher
+          <span>📡</span> Watcher
         </button>
 
         <button
           onClick={() => onAddNode('condition')}
-          className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300 hover:bg-amber-500/20 transition"
+          className="flex items-center gap-1.5 rounded-xl bg-[#FFFDE7] px-3 py-1.5 text-xs font-bold text-amber-900 hover:bg-[#FFF9C4] border border-amber-200 transition-all active:scale-95"
         >
-          <GitBranch className="h-3.5 w-3.5" /> Condition
-        </button>
-
-        <button
-          onClick={() => onAddNode('note')}
-          className="flex items-center gap-1.5 rounded-lg border border-teal-500/30 bg-teal-500/10 px-2.5 py-1 text-xs font-medium text-teal-300 hover:bg-teal-500/20 transition"
-        >
-          <FileText className="h-3.5 w-3.5" /> Note
+          <span>⚖️</span> Condition
         </button>
 
         <button
           onClick={() => onAddNode('alert')}
-          className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-300 hover:bg-rose-500/20 transition"
+          className="flex items-center gap-1.5 rounded-xl bg-rose-50 px-3 py-1.5 text-xs font-bold text-[#FF5B79] hover:bg-rose-100 border border-rose-200 transition-all active:scale-95"
         >
-          <Bell className="h-3.5 w-3.5" /> Alert
+          <span>🔔</span> Alert
         </button>
 
         <button
           onClick={() => onAddNode('action')}
-          className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300 hover:bg-emerald-500/20 transition"
+          className="flex items-center gap-1.5 rounded-xl bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#0050FF] hover:bg-blue-100 border border-blue-200 transition-all active:scale-95"
         >
-          <Zap className="h-3.5 w-3.5" /> Action
+          <span>⚡</span> Action
         </button>
       </div>
     </header>

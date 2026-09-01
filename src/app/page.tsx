@@ -18,7 +18,7 @@ export default function Home() {
     } else if (type === 'condition') {
       defaultConfig = { rule: 'price_change > 4' };
     } else if (type === 'note') {
-      defaultConfig = { content: 'Watching sector dynamics...' };
+      defaultConfig = { content: 'Watching sector dynamics...', color: 'mint' };
     } else if (type === 'alert') {
       defaultConfig = { channel: 'ui' };
     } else if (type === 'action') {
@@ -48,8 +48,8 @@ export default function Home() {
   };
 
   return (
-    <main className="flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-slate-100 antialiased font-sans">
-      <TopNav canvasName={canvas?.name || 'Scriffle Studio'} onAddNode={handleAddNode} />
+    <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F9FC] text-slate-900 antialiased font-sans">
+      <TopNav canvasName={canvas?.name || 'Scriffle Whiteboard'} onAddNode={handleAddNode} />
 
       <div className="relative flex flex-1 overflow-hidden">
         {/* Main React Flow Canvas */}
@@ -61,7 +61,7 @@ export default function Home() {
         <ActivityFeed logs={logs} />
       </div>
 
-      {/* Floating Demo Simulation Bar */}
+      {/* Floating FigJam Presenter Simulation Dock */}
       <SimulationBar onSimulateSuccess={handleRefresh} />
     </main>
   );

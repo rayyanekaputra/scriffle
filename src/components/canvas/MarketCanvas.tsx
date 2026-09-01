@@ -21,7 +21,7 @@ import { ConditionNode } from './nodes/ConditionNode';
 import { NoteNode } from './nodes/NoteNode';
 import { AlertNode } from './nodes/AlertNode';
 import { ActionNode } from './nodes/ActionNode';
-import { CanvasData, NodeType } from '@/types/canvas';
+import { CanvasData } from '@/types/canvas';
 
 interface MarketCanvasProps {
   canvasData?: CanvasData;
@@ -60,7 +60,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
       source: e.from,
       target: e.to,
       animated: true,
-      style: { stroke: '#818cf8', strokeWidth: 2 },
+      style: { stroke: '#0050FF', strokeWidth: 2.5 },
     }));
   }, [canvasData?.edges]);
 
@@ -94,7 +94,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
           source: e.from,
           target: e.to,
           animated: true,
-          style: { stroke: '#818cf8', strokeWidth: 2 },
+          style: { stroke: '#0050FF', strokeWidth: 2.5 },
         }))
       );
     }
@@ -104,7 +104,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
   const onConnect = useCallback(
     async (params: Connection) => {
       if (!params.source || !params.target) return;
-      setEdges((eds) => addEdge({ ...params, animated: true }, eds));
+      setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#0050FF', strokeWidth: 2.5 } }, eds));
 
       try {
         await fetch('/api/canvas/edges', {
@@ -143,7 +143,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
   );
 
   return (
-    <div className="h-full w-full bg-slate-950">
+    <div className="h-full w-full bg-[#F8F9FC]">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -153,16 +153,16 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({ canvasData, onRefres
         onNodeDragStop={onNodeDragStop}
         nodeTypes={nodeTypes}
         fitView
-        colorMode="dark"
+        colorMode="light"
         minZoom={0.2}
         maxZoom={2}
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#334155" />
-        <Controls className="!border-slate-800 !bg-slate-900/90 !fill-slate-300" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#CBD5E1" />
+        <Controls className="!border-slate-200 !bg-white !fill-slate-700 !shadow-sm !rounded-xl" />
         <MiniMap
-          nodeColor="#6366f1"
-          maskColor="rgba(15, 23, 42, 0.7)"
-          className="!border-slate-800 !bg-slate-950/90"
+          nodeColor="#0050FF"
+          maskColor="rgba(241, 245, 249, 0.7)"
+          className="!border-slate-200 !bg-white !rounded-xl !shadow-sm"
         />
       </ReactFlow>
     </div>

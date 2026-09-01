@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, Sparkles, RefreshCw, Zap, TrendingUp, BarChart2 } from 'lucide-react';
+import { RefreshCw, TrendingUp, BarChart2 } from 'lucide-react';
 
 interface SimulationBarProps {
   onSimulateSuccess?: () => void;
@@ -49,13 +49,13 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({ onSimulateSuccess 
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-2 shadow-2xl backdrop-blur-xl ring-1 ring-white/10">
-      <div className="flex items-center gap-1.5 px-3 border-r border-slate-700 text-xs font-semibold text-slate-300">
-        <Zap className="h-4 w-4 text-amber-400 animate-pulse" />
-        <span>Demo Simulator</span>
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-2xl border border-slate-200/90 bg-white/95 p-2 shadow-xl backdrop-blur-xl ring-4 ring-black/5">
+      <div className="flex items-center gap-1.5 px-3 border-r border-slate-200 text-xs font-bold text-slate-700">
+        <span className="text-base">🎮</span>
+        <span>Demo Controls</span>
       </div>
 
-      {/* Preset 1: BBCA Breakout Surge */}
+      {/* Preset 1: BBCA Surge */}
       <button
         disabled={loading}
         onClick={() =>
@@ -69,14 +69,14 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({ onSimulateSuccess 
             rank: 1,
           })
         }
-        className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
+        className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all active:scale-95 ${
           activePreset === 'bbca_surge'
-            ? 'bg-emerald-500 text-slate-950 scale-95'
-            : 'bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/30'
+            ? 'bg-[#0050FF] text-white scale-95'
+            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
         }`}
       >
         <TrendingUp className="h-3.5 w-3.5" />
-        <span>BBCA Surge (+6.37%)</span>
+        <span>Simulate BBCA Surge (+6.37%)</span>
       </button>
 
       {/* Preset 2: BBRI Volume Spike */}
@@ -93,23 +93,23 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({ onSimulateSuccess 
             rank: 2,
           })
         }
-        className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
+        className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all active:scale-95 ${
           activePreset === 'bbri_vol'
-            ? 'bg-purple-500 text-slate-950 scale-95'
-            : 'bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/30'
+            ? 'bg-[#0050FF] text-white scale-95'
+            : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
         }`}
       >
         <BarChart2 className="h-3.5 w-3.5" />
-        <span>BBRI Volume Spike</span>
+        <span>Simulate BBRI Volume Spike</span>
       </button>
 
-      {/* Live Sectors API Poll */}
+      {/* Live Market Poll */}
       <button
         disabled={loading}
         onClick={runLivePoll}
-        className="flex items-center gap-1.5 rounded-xl bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white border border-slate-700 transition-all"
+        className="flex items-center gap-1.5 rounded-xl bg-slate-100 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 border border-slate-200 transition-all active:scale-95"
       >
-        <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-purple-400' : ''}`} />
+        <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-[#0050FF]' : ''}`} />
         <span>Poll Market Data</span>
       </button>
     </div>

@@ -2,7 +2,6 @@
 
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { Zap, PlusCircle, RefreshCw } from 'lucide-react';
 import { ActionConfig } from '@/types/canvas';
 
 export const ActionNode = memo(({ data, selected }: NodeProps) => {
@@ -12,44 +11,44 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`w-68 rounded-xl border bg-slate-900/95 p-4 shadow-xl backdrop-blur-md transition-all duration-300 ${
-        selected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : 'border-slate-800 hover:border-slate-700'
-      } ${isPassed ? 'shadow-emerald-500/20 ring-1 ring-emerald-400' : ''}`}
+      className={`relative w-64 rounded-2xl border-2 bg-white p-4 transition-all duration-200 figma-shadow ${
+        selected
+          ? 'border-[#0050FF] ring-4 ring-[#0050FF]/15'
+          : isPassed
+          ? 'border-[#0050FF] shadow-md shadow-[#0050FF]/10'
+          : 'border-slate-200 hover:border-slate-300'
+      }`}
     >
       {/* Input Handle */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!h-3 !w-3 !rounded-full !border-2 !border-slate-900 !bg-emerald-500 transition hover:!scale-125"
+        className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-[#0050FF] transition hover:!scale-125"
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="rounded-lg bg-emerald-500/20 p-1.5 text-emerald-400">
-            <Zap className="h-4 w-4" />
-          </div>
+          <span className="text-xl">⚡</span>
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Mutation</span>
-            <h3 className="text-sm font-semibold text-white">System Action</h3>
+            <span className="text-[11px] font-medium text-slate-500">Board Mutation</span>
+            <h3 className="text-xs font-bold text-slate-900 leading-tight">Automation</h3>
           </div>
         </div>
 
-        <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium uppercase text-emerald-300">
-          <RefreshCw className={`h-2.5 w-2.5 ${isPassed ? 'animate-spin' : ''}`} />
+        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-[#0050FF] border border-blue-100">
           Auto
         </span>
       </div>
 
       {/* Body */}
       <div className="mt-3 space-y-2 text-xs">
-        <div className="flex items-center gap-2 rounded-lg bg-slate-950/80 p-2.5 border border-slate-800 text-slate-300">
-          <PlusCircle className="h-4 w-4 text-emerald-400 shrink-0" />
-          <span className="font-mono text-[11px] text-emerald-300">{config.action || 'create_note'}</span>
+        <div className="rounded-xl bg-blue-50/60 p-2.5 border border-blue-100/80 font-medium text-blue-900">
+          {config.action === 'create_note' ? 'Creates child sticky note' : config.action || 'create_note'}
         </div>
 
-        <div className="text-[10px] text-slate-500">
-          Mutates graph topology when upstream condition passes.
+        <div className="text-[11px] text-slate-400">
+          Spawns a new connected sticky note when triggered.
         </div>
       </div>
 
@@ -57,7 +56,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="!h-3 !w-3 !rounded-full !border-2 !border-slate-900 !bg-emerald-500 transition hover:!scale-125"
+        className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-[#0050FF] transition hover:!scale-125"
       />
     </div>
   );

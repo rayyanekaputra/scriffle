@@ -2,51 +2,56 @@
 
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { FileText, Sparkles } from 'lucide-react';
 import { NoteConfig } from '@/types/canvas';
+
+const COLOR_STYLES = {
+  yellow: 'bg-[#FEF9C3] border-[#FDE047] text-amber-950',
+  mint: 'bg-[#DCFCE7] border-[#86EFAC] text-emerald-950',
+  pink: 'bg-[#FFE4E6] border-[#FDA4AF] text-rose-950',
+  blue: 'bg-[#E0F2FE] border-[#7DD3FC] text-sky-950',
+  purple: 'bg-[#F3E8FF] border-[#D8B4FE] text-purple-950',
+};
 
 export const NoteNode = memo(({ data, selected }: NodeProps) => {
   const config = (data.config || {}) as NoteConfig;
   const state = (data.state || {}) as any;
   const isPassed = state.status === 'passed';
+  const colorKey = config.color || 'yellow';
+  const colorClass = COLOR_STYLES[colorKey] || COLOR_STYLES.yellow;
 
   return (
     <div
-      className={`w-72 rounded-xl border bg-slate-900/95 p-4 shadow-xl backdrop-blur-md transition-all duration-300 ${
-        selected ? 'border-teal-500 ring-2 ring-teal-500/50' : 'border-slate-800 hover:border-slate-700'
-      } ${isPassed ? 'shadow-teal-500/20 ring-1 ring-teal-400' : ''}`}
+      className={`relative w-72 rounded-2xl border-2 p-4 transition-all duration-200 figma-shadow ${colorClass} ${
+        selected ? 'ring-4 ring-[#0050FF]/25 scale-[1.02]' : 'hover:scale-[1.01]'
+      } ${isPassed ? 'shadow-md' : ''}`}
     >
+      {/* Tape decoration */}
+      <div className="sticky-tape" />
+
       {/* Input Handle */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!h-3 !w-3 !rounded-full !border-2 !border-slate-900 !bg-teal-500 transition hover:!scale-125"
+        className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-[#0050FF] transition hover:!scale-125"
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-        <div className="flex items-center gap-2">
-          <div className="rounded-lg bg-teal-500/20 p-1.5 text-teal-400">
-            <FileText className="h-4 w-4" />
-          </div>
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400">Output</span>
-            <h3 className="text-sm font-semibold text-white">Market Note</h3>
-          </div>
+      <div className="flex items-center justify-between pb-2 border-b border-black/5 pt-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">📝</span>
+          <h3 className="text-xs font-bold opacity-80">Research Note</h3>
         </div>
 
         {isPassed && (
-          <span className="flex items-center gap-1 rounded-full bg-teal-500/20 px-2 py-0.5 text-[10px] font-medium text-teal-300">
-            <Sparkles className="h-2.5 w-2.5" /> Updated
+          <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold shadow-xs">
+            ✨ Updated
           </span>
         )}
       </div>
 
-      {/* Note Body */}
-      <div className="mt-3">
-        <div className="min-h-[64px] rounded-lg bg-slate-950/80 p-3 border border-slate-800 text-xs leading-relaxed text-slate-200">
-          {config.content || 'Awaiting trigger to generate market research commentary...'}
-        </div>
+      {/* Note Content */}
+      <div className="mt-2.5 min-h-[72px] text-xs leading-relaxed font-medium">
+        {config.content || 'Awaiting market triggers to populate commentary...'}
       </div>
     </div>
   );

@@ -64,19 +64,27 @@ export async function executeGraphForEvent(
   const queue: Array<{ nodeId: string; event: MarketEvent }> = [];
   const visited = new Set<string>();
 
-  // Mark watchers as triggered and enqueue their children
+  // Mark watchers as triggered, increment cycle count, and enqueue their children
   for (const watcher of matchingWatchers) {
     triggeredNodes.push(watcher.id);
     visited.add(watcher.id);
 
-    // Update watcher state
+    let currentState: any = {};
+    try {
+      if (watcher.stateJson) currentState = JSON.parse(watcher.stateJson);
+    } catch {}
+
+    const newCycleCount = (currentState.cycleCount || 0) + 1;
+
+    // Update watcher state with incremented cycle counter
     await prisma.node.update({
       where: { id: watcher.id },
       data: {
         stateJson: JSON.stringify({
           status: 'passed',
           lastValue: event,
-          lastTriggeredAt: event.timestamp || new Date().toISOString(),
+          cycleCount: newCycleCount,
+          lastTriggeredAt: event.timestamp || new Date().toLocaleTimeString(),
         }),
       },
     });
@@ -112,17 +120,17 @@ export async function executeGraphForEvent(
           stateJson: JSON.stringify({
             status: passed ? 'passed' : 'failed',
             lastValue: curEvent,
-            lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+            lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
           }),
         },
       });
 
       if (passed) {
         triggeredNodes.push(node.id);
-        logs.push(`Condition matched: [${nodeConfig.rule}] for ${curEvent.symbol}`);
+        logs.push(`Condition matched: "${nodeConfig.rule}" for ${curEvent.symbol}`);
       } else {
         branchShouldContinue = false;
-        logs.push(`Condition not met: [${nodeConfig.rule}] for ${curEvent.symbol}`);
+        logs.push(`Condition not met: "${nodeConfig.rule}" for ${curEvent.symbol}`);
       }
     } else if (node.type === 'note') {
       triggeredNodes.push(node.id);
@@ -142,24 +150,24 @@ export async function executeGraphForEvent(
           }),
           stateJson: JSON.stringify({
             status: 'passed',
-            lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+            lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
           }),
         },
       });
       mutationsCount++;
-      logs.push(`Note updated: "${updatedContent.slice(0, 50)}..."`);
+      logs.push(`Sticky note updated: "${updatedContent.slice(0, 45)}..."`);
     } else if (node.type === 'alert') {
       triggeredNodes.push(node.id);
       const alertMsg = nodeConfig.messageTemplate
         ? interpolateTemplate(nodeConfig.messageTemplate, curEvent)
-        : `Alert fired for ${curEvent.symbol} (${curEvent.price_change}%)`;
+        : `Alert: ${curEvent.symbol} price change is ${curEvent.price_change}%`;
 
       await prisma.node.update({
         where: { id: node.id },
         data: {
           stateJson: JSON.stringify({
             status: 'passed',
-            lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+            lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
           }),
         },
       });
@@ -172,7 +180,7 @@ export async function executeGraphForEvent(
           detailsJson: JSON.stringify(curEvent),
         },
       });
-      logs.push(`Alert dispatched: ${alertMsg}`);
+      logs.push(`Notification fired: ${alertMsg}`);
     } else if (node.type === 'action') {
       triggeredNodes.push(node.id);
       await prisma.node.update({
@@ -180,18 +188,18 @@ export async function executeGraphForEvent(
         data: {
           stateJson: JSON.stringify({
             status: 'passed',
-            lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+            lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
           }),
         },
       });
 
       if (nodeConfig.action === 'create_note') {
-        const rawContent = nodeConfig.params?.template || 'Auto-generated note from action node';
+        const rawContent = nodeConfig.params?.template || 'Auto-generated sticky note';
         const noteContent = interpolateTemplate(rawContent, curEvent);
         
         // Offset position to right of action node
-        const newX = node.positionX + 260;
-        const newY = node.positionY + 30;
+        const newX = node.positionX + 250;
+        const newY = node.positionY + 20;
 
         const newNode = await prisma.node.create({
           data: {
@@ -201,10 +209,11 @@ export async function executeGraphForEvent(
             positionY: newY,
             configJson: JSON.stringify({
               content: noteContent,
+              color: 'mint',
             }),
             stateJson: JSON.stringify({
               status: 'passed',
-              lastTriggeredAt: curEvent.timestamp || new Date().toISOString(),
+              lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
             }),
           },
         });
@@ -218,7 +227,7 @@ export async function executeGraphForEvent(
         });
 
         mutationsCount++;
-        logs.push(`Self-mutation executed: Created child Note node ${newNode.id}`);
+        logs.push(`Added new sticky note on canvas`);
       }
     }
 
@@ -236,7 +245,7 @@ export async function executeGraphForEvent(
     await prisma.log.create({
       data: {
         canvasId,
-        eventSummary: `Market event for ${event.symbol} (${event.price_change > 0 ? '+' : ''}${event.price_change}%) executed across ${triggeredNodes.length} nodes`,
+        eventSummary: `Market event for ${event.symbol} (${event.price_change > 0 ? '+' : ''}${event.price_change}%) flowed through ${triggeredNodes.length} cards`,
         triggeredNodes: JSON.stringify(triggeredNodes),
         detailsJson: JSON.stringify({ event, logs }),
       },

@@ -1,7 +1,7 @@
 import { prisma } from '../src/lib/prisma';
 
 async function seed() {
-  console.log('🌱 Seeding default Scriffle canvas...');
+  console.log('🌱 Seeding FigJam-style whiteboard canvas...');
 
   // Reset existing canvas
   await prisma.log.deleteMany();
@@ -12,7 +12,7 @@ async function seed() {
 
   const canvas = await prisma.canvas.create({
     data: {
-      name: 'Indonesian Market Momentum Canvas',
+      name: 'Indonesian Market Momentum Board',
     },
   });
 
@@ -21,8 +21,8 @@ async function seed() {
     data: {
       canvasId: canvas.id,
       type: 'watcher',
-      positionX: 100,
-      positionY: 200,
+      positionX: 80,
+      positionY: 180,
       configJson: JSON.stringify({
         symbol: 'BBCA',
         metric: 'price_change',
@@ -30,7 +30,8 @@ async function seed() {
       }),
       stateJson: JSON.stringify({
         status: 'idle',
-        lastValue: { price: 10200, price_change: 0 },
+        cycleCount: 12,
+        lastValue: { price: 10200, price_change: 1.8 },
       }),
     },
   });
@@ -40,8 +41,8 @@ async function seed() {
     data: {
       canvasId: canvas.id,
       type: 'condition',
-      positionX: 450,
-      positionY: 200,
+      positionX: 420,
+      positionY: 180,
       configJson: JSON.stringify({
         rule: 'price_change > 5',
       }),
@@ -51,16 +52,17 @@ async function seed() {
     },
   });
 
-  // 3. Note Node: Momentum commentary
+  // 3. Note Node: Sticky Note
   const noteNode = await prisma.node.create({
     data: {
       canvasId: canvas.id,
       type: 'note',
-      positionX: 800,
-      positionY: 100,
+      positionX: 760,
+      positionY: 60,
       configJson: JSON.stringify({
-        content: 'Watching for BBCA momentum breakout (> 5%)...',
-        template: '🚀 ${symbol} surged +${price_change}% to Rp ${price} (Avg Vol: ${avg_volume}) at ${timestamp}',
+        content: 'Watching for BBCA momentum breakout above +5%...',
+        template: '🚀 BBCA surged +${price_change}% to Rp ${price} (Avg volume: ${avg_volume}) at ${timestamp}',
+        color: 'yellow',
       }),
       stateJson: JSON.stringify({
         status: 'idle',
@@ -68,16 +70,16 @@ async function seed() {
     },
   });
 
-  // 4. Alert Node: UI Toast alert
+  // 4. Alert Node: Notification pill
   const alertNode = await prisma.node.create({
     data: {
       canvasId: canvas.id,
       type: 'alert',
-      positionX: 800,
+      positionX: 760,
       positionY: 260,
       configJson: JSON.stringify({
         channel: 'ui',
-        messageTemplate: 'High volatility alert: ${symbol} price change is ${price_change}%',
+        messageTemplate: 'High volatility alert: BBCA price jumped ${price_change}%',
       }),
       stateJson: JSON.stringify({
         status: 'idle',
@@ -85,17 +87,17 @@ async function seed() {
     },
   });
 
-  // 5. Action Node: Self-mutate canvas by creating follow-up note
+  // 5. Action Node: Whiteboard automation action
   const actionNode = await prisma.node.create({
     data: {
       canvasId: canvas.id,
       type: 'action',
-      positionX: 800,
+      positionX: 760,
       positionY: 420,
       configJson: JSON.stringify({
         action: 'create_note',
         params: {
-          template: 'Generated Review: ${symbol} breakout confirmed at ${timestamp}.',
+          template: 'Breakout confirmed for ${symbol} at ${timestamp}. Check volume profile next.',
         },
       }),
       stateJson: JSON.stringify({
@@ -105,7 +107,6 @@ async function seed() {
   });
 
   // Connect edges
-  // Watcher -> Condition
   await prisma.edge.create({
     data: {
       canvasId: canvas.id,
@@ -114,7 +115,6 @@ async function seed() {
     },
   });
 
-  // Condition -> Note
   await prisma.edge.create({
     data: {
       canvasId: canvas.id,
@@ -123,7 +123,6 @@ async function seed() {
     },
   });
 
-  // Condition -> Alert
   await prisma.edge.create({
     data: {
       canvasId: canvas.id,
@@ -132,7 +131,6 @@ async function seed() {
     },
   });
 
-  // Condition -> Action
   await prisma.edge.create({
     data: {
       canvasId: canvas.id,
@@ -141,7 +139,6 @@ async function seed() {
     },
   });
 
-  // Initialize market snapshot baseline
   await prisma.marketSnapshot.create({
     data: {
       symbol: 'BBCA',
@@ -154,7 +151,7 @@ async function seed() {
     },
   });
 
-  console.log('✅ Canvas initialized with 5 connected demo nodes.');
+  console.log('✅ FigJam demo canvas seeded.');
 }
 
 seed()
