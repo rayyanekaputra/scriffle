@@ -16,6 +16,10 @@ function WhiteboardContent() {
   const [editingNode, setEditingNode] = useState<CanvasNodeData | null>(null);
   const { showToast } = useToast();
 
+  // Panels visibility state (hideable Left Panel & Activity Feed)
+  const [isFeedOpen, setIsFeedOpen] = useState(true);
+  const [isControlsOpen, setIsControlsOpen] = useState(true);
+
   // Auto-stream continuous market ticker state
   const [autoTickActive, setAutoTickActive] = useState(false);
   const [autoTickInterval, setAutoTickInterval] = useState(3);
@@ -132,14 +136,20 @@ function WhiteboardContent() {
 
         const alertLogs = data.result?.logs?.filter((l: string) => l.startsWith('Notification fired:')) || [];
         if (alertLogs.length > 0) {
+          const isRising = (eventPayload.price_change || 0) >= 0;
           for (const msg of alertLogs) {
-            showToast(`Market Alert: ${eventPayload.symbol}`, msg.replace('Notification fired: ', ''));
+            showToast(
+              `Market Alert: ${eventPayload.symbol}`,
+              msg.replace('Notification fired: ', ''),
+              isRising ? 'rising' : 'crashing'
+            );
           }
         } else if (!suppressInfoToast) {
+          const isRising = (eventPayload.price_change || 0) >= 0;
           showToast(
-            `Injected ${eventPayload.symbol} Tick`,
-            `Change: ${eventPayload.price_change >= 0 ? '+' : ''}${eventPayload.price_change}%, Volume: ${eventPayload.volume?.toLocaleString()}`,
-            'info'
+            `${eventPayload.symbol} ${isRising ? 'Surge' : 'Drop'} Tick`,
+            `Change: ${isRising ? '+' : ''}${eventPayload.price_change}%, Volume: ${eventPayload.volume?.toLocaleString()}`,
+            isRising ? 'rising' : 'crashing'
           );
         }
       }
@@ -168,7 +178,6 @@ function WhiteboardContent() {
 
     timerRef.current = setInterval(() => {
       const randomSymbol = availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
-      // Generate realistic price fluctuation with occasional breakout spikes
       const isSpike = Math.random() < 0.25;
       const priceChange = isSpike
         ? parseFloat((5.5 + Math.random() * 3.5).toFixed(2))
@@ -192,7 +201,7 @@ function WhiteboardContent() {
           rank: 1,
           timestamp: new Date().toLocaleTimeString(),
         },
-        true // suppress noisy single-tick info toasts during continuous stream
+        true // suppress info toasts during stream, only show alert toasts
       );
     }, autoTickInterval * 1000);
 
@@ -205,7 +214,7 @@ function WhiteboardContent() {
     setAutoTickActive(active);
     setAutoTickInterval(intervalSec);
     if (active) {
-      showToast('Live Streaming Started', `Mimicking live market ticks every ${intervalSec}s`, 'info');
+      showToast('Live Streaming Started', `Mimicking live market ticks every ${intervalSec}s`, 'rising');
     } else {
       showToast('Streaming Paused', 'Market tick loop stopped', 'info');
     }
@@ -218,12 +227,27 @@ function WhiteboardContent() {
 
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F9FC] text-slate-900 antialiased font-sans">
+      {/* Centered TopNav with view toggle buttons on the right */}
       <TopNav
         canvasName={canvas?.name || 'Scriffle Whiteboard'}
         onAddNode={(type, config) => handleAddNode(type, undefined, config)}
+        isFeedOpen={isFeedOpen}
+        onToggleFeed={() => setIsFeedOpen(!isFeedOpen)}
+        isControlsOpen={isControlsOpen}
+        onToggleControls={() => setIsControlsOpen(!isControlsOpen)}
       />
 
       <div className="relative flex flex-1 overflow-hidden">
+        {/* Hideable Left Controls Panel */}
+        <SimulationBar
+          isOpen={isControlsOpen}
+          onClose={() => setIsControlsOpen(false)}
+          onSimulateSuccess={handleRefresh}
+          onSimulateCustom={handleSimulateCustom}
+          autoTickActive={autoTickActive}
+          onToggleAutoTick={handleToggleAutoTick}
+        />
+
         {/* Main React Flow Canvas */}
         <div className="flex-1 h-full">
           <ReactFlowProvider>
@@ -238,17 +262,13 @@ function WhiteboardContent() {
           </ReactFlowProvider>
         </div>
 
-        {/* Live Activity & Log Sidebar */}
-        <ActivityFeed logs={logs} />
+        {/* Hideable Live Activity & Log Sidebar */}
+        <ActivityFeed
+          logs={logs}
+          isOpen={isFeedOpen}
+          onClose={() => setIsFeedOpen(false)}
+        />
       </div>
-
-      {/* Floating FigJam Presenter Simulation Dock */}
-      <SimulationBar
-        onSimulateSuccess={handleRefresh}
-        onSimulateCustom={handleSimulateCustom}
-        autoTickActive={autoTickActive}
-        onToggleAutoTick={handleToggleAutoTick}
-      />
 
       {/* Configuration Modal */}
       <EditNodeModal

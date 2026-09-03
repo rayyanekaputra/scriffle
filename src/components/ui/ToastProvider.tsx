@@ -7,26 +7,55 @@ interface Toast {
   id: string;
   title: string;
   message: string;
-  type?: 'alert' | 'success' | 'info';
+  type?: 'rising' | 'crashing' | 'alert' | 'success' | 'info';
 }
 
 interface ToastContextType {
-  showToast: (title: string, message: string, type?: 'alert' | 'success' | 'info') => void;
+  showToast: (title: string, message: string, type?: 'rising' | 'crashing' | 'alert' | 'success' | 'info') => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
+const TOAST_STYLES: Record<
+  string,
+  { bg: string; icon: string }
+> = {
+  rising: {
+    bg: 'bg-emerald-600 border-emerald-700 text-white',
+    icon: 'trending_up_line',
+  },
+  crashing: {
+    bg: 'bg-rose-600 border-rose-700 text-white',
+    icon: 'trending_down_line',
+  },
+  alert: {
+    bg: 'bg-[#0050FF] border-blue-700 text-white',
+    icon: 'notification_line',
+  },
+  success: {
+    bg: 'bg-emerald-600 border-emerald-700 text-white',
+    icon: 'check_circle_line',
+  },
+  info: {
+    bg: 'bg-slate-900 border-slate-950 text-white',
+    icon: 'information_line',
+  },
+};
+
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = useCallback((title: string, message: string, type: 'alert' | 'success' | 'info' = 'alert') => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, title, message, type }]);
+  const showToast = useCallback(
+    (title: string, message: string, type: 'rising' | 'crashing' | 'alert' | 'success' | 'info' = 'alert') => {
+      const id = Math.random().toString(36).substring(2, 9);
+      setToasts((prev) => [...prev, { id, title, message, type }]);
 
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
-  }, []);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4500);
+    },
+    []
+  );
 
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -38,28 +67,31 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       {/* Floating Toast Notification Container (Top-Right) */}
       <div className="fixed top-20 right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className="pointer-events-auto flex items-start gap-3 rounded-2xl border-2 border-slate-300 bg-white p-4 shadow-sm transition-all animate-in fade-in slide-in-from-top-4 duration-200"
-          >
-            <div className="rounded-xl bg-rose-50 p-2 text-rose-600 border border-rose-200 shrink-0 mt-0.5">
-              <MingIcon name="notification_line" size={18} />
-            </div>
-
-            <div className="flex-1 text-xs">
-              <h4 className="font-bold text-slate-900 leading-tight">{toast.title}</h4>
-              <p className="mt-1 font-medium text-slate-600 leading-relaxed">{toast.message}</p>
-            </div>
-
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="text-slate-400 hover:text-slate-600 transition p-1 -mr-1 -mt-1"
+        {toasts.map((toast) => {
+          const style = TOAST_STYLES[toast.type || 'alert'] || TOAST_STYLES.alert;
+          return (
+            <div
+              key={toast.id}
+              className={`pointer-events-auto flex items-start gap-3 rounded-2xl border-2 ${style.bg} p-4 shadow-md transition-all animate-in fade-in slide-in-from-top-4 duration-200`}
             >
-              <MingIcon name="close_line" size={16} />
-            </button>
-          </div>
-        ))}
+              <div className="rounded-xl bg-white/20 p-2 text-white shrink-0 mt-0.5">
+                <MingIcon name={style.icon} size={18} />
+              </div>
+
+              <div className="flex-1 text-xs">
+                <h4 className="font-bold text-white leading-tight">{toast.title}</h4>
+                <p className="mt-1 font-medium text-white/90 leading-relaxed">{toast.message}</p>
+              </div>
+
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="text-white/70 hover:text-white transition p-1 -mr-1 -mt-1"
+              >
+                <MingIcon name="close_line" size={16} />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </ToastContext.Provider>
   );

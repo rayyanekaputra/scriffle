@@ -7,9 +7,20 @@ import { MingIcon } from '@/components/ui/MingIcon';
 interface TopNavProps {
   canvasName: string;
   onAddNode: (type: NodeType, config?: any) => void;
+  isFeedOpen: boolean;
+  onToggleFeed: () => void;
+  isControlsOpen: boolean;
+  onToggleControls: () => void;
 }
 
-export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
+export const TopNav: React.FC<TopNavProps> = ({
+  canvasName,
+  onAddNode,
+  isFeedOpen,
+  onToggleFeed,
+  isControlsOpen,
+  onToggleControls,
+}) => {
   const [showStickerMenu, setShowStickerMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -31,8 +42,8 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
-      {/* Brand & Canvas Title */}
+    <header className="relative flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
+      {/* Left: Brand & Canvas Title */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-1.5 text-white">
           <MingIcon name="sparkles_line" size={18} />
@@ -42,8 +53,8 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
         <h1 className="text-sm font-semibold text-slate-800">{canvasName}</h1>
       </div>
 
-      {/* FigJam Floating Whiteboard Toolbar (Neutral Chrome) */}
-      <div className="relative flex items-center gap-1 rounded-2xl border-2 border-slate-200 bg-slate-50 p-1.5">
+      {/* Center: Absolute Centered FigJam Toolbar */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-2xl border-2 border-slate-200 bg-slate-50 p-1.5">
         <button
           onClick={() => onAddNode('note', { color: 'yellow', content: 'Double click to write note...' })}
           className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
@@ -103,7 +114,7 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
           </button>
 
           {showStickerMenu && (
-            <div className="absolute top-full right-0 mt-2 z-50 w-44 rounded-2xl border-2 border-slate-200 bg-white p-1.5">
+            <div className="absolute top-full left-0 mt-2 z-50 w-44 rounded-2xl border-2 border-slate-200 bg-white p-1.5 shadow-sm">
               {[
                 { type: 'bullish', label: 'Bullish', icon: 'chart_line' },
                 { type: 'bearish', label: 'Bearish', icon: 'chart_line' },
@@ -120,7 +131,7 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
                   }}
                   className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition"
                 >
-                  <MingIcon name={s.icon} size={16} className="text-slate-600" />
+                  <MingIcon name={s.icon} size={16} />
                   <span>{s.label}</span>
                 </button>
               ))}
@@ -142,6 +153,35 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
         >
           <MingIcon name="flash_line" size={16} className="text-slate-600" />
           <span>Action</span>
+        </button>
+      </div>
+
+      {/* Right: Sidebar & Left Panel View Toggles + Future Options Area */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onToggleControls}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border-2 transition-all ${
+            isControlsOpen
+              ? 'bg-slate-900 text-white border-slate-900'
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+          }`}
+          title="Toggle Left Demo Controls Panel"
+        >
+          <MingIcon name="layout_left_line" size={16} />
+          <span>Controls</span>
+        </button>
+
+        <button
+          onClick={onToggleFeed}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border-2 transition-all ${
+            isFeedOpen
+              ? 'bg-slate-900 text-white border-slate-900'
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+          }`}
+          title="Toggle Right Activity Feed Sidebar"
+        >
+          <MingIcon name="layout_right_line" size={16} />
+          <span>Feed</span>
         </button>
       </div>
     </header>

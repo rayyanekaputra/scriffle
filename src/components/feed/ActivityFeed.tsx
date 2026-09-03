@@ -6,22 +6,35 @@ import { MingIcon } from '@/components/ui/MingIcon';
 
 interface ActivityFeedProps {
   logs: ExecutionLog[];
+  isOpen: boolean;
+  onClose: () => void;
   onSelectNode?: (nodeId: string) => void;
 }
 
-export const ActivityFeed: React.FC<ActivityFeedProps> = ({ logs, onSelectNode }) => {
+export const ActivityFeed: React.FC<ActivityFeedProps> = ({ logs, isOpen, onClose, onSelectNode }) => {
+  if (!isOpen) return null;
+
   return (
-    <aside className="w-80 border-l-2 border-slate-200 bg-white p-4 flex flex-col h-full z-30">
+    <aside className="w-80 border-l-2 border-slate-200 bg-white p-4 flex flex-col h-full z-30 transition-all">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
         <div className="flex items-center gap-2">
           <MingIcon name="history_line" size={18} className="text-slate-700" />
           <h2 className="text-sm font-bold text-slate-800">Activity Feed</h2>
         </div>
-        <span className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 border border-slate-200">
-          <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-ping" />
-          Live
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 border border-slate-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-ping" />
+            Live
+          </span>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            title="Hide Activity Feed"
+          >
+            <MingIcon name="close_line" size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Log List */}

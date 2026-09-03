@@ -5,6 +5,8 @@ import { MingIcon } from '@/components/ui/MingIcon';
 import { DevSpikeTool } from './DevSpikeTool';
 
 interface SimulationBarProps {
+  isOpen: boolean;
+  onClose: () => void;
   onSimulateSuccess?: () => void;
   onSimulateCustom?: (eventPayload: any) => void;
   autoTickActive?: boolean;
@@ -12,6 +14,8 @@ interface SimulationBarProps {
 }
 
 export const SimulationBar: React.FC<SimulationBarProps> = ({
+  isOpen,
+  onClose,
   onSimulateSuccess,
   onSimulateCustom,
   autoTickActive = false,
@@ -62,85 +66,130 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <>
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-2xl border-2 border-slate-200 bg-white p-2">
-        <div className="flex items-center gap-1.5 px-3 border-r-2 border-slate-200 text-xs font-bold text-slate-700">
-          <MingIcon name="game_2_line" size={18} className="text-slate-600" />
-          <span>Demo Controls</span>
+      <aside className="w-72 border-r-2 border-slate-200 bg-white p-4 flex flex-col h-full z-30 transition-all">
+        {/* Panel Header */}
+        <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+          <div className="flex items-center gap-2">
+            <MingIcon name="game_2_line" size={18} className="text-slate-700" />
+            <h2 className="text-sm font-bold text-slate-800">Demo Controls</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            title="Hide Demo Controls"
+          >
+            <MingIcon name="close_line" size={16} />
+          </button>
         </div>
 
-        {/* Preset 1: BBCA Surge */}
-        <button
-          disabled={loading}
-          onClick={() =>
-            runSimulation('bbca_surge', {
-              symbol: 'BBCA',
-              price: 10850,
-              prevPrice: 10200,
-              price_change: 6.37,
-              volume: 25000000,
-              avg_volume: 10000000,
-              rank: 1,
-            })
-          }
-          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold border-2 transition-all active:scale-95 ${
-            activePreset === 'bbca_surge'
-              ? 'bg-slate-900 text-white border-slate-900 scale-95'
-              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
-          }`}
-        >
-          <MingIcon name="trending_up_line" size={16} className="text-slate-600" />
-          <span>Simulate BBCA Surge (+6.37%)</span>
-        </button>
+        {/* Action Controls List */}
+        <div className="flex-1 overflow-y-auto pt-4 space-y-4">
+          <div>
+            <span className="text-[11px] font-bold text-slate-500 block mb-2">
+              Preset Spikes
+            </span>
+            <div className="space-y-2">
+              {/* Preset 1: BBCA Surge */}
+              <button
+                disabled={loading}
+                onClick={() =>
+                  runSimulation('bbca_surge', {
+                    symbol: 'BBCA',
+                    price: 10850,
+                    prevPrice: 10200,
+                    price_change: 6.37,
+                    volume: 25000000,
+                    avg_volume: 10000000,
+                    rank: 1,
+                  })
+                }
+                className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold border-2 transition-all active:scale-98 ${
+                  activePreset === 'bbca_surge'
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <MingIcon name="trending_up_line" size={16} className="text-emerald-600" />
+                  <span>BBCA Surge (+6.37%)</span>
+                </div>
+              </button>
 
-        {/* Preset 2: BBRI Volume Spike */}
-        <button
-          disabled={loading}
-          onClick={() =>
-            runSimulation('bbri_vol', {
-              symbol: 'BBRI',
-              price: 5400,
-              prevPrice: 5100,
-              price_change: 5.88,
-              volume: 45000000,
-              avg_volume: 18000000,
-              rank: 2,
-            })
-          }
-          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold border-2 transition-all active:scale-95 ${
-            activePreset === 'bbri_vol'
-              ? 'bg-slate-900 text-white border-slate-900 scale-95'
-              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
-          }`}
-        >
-          <MingIcon name="chart_bar_line" size={16} className="text-slate-600" />
-          <span>Simulate BBRI Volume Spike</span>
-        </button>
+              {/* Preset 2: BBRI Volume Spike */}
+              <button
+                disabled={loading}
+                onClick={() =>
+                  runSimulation('bbri_vol', {
+                    symbol: 'BBRI',
+                    price: 5400,
+                    prevPrice: 5100,
+                    price_change: 5.88,
+                    volume: 45000000,
+                    avg_volume: 18000000,
+                    rank: 2,
+                  })
+                }
+                className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold border-2 transition-all active:scale-98 ${
+                  activePreset === 'bbri_vol'
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <MingIcon name="chart_bar_line" size={16} className="text-purple-600" />
+                  <span>BBRI Volume Spike</span>
+                </div>
+              </button>
+            </div>
+          </div>
 
-        {/* Custom 4-Param DevTool Button */}
-        <button
-          onClick={() => setIsDevToolOpen(true)}
-          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold border-2 transition-all active:scale-95 ${
-            autoTickActive
-              ? 'bg-emerald-50 text-emerald-900 border-emerald-400'
-              : 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200'
-          }`}
-        >
-          <MingIcon name="tools_line" size={16} className={autoTickActive ? 'text-emerald-600 animate-spin' : 'text-slate-700'} />
-          <span>{autoTickActive ? 'Live Streaming (Timer Active)' : 'Custom Spike (DevTool)'}</span>
-        </button>
+          <div>
+            <span className="text-[11px] font-bold text-slate-500 block mb-2">
+              Advanced Tools
+            </span>
+            <div className="space-y-2">
+              {/* Custom 4-Param DevTool Button */}
+              <button
+                onClick={() => setIsDevToolOpen(true)}
+                className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold border-2 transition-all active:scale-98 ${
+                  autoTickActive
+                    ? 'bg-emerald-50 text-emerald-900 border-emerald-400'
+                    : 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <MingIcon
+                    name="tools_line"
+                    size={16}
+                    className={autoTickActive ? 'text-emerald-600 animate-spin' : 'text-slate-700'}
+                  />
+                  <span>{autoTickActive ? 'Streaming Active' : 'Custom Spike (DevTool)'}</span>
+                </div>
+              </button>
 
-        {/* Live Market Poll */}
-        <button
-          disabled={loading}
-          onClick={runLivePoll}
-          className="flex items-center gap-1.5 rounded-xl bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 border-2 border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
-        >
-          <MingIcon name="refresh_3_line" size={16} className={loading ? 'animate-spin text-slate-600' : 'text-slate-600'} />
-          <span>Poll Market Data</span>
-        </button>
-      </div>
+              {/* Live Market Poll */}
+              <button
+                disabled={loading}
+                onClick={runLivePoll}
+                className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-700 border-2 border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-98"
+              >
+                <div className="flex items-center gap-2">
+                  <MingIcon
+                    name="refresh_3_line"
+                    size={16}
+                    className={loading ? 'animate-spin text-slate-600' : 'text-slate-600'}
+                  />
+                  <span>Poll Market API</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
 
       {/* DevTool Modal with Timer Stream Controls */}
       <DevSpikeTool
