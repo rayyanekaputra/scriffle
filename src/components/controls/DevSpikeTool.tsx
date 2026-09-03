@@ -1,15 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MingIcon } from '@/components/ui/MingIcon';
 
 interface DevSpikeToolProps {
   isOpen: boolean;
   onClose: () => void;
   onInject: (event: any) => void;
+  autoTickActive?: boolean;
+  onToggleAutoTick?: (active: boolean, intervalSec: number) => void;
 }
 
-export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onInject }) => {
+export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({
+  isOpen,
+  onClose,
+  onInject,
+  autoTickActive = false,
+  onToggleAutoTick,
+}) => {
   const [symbol, setSymbol] = useState('TLKM');
   const [price, setPrice] = useState(3250);
   const [priceChange, setPriceChange] = useState(6.5);
@@ -17,7 +25,14 @@ export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onI
   const [avgVolume, setAvgVolume] = useState(10000000);
   const [rank, setRank] = useState(3);
 
-  if (!isOpen) return null;
+  // Auto-Ticker Timer Controls
+  const [timerInterval, setTimerInterval] = useState(3); // in seconds
+  const [isAutoRunning, setIsAutoRunning] = useState(autoTickActive);
+  const [randomJitter, setRandomJitter] = useState(true);
+
+  useEffect(() => {
+    setIsAutoRunning(autoTickActive);
+  }, [autoTickActive]);
 
   const handleInject = () => {
     onInject({
@@ -33,6 +48,12 @@ export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onI
     onClose();
   };
 
+  const handleToggleTimer = () => {
+    const nextState = !isAutoRunning;
+    setIsAutoRunning(nextState);
+    onToggleAutoTick?.(nextState, timerInterval);
+  };
+
   const applyPreset = (sym: string, chg: number, vol: number, avgVol: number, p: number, r: number) => {
     setSymbol(sym);
     setPriceChange(chg);
@@ -41,6 +62,8 @@ export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onI
     setPrice(p);
     setRank(r);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-xs p-4">
@@ -52,8 +75,8 @@ export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onI
               <MingIcon name="tools_line" size={18} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Developer Market Spike Tool</h3>
-              <p className="text-[11px] text-slate-500">Inject custom numbers to test complex condition formulas</p>
+              <h3 className="text-sm font-bold text-slate-900">Developer Market Spike & Auto-Ticker Tool</h3>
+              <p className="text-[11px] text-slate-500">Inject custom numbers or stream live changing market ticks</p>
             </div>
           </div>
           <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 transition">
@@ -61,8 +84,64 @@ export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onI
           </button>
         </div>
 
+        {/* Continuous Auto-Ticker Stream Section */}
+        <div className="mt-3 rounded-2xl border-2 border-slate-200 bg-slate-50/80 p-3.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className={`h-2.5 w-2.5 rounded-full ${isAutoRunning ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Auto-Stream Market Ticks (Timer)</h4>
+                <p className="text-[10px] text-slate-500">Continuously mimics live market API updates</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleToggleTimer}
+              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition active:scale-95 ${
+                isAutoRunning
+                  ? 'bg-rose-600 text-white hover:bg-rose-700'
+                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
+              }`}
+            >
+              <MingIcon name={isAutoRunning ? 'pause_line' : 'play_line'} size={14} />
+              <span>{isAutoRunning ? 'Stop Streaming' : 'Start Streaming'}</span>
+            </button>
+          </div>
+
+          <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-slate-200/60 text-[11px] text-slate-600">
+            <div className="flex items-center gap-1.5">
+              <span>Interval:</span>
+              <select
+                value={timerInterval}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setTimerInterval(val);
+                  if (isAutoRunning) onToggleAutoTick?.(true, val);
+                }}
+                className="rounded-lg border border-slate-300 bg-white px-2 py-0.5 font-bold text-slate-800 focus:outline-none"
+              >
+                <option value={1}>Every 1 sec (Fast)</option>
+                <option value={2}>Every 2 sec</option>
+                <option value={3}>Every 3 sec (Recommended)</option>
+                <option value={5}>Every 5 sec</option>
+              </select>
+            </div>
+
+            <label className="flex items-center gap-1 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={randomJitter}
+                onChange={(e) => setRandomJitter(e.target.checked)}
+                className="rounded text-slate-900"
+              />
+              <span>Realistic Volatility Jitter</span>
+            </label>
+          </div>
+        </div>
+
         {/* Presets Row */}
-        <div className="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+        <div className="mt-4 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
           <span className="text-[11px] font-bold text-slate-400 mr-1 shrink-0">Presets:</span>
           <button
             type="button"
@@ -88,7 +167,7 @@ export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onI
         </div>
 
         {/* 4 Core Parameter Inputs */}
-        <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+        <div className="mt-3.5 grid grid-cols-2 gap-3 text-xs">
           {/* Param 1: Symbol */}
           <div>
             <label className="font-bold text-slate-700 block mb-1">1. Stock Ticker (symbol)</label>
@@ -160,13 +239,13 @@ export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onI
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-6 flex justify-end gap-2">
+        <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
             className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 transition"
           >
-            Cancel
+            Close
           </button>
           <button
             type="button"
@@ -174,7 +253,7 @@ export const DevSpikeTool: React.FC<DevSpikeToolProps> = ({ isOpen, onClose, onI
             className="flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition active:scale-95"
           >
             <MingIcon name="flash_line" size={16} />
-            <span>Inject Custom Tick</span>
+            <span>Inject Single Tick</span>
           </button>
         </div>
       </div>

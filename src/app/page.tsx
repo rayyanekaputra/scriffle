@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { TopNav } from '@/components/controls/TopNav';
 import { MarketCanvas } from '@/components/canvas/MarketCanvas';
@@ -15,6 +15,11 @@ function WhiteboardContent() {
   const { canvas, logs, mutate, mutateLogs } = useCanvasSync();
   const [editingNode, setEditingNode] = useState<CanvasNodeData | null>(null);
   const { showToast } = useToast();
+
+  // Auto-stream continuous market ticker state
+  const [autoTickActive, setAutoTickActive] = useState(false);
+  const [autoTickInterval, setAutoTickInterval] = useState(3);
+  const timerRef = useRef<any>(null);
 
   const handleAddNode = async (
     type: NodeType,
@@ -113,7 +118,7 @@ function WhiteboardContent() {
     }
   };
 
-  const handleSimulateCustom = async (eventPayload: any) => {
+  const handleSimulateCustom = async (eventPayload: any, suppressInfoToast = false) => {
     try {
       const res = await fetch('/api/engine/simulate', {
         method: 'POST',
@@ -125,13 +130,12 @@ function WhiteboardContent() {
         mutate();
         mutateLogs();
 
-        // If an alert was fired, trigger the visual floating toast
         const alertLogs = data.result?.logs?.filter((l: string) => l.startsWith('Notification fired:')) || [];
         if (alertLogs.length > 0) {
           for (const msg of alertLogs) {
             showToast(`Market Alert: ${eventPayload.symbol}`, msg.replace('Notification fired: ', ''));
           }
-        } else {
+        } else if (!suppressInfoToast) {
           showToast(
             `Injected ${eventPayload.symbol} Tick`,
             `Change: ${eventPayload.price_change >= 0 ? '+' : ''}${eventPayload.price_change}%, Volume: ${eventPayload.volume?.toLocaleString()}`,
@@ -141,6 +145,69 @@ function WhiteboardContent() {
       }
     } catch (err) {
       console.error('Failed to run custom simulation:', err);
+    }
+  };
+
+  // Continuous Auto-Ticker Stream Loop
+  useEffect(() => {
+    if (!autoTickActive) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+
+    const availableSymbols = Array.from(
+      new Set(
+        canvas?.nodes
+          ?.filter((n) => n.type === 'watcher')
+          ?.map((n: any) => n.config?.symbol?.toUpperCase())
+          ?.filter(Boolean) || ['BBCA', 'TLKM', 'BMRI']
+      )
+    );
+
+    if (availableSymbols.length === 0) availableSymbols.push('BBCA');
+
+    timerRef.current = setInterval(() => {
+      const randomSymbol = availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
+      // Generate realistic price fluctuation with occasional breakout spikes
+      const isSpike = Math.random() < 0.25;
+      const priceChange = isSpike
+        ? parseFloat((5.5 + Math.random() * 3.5).toFixed(2))
+        : parseFloat(((Math.random() - 0.4) * 3.2).toFixed(2));
+
+      const volume = isSpike
+        ? Math.floor(18000000 + Math.random() * 20000000)
+        : Math.floor(5000000 + Math.random() * 10000000);
+
+      const basePrice = randomSymbol === 'TLKM' ? 3200 : randomSymbol === 'BBRI' ? 5100 : 10200;
+      const currentPrice = Math.round(basePrice * (1 + priceChange / 100));
+
+      handleSimulateCustom(
+        {
+          symbol: randomSymbol,
+          price: currentPrice,
+          prevPrice: basePrice,
+          price_change: priceChange,
+          volume,
+          avg_volume: 10000000,
+          rank: 1,
+          timestamp: new Date().toLocaleTimeString(),
+        },
+        true // suppress noisy single-tick info toasts during continuous stream
+      );
+    }, autoTickInterval * 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [autoTickActive, autoTickInterval, canvas?.nodes]);
+
+  const handleToggleAutoTick = (active: boolean, intervalSec: number) => {
+    setAutoTickActive(active);
+    setAutoTickInterval(intervalSec);
+    if (active) {
+      showToast('Live Streaming Started', `Mimicking live market ticks every ${intervalSec}s`, 'info');
+    } else {
+      showToast('Streaming Paused', 'Market tick loop stopped', 'info');
     }
   };
 
@@ -176,7 +243,12 @@ function WhiteboardContent() {
       </div>
 
       {/* Floating FigJam Presenter Simulation Dock */}
-      <SimulationBar onSimulateSuccess={handleRefresh} onSimulateCustom={handleSimulateCustom} />
+      <SimulationBar
+        onSimulateSuccess={handleRefresh}
+        onSimulateCustom={handleSimulateCustom}
+        autoTickActive={autoTickActive}
+        onToggleAutoTick={handleToggleAutoTick}
+      />
 
       {/* Configuration Modal */}
       <EditNodeModal

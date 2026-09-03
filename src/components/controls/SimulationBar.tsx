@@ -7,9 +7,16 @@ import { DevSpikeTool } from './DevSpikeTool';
 interface SimulationBarProps {
   onSimulateSuccess?: () => void;
   onSimulateCustom?: (eventPayload: any) => void;
+  autoTickActive?: boolean;
+  onToggleAutoTick?: (active: boolean, intervalSec: number) => void;
 }
 
-export const SimulationBar: React.FC<SimulationBarProps> = ({ onSimulateSuccess, onSimulateCustom }) => {
+export const SimulationBar: React.FC<SimulationBarProps> = ({
+  onSimulateSuccess,
+  onSimulateCustom,
+  autoTickActive = false,
+  onToggleAutoTick,
+}) => {
   const [loading, setLoading] = useState(false);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [isDevToolOpen, setIsDevToolOpen] = useState(false);
@@ -114,10 +121,14 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({ onSimulateSuccess,
         {/* Custom 4-Param DevTool Button */}
         <button
           onClick={() => setIsDevToolOpen(true)}
-          className="flex items-center gap-1.5 rounded-xl bg-slate-100 px-3.5 py-2 text-xs font-bold text-slate-800 border-2 border-slate-300 hover:bg-slate-200 transition-all active:scale-95"
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold border-2 transition-all active:scale-95 ${
+            autoTickActive
+              ? 'bg-emerald-50 text-emerald-900 border-emerald-400'
+              : 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200'
+          }`}
         >
-          <MingIcon name="tools_line" size={16} className="text-slate-700" />
-          <span>Custom Spike (DevTool)</span>
+          <MingIcon name="tools_line" size={16} className={autoTickActive ? 'text-emerald-600 animate-spin' : 'text-slate-700'} />
+          <span>{autoTickActive ? 'Live Streaming (Timer Active)' : 'Custom Spike (DevTool)'}</span>
         </button>
 
         {/* Live Market Poll */}
@@ -131,11 +142,13 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({ onSimulateSuccess,
         </button>
       </div>
 
-      {/* DevTool Modal */}
+      {/* DevTool Modal with Timer Stream Controls */}
       <DevSpikeTool
         isOpen={isDevToolOpen}
         onClose={() => setIsDevToolOpen(false)}
         onInject={(event) => runSimulation('custom_spike', event)}
+        autoTickActive={autoTickActive}
+        onToggleAutoTick={onToggleAutoTick}
       />
     </>
   );
