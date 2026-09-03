@@ -306,6 +306,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onConnect={onConnect}
         onNodeDragStop={onNodeDragStop}
         onNodeDoubleClick={onNodeDoubleClick}
+        onPaneClick={() => setMenu(null)}
+        onNodeClick={() => setMenu(null)}
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onNodeContextMenu}
         nodeTypes={nodeTypes}

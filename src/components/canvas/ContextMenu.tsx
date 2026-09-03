@@ -34,8 +34,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         onClose();
       }
     };
-    window.addEventListener('mousedown', handleClick);
-    return () => window.removeEventListener('mousedown', handleClick);
+    // Use capture phase to intercept outside clicks immediately across canvas pane
+    window.addEventListener('pointerdown', handleClick, true);
+    window.addEventListener('mousedown', handleClick, true);
+    return () => {
+      window.removeEventListener('pointerdown', handleClick, true);
+      window.removeEventListener('mousedown', handleClick, true);
+    };
   }, [onClose]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +65,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       ref={menuRef}
       style={{ left: `${x}px`, top: `${y}px` }}
       className="fixed z-50 min-w-[200px] rounded-2xl border-2 border-slate-200 bg-white p-1.5 text-xs text-slate-800"
+      onContextMenu={(e) => e.stopPropagation()}
     >
       {targetNodeId ? (
         // Element Context Menu
@@ -113,7 +119,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           </button>
         </div>
       ) : (
-        // Canvas Add Menu (Neutral hover states)
+        // Canvas Add Menu
         <div className="space-y-0.5">
           <div className="px-2.5 py-1 text-[11px] font-bold text-slate-400">Add to board</div>
 
@@ -191,7 +197,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             }}
             className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition"
           >
-            <MingIcon name="rocket_line" size={16} className="text-slate-600" />
+            <MingIcon name="rocket_line" size={16} className="text-indigo-600" />
             <span>Sticker: Breakout</span>
           </button>
 
