@@ -7,12 +7,14 @@ import { MarketCanvas } from '@/components/canvas/MarketCanvas';
 import { ActivityFeed } from '@/components/feed/ActivityFeed';
 import { SimulationBar } from '@/components/controls/SimulationBar';
 import { EditNodeModal } from '@/components/controls/EditNodeModal';
+import { ToastProvider, useToast } from '@/components/ui/ToastProvider';
 import { useCanvasSync } from '@/hooks/useCanvasSync';
 import { CanvasNodeData, NodeType } from '@/types/canvas';
 
-export default function Home() {
+function WhiteboardContent() {
   const { canvas, logs, mutate, mutateLogs } = useCanvasSync();
   const [editingNode, setEditingNode] = useState<CanvasNodeData | null>(null);
+  const { showToast } = useToast();
 
   const handleAddNode = async (
     type: NodeType,
@@ -57,7 +59,6 @@ export default function Home() {
     }
   };
 
-  // Only open modal for structured configuration nodes (watcher, condition, alert, action)
   const handleEditNode = (nodeId: string) => {
     const found = canvas?.nodes.find((n) => n.id === nodeId);
     if (found && (found.type === 'watcher' || found.type === 'condition' || found.type === 'alert' || found.type === 'action')) {
@@ -112,6 +113,37 @@ export default function Home() {
     }
   };
 
+  const handleSimulateCustom = async (eventPayload: any) => {
+    try {
+      const res = await fetch('/api/engine/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: eventPayload }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        mutate();
+        mutateLogs();
+
+        // If an alert was fired, trigger the visual floating toast
+        const alertLogs = data.result?.logs?.filter((l: string) => l.startsWith('Notification fired:')) || [];
+        if (alertLogs.length > 0) {
+          for (const msg of alertLogs) {
+            showToast(`Market Alert: ${eventPayload.symbol}`, msg.replace('Notification fired: ', ''));
+          }
+        } else {
+          showToast(
+            `Injected ${eventPayload.symbol} Tick`,
+            `Change: ${eventPayload.price_change >= 0 ? '+' : ''}${eventPayload.price_change}%, Volume: ${eventPayload.volume?.toLocaleString()}`,
+            'info'
+          );
+        }
+      }
+    } catch (err) {
+      console.error('Failed to run custom simulation:', err);
+    }
+  };
+
   const handleRefresh = () => {
     mutate();
     mutateLogs();
@@ -144,9 +176,9 @@ export default function Home() {
       </div>
 
       {/* Floating FigJam Presenter Simulation Dock */}
-      <SimulationBar onSimulateSuccess={handleRefresh} />
+      <SimulationBar onSimulateSuccess={handleRefresh} onSimulateCustom={handleSimulateCustom} />
 
-      {/* Configuration Modal (Only for Watcher / Condition / Alert / Action) */}
+      {/* Configuration Modal */}
       <EditNodeModal
         isOpen={Boolean(editingNode)}
         node={editingNode}
@@ -154,5 +186,13 @@ export default function Home() {
         onSave={handleSaveNodeConfig}
       />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <ToastProvider>
+      <WhiteboardContent />
+    </ToastProvider>
   );
 }

@@ -26,7 +26,6 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
   const state = (data.state || {}) as any;
   const isPassed = state.status === 'passed';
   const colorKey = config.color || 'yellow';
-  const colorClass = COLOR_STYLES[colorKey] || COLOR_STYLES.yellow;
 
   const [content, setContent] = useState(config.content || '');
   const [currentColor, setCurrentColor] = useState(colorKey);
@@ -96,20 +95,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
       {/* Tape decoration */}
       <div className="flat-tape" />
 
-      {/* 4-Sided Multi-Directional Handles (Connect from/to any side) */}
-      <Handle
-        type="target"
-        id="target-top"
-        position={Position.Top}
-        className="!h-3 !w-3 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
-      />
-      <Handle
-        type="source"
-        id="source-top"
-        position={Position.Top}
-        className="!h-3 !w-3 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
-      />
-
+      {/* Inputs (Targets) - Left & Top */}
       <Handle
         type="target"
         id="target-left"
@@ -117,36 +103,24 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
         className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
       />
       <Handle
-        type="source"
-        id="source-left"
-        position={Position.Left}
+        type="target"
+        id="target-top"
+        position={Position.Top}
         className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
       />
 
-      <Handle
-        type="target"
-        id="target-right"
-        position={Position.Right}
-        className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
-      />
+      {/* Outputs (Sources) - Right & Bottom */}
       <Handle
         type="source"
         id="source-right"
         position={Position.Right}
-        className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
-      />
-
-      <Handle
-        type="target"
-        id="target-bottom"
-        position={Position.Bottom}
-        className="!h-3 !w-3 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-800 opacity-0 group-hover:opacity-100 transition-opacity"
       />
       <Handle
         type="source"
         id="source-bottom"
         position={Position.Bottom}
-        className="!h-3 !w-3 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-800 opacity-0 group-hover:opacity-100 transition-opacity"
       />
 
       {/* Header with Quick Color Palette & Update Badge */}
@@ -193,7 +167,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onBlur={handleBlur}
-          placeholder="Write your research ideas, market notes, or hypotheses..."
+          placeholder="Write research thoughts or template: ${symbol} surged ${price_change}%..."
           rows={3}
           className="w-full resize-none bg-transparent text-sm font-medium leading-relaxed text-inherit placeholder:opacity-40 focus:outline-none nodrag nowheel"
         />

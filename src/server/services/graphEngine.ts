@@ -134,11 +134,17 @@ export async function executeGraphForEvent(
       }
     } else if (node.type === 'note') {
       triggeredNodes.push(node.id);
-      let updatedContent = nodeConfig.content || '';
-      if (nodeConfig.template) {
-        updatedContent = interpolateTemplate(nodeConfig.template, curEvent);
+      const rawText = nodeConfig.template || nodeConfig.content || '';
+      let updatedContent = '';
+
+      // If text contains dynamic variables like ${symbol} or ${price_change}, interpolate them
+      if (rawText.includes('${')) {
+        updatedContent = interpolateTemplate(rawText, curEvent);
       } else {
-        updatedContent = `${curEvent.symbol} triggered update at ${curEvent.timestamp}`;
+        // Natural sticky note update: append or update with live market stamp
+        updatedContent = rawText
+          ? `${rawText}\n\n[Triggered: ${curEvent.symbol} ${curEvent.price_change >= 0 ? '+' : ''}${curEvent.price_change}% at ${curEvent.timestamp}]`
+          : `Live: ${curEvent.symbol} surged ${curEvent.price_change}% at ${curEvent.timestamp}`;
       }
 
       await prisma.node.update({
@@ -194,7 +200,7 @@ export async function executeGraphForEvent(
       });
 
       if (nodeConfig.action === 'create_note') {
-        const rawContent = nodeConfig.params?.template || 'Auto-generated sticky note';
+        const rawContent = nodeConfig.params?.template || 'Breakout confirmed for ${symbol} at ${timestamp}.';
         const noteContent = interpolateTemplate(rawContent, curEvent);
         
         // Offset position to right of action node
