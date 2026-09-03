@@ -38,7 +38,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <MingIcon name="edit_line" size={20} className="text-[#0050FF]" />
+            <MingIcon name="edit_line" size={20} className="text-slate-700" />
             <h2 className="text-base font-bold text-slate-900">
               Edit {node.type.charAt(0).toUpperCase() + node.type.slice(1)}
             </h2>
@@ -62,7 +62,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   value={config.symbol || ''}
                   onChange={(e) => setConfig({ ...config, symbol: e.target.value.toUpperCase() })}
                   placeholder="e.g. BBCA, BBRI, BMRI, TLKM"
-                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 font-bold text-slate-900 focus:border-[#0050FF] focus:outline-none"
+                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 font-bold text-slate-900 focus:border-slate-800 focus:outline-none"
                 />
               </div>
 
@@ -72,7 +72,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   type="number"
                   value={config.interval || 300}
                   onChange={(e) => setConfig({ ...config, interval: Number(e.target.value) })}
-                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-[#0050FF] focus:outline-none"
+                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-slate-800 focus:outline-none"
                 />
               </div>
             </>
@@ -86,7 +86,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                 value={config.rule || ''}
                 onChange={(e) => setConfig({ ...config, rule: e.target.value })}
                 placeholder="e.g. price_change > 5 AND volume > 1000000"
-                className="w-full rounded-xl border-2 border-slate-200 p-2.5 font-mono text-xs text-slate-900 focus:border-[#FFD728] focus:outline-none"
+                className="w-full rounded-xl border-2 border-slate-200 p-2.5 font-mono text-xs text-slate-900 focus:border-slate-800 focus:outline-none"
               />
               <p className="mt-1 text-[11px] text-slate-400">
                 Variables: price, price_change, volume, avg_volume, rank.
@@ -103,7 +103,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   value={config.content || ''}
                   onChange={(e) => setConfig({ ...config, content: e.target.value })}
                   placeholder="Type note commentary..."
-                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-[#0050FF] focus:outline-none leading-relaxed"
+                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-slate-800 focus:outline-none leading-relaxed"
                 />
               </div>
 
@@ -114,7 +114,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   value={config.template || ''}
                   onChange={(e) => setConfig({ ...config, template: e.target.value })}
                   placeholder="${symbol} surged ${price_change}% at ${timestamp}"
-                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 font-mono text-[11px] text-slate-900 focus:border-[#0050FF] focus:outline-none"
+                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 font-mono text-[11px] text-slate-900 focus:border-slate-800 focus:outline-none"
                 />
               </div>
 
@@ -153,7 +153,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                 rows={3}
                 value={config.text || ''}
                 onChange={(e) => setConfig({ ...config, text: e.target.value })}
-                className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-[#0050FF] focus:outline-none"
+                className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-slate-800 focus:outline-none"
               />
             </div>
           )}
@@ -164,7 +164,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
               <select
                 value={config.channel || 'ui'}
                 onChange={(e) => setConfig({ ...config, channel: e.target.value })}
-                className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-[#FF5B79] focus:outline-none font-medium"
+                className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-slate-800 focus:outline-none font-medium"
               >
                 <option value="ui">UI Toast Notification</option>
                 <option value="telegram">Telegram Dispatch</option>
@@ -179,7 +179,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
               <select
                 value={config.action || 'create_note'}
                 onChange={(e) => setConfig({ ...config, action: e.target.value })}
-                className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-[#0050FF] focus:outline-none font-medium"
+                className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-slate-800 focus:outline-none font-medium"
               >
                 <option value="create_note">Create Child Sticky Note</option>
                 <option value="create_watcher">Spawn Related Watcher</option>
@@ -201,7 +201,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
           <button
             type="button"
             onClick={handleSave}
-            className="rounded-xl bg-[#0050FF] px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition"
+            className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition"
           >
             Save Changes
           </button>

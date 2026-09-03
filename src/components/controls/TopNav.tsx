@@ -34,7 +34,7 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
     <header className="flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
       {/* Brand & Canvas Title */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-xl bg-[#0050FF] px-3 py-1.5 text-white">
+        <div className="flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-1.5 text-white">
           <MingIcon name="sparkles_line" size={18} />
           <span className="text-sm font-bold tracking-tight">Scriffle</span>
         </div>
@@ -42,30 +42,30 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
         <h1 className="text-sm font-semibold text-slate-800">{canvasName}</h1>
       </div>
 
-      {/* FigJam Floating Whiteboard Toolbar */}
+      {/* FigJam Floating Whiteboard Toolbar (Neutral Chrome) */}
       <div className="relative flex items-center gap-1 rounded-2xl border-2 border-slate-200 bg-slate-50 p-1.5">
         <button
           onClick={() => onAddNode('note', { color: 'yellow', content: 'Double click to write note...' })}
-          className="flex items-center gap-1.5 rounded-xl bg-[#FEF9C3] px-3 py-1.5 text-xs font-bold text-amber-950 border border-amber-300 hover:bg-[#FDE047] transition-all active:scale-95"
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
         >
-          <MingIcon name="quill_pen_line" size={16} />
+          <MingIcon name="quill_pen_line" size={16} className="text-slate-600" />
           <span>Sticky Note</span>
         </button>
 
         <button
           onClick={() => onAddNode('text', { text: 'Freeform text headline...' })}
-          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-300 hover:bg-slate-100 transition-all active:scale-95"
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
         >
-          <MingIcon name="font_size_line" size={16} />
+          <MingIcon name="font_size_line" size={16} className="text-slate-600" />
           <span>Text</span>
         </button>
 
         {/* Upload Image Button */}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-300 hover:bg-slate-100 transition-all active:scale-95"
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
         >
-          <MingIcon name="pic_line" size={16} />
+          <MingIcon name="pic_line" size={16} className="text-slate-600" />
           <span>Image</span>
         </button>
         <input
@@ -78,17 +78,17 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
 
         <button
           onClick={() => onAddNode('watcher', { symbol: 'BBCA', metric: 'price_change', interval: 300 })}
-          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#0050FF] border border-blue-200 hover:bg-blue-50 transition-all active:scale-95"
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
         >
-          <MingIcon name="radar_line" size={16} />
+          <MingIcon name="radar_line" size={16} className="text-slate-600" />
           <span>Watcher</span>
         </button>
 
         <button
           onClick={() => onAddNode('condition', { rule: 'price_change > 5' })}
-          className="flex items-center gap-1.5 rounded-xl bg-[#FFFDE7] px-3 py-1.5 text-xs font-bold text-amber-950 border border-amber-300 hover:bg-[#FFF9C4] transition-all active:scale-95"
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
         >
-          <MingIcon name="filter_line" size={16} />
+          <MingIcon name="filter_line" size={16} className="text-slate-600" />
           <span>Condition</span>
         </button>
 
@@ -96,9 +96,9 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
         <div className="relative">
           <button
             onClick={() => setShowStickerMenu(!showStickerMenu)}
-            className="flex items-center gap-1.5 rounded-xl bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-900 border border-purple-200 hover:bg-purple-100 transition-all active:scale-95"
+            className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
           >
-            <MingIcon name="star_line" size={16} />
+            <MingIcon name="star_line" size={16} className="text-slate-600" />
             <span>Stickers</span>
           </button>
 
@@ -118,9 +118,9 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
                     onAddNode('sticker', { stickerType: s.type });
                     setShowStickerMenu(false);
                   }}
-                  className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                  className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition"
                 >
-                  <MingIcon name={s.icon} size={16} />
+                  <MingIcon name={s.icon} size={16} className="text-slate-600" />
                   <span>{s.label}</span>
                 </button>
               ))}
@@ -130,17 +130,17 @@ export const TopNav: React.FC<TopNavProps> = ({ canvasName, onAddNode }) => {
 
         <button
           onClick={() => onAddNode('alert', { channel: 'ui' })}
-          className="flex items-center gap-1.5 rounded-xl bg-rose-50 px-3 py-1.5 text-xs font-bold text-[#FF5B79] border border-rose-200 hover:bg-rose-100 transition-all active:scale-95"
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
         >
-          <MingIcon name="notification_line" size={16} />
+          <MingIcon name="notification_line" size={16} className="text-slate-600" />
           <span>Alert</span>
         </button>
 
         <button
           onClick={() => onAddNode('action', { action: 'create_note' })}
-          className="flex items-center gap-1.5 rounded-xl bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#0050FF] border border-blue-200 hover:bg-blue-100 transition-all active:scale-95"
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
         >
-          <MingIcon name="flash_line" size={16} />
+          <MingIcon name="flash_line" size={16} className="text-slate-600" />
           <span>Action</span>
         </button>
       </div>

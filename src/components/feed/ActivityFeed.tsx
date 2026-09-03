@@ -15,11 +15,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ logs, onSelectNode }
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
         <div className="flex items-center gap-2">
-          <MingIcon name="history_line" size={18} className="text-[#0050FF]" />
-          <h2 className="text-sm font-bold text-slate-900">Activity Feed</h2>
+          <MingIcon name="history_line" size={18} className="text-slate-700" />
+          <h2 className="text-sm font-bold text-slate-800">Activity Feed</h2>
         </div>
-        <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 border border-emerald-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+        <span className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 border border-slate-200">
+          <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-ping" />
           Live
         </span>
       </div>
@@ -43,12 +43,12 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ logs, onSelectNode }
                   <MingIcon name="time_line" size={12} className="text-slate-400" />
                   {new Date(log.createdAt).toLocaleTimeString()}
                 </span>
-                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-[#0050FF] border border-blue-200">
+                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700 border border-slate-300">
                   {log.triggeredNodes.length} cards
                 </span>
               </div>
 
-              <p className="mt-2 text-xs font-semibold text-slate-900 leading-snug">
+              <p className="mt-2 text-xs font-semibold text-slate-800 leading-snug">
                 {log.eventSummary}
               </p>
 
@@ -59,7 +59,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ logs, onSelectNode }
                     <button
                       key={idx}
                       onClick={() => onSelectNode?.(nodeId)}
-                      className="rounded-lg bg-white px-2 py-0.5 text-[10px] font-medium text-slate-700 border border-slate-300 hover:border-[#0050FF] hover:text-[#0050FF] transition"
+                      className="rounded-lg bg-white px-2 py-0.5 text-[10px] font-medium text-slate-700 border border-slate-300 hover:border-slate-500 hover:text-slate-900 transition"
                     >
                       card-{nodeId.slice(0, 4)}
                     </button>
