@@ -38,10 +38,27 @@ export async function GET() {
 
 export async function DELETE() {
   try {
+    // 1. Delete all log records
     await prisma.log.deleteMany();
-    return NextResponse.json({ success: true, message: 'All execution logs cleared' });
+
+    // 2. Reset all node states and run counters to idle (0 runs)
+    await prisma.node.updateMany({
+      data: {
+        stateJson: JSON.stringify({
+          status: 'idle',
+          cycleCount: 0,
+          lastValue: null,
+          lastTriggeredAt: null,
+        }),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'All execution logs and node run counters have been cleared and reset',
+    });
   } catch (error: any) {
-    console.error('Failed to clear logs:', error);
+    console.error('Failed to clear logs and reset node states:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -205,7 +205,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
             </div>
             <h3 className="text-xs font-bold text-slate-900">Are you sure to clear?</h3>
             <p className="mt-1 text-[11px] text-slate-500 leading-relaxed">
-              This will pause the streaming ticks and remove all {logs.length} activity feed entries.
+              This will pause the streaming ticks, remove all {logs.length} activity feed entries, and <strong className="text-slate-800 font-bold">reset every card's run counter to 0</strong>.
             </p>
             <div className="mt-4 flex justify-center gap-2">
               <button

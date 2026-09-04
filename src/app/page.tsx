@@ -253,7 +253,8 @@ function WhiteboardContent() {
       if (res.ok) {
         mutateLogs([], false); // Instant optimistic update
         mutateLogs();
-        showToast('Activity Feed Cleared', 'All previous trigger records have been cleared', 'info');
+        mutate(); // Revalidate canvas to show 0 runs on watcher cards
+        showToast('Activity Feed & Counters Reset', 'All trigger logs cleared and card run counters reset to 0', 'info');
       }
     } catch (err) {
       console.error('Failed to clear logs:', err);
