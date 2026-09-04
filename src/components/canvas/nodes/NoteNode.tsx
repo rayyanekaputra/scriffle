@@ -119,7 +119,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           minWidth: 180,
           minHeight: 140,
         }}
-        className={`group relative flex flex-col rounded-2xl border-2 p-4 transition-shadow duration-150 overflow-hidden ${
+        className={`group relative flex flex-col rounded-2xl border-2 p-4 transition-shadow duration-150 ${
           !config.width ? 'w-72' : ''
         } ${COLOR_STYLES[currentColor] || COLOR_STYLES.yellow} ${
           selected ? 'ring-3 ring-slate-900/30' : 'hover:border-slate-800'
@@ -133,13 +133,13 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           type="target"
           id="target-left"
           position={Position.Left}
-          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 !z-50 opacity-0 group-hover:opacity-100 transition-opacity"
         />
         <Handle
           type="target"
           id="target-top"
           position={Position.Top}
-          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 !z-50 opacity-0 group-hover:opacity-100 transition-opacity"
         />
 
         {/* Outputs (Sources) - Right & Bottom */}
@@ -147,13 +147,13 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           type="source"
           id="source-right"
           position={Position.Right}
-          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-800 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-800 !z-50 opacity-0 group-hover:opacity-100 transition-opacity"
         />
         <Handle
           type="source"
           id="source-bottom"
           position={Position.Bottom}
-          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-800 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-800 !z-50 opacity-0 group-hover:opacity-100 transition-opacity"
         />
 
         {/* Header with Quick Color Palette & Update Badge */}

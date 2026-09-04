@@ -46,3 +46,13 @@
   stroke-width: 3.5px !important;
 }
 
+/* Ensure Handles / Connection dots are always above the resize bounding box & corner handles */
+.react-flow__resize-control {
+  z-index: 10 !important;
+}
+
+.react-flow__handle {
+  z-index: 40 !important;
+}
+
+
