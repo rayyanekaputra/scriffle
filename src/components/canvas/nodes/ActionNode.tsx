@@ -46,12 +46,23 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
 
       {/* Body */}
       <div className="mt-3 space-y-2 text-xs">
-        <div className="rounded-xl bg-blue-50 p-2.5 border border-blue-200 font-medium text-blue-900">
-          {config.action === 'create_note' ? 'Creates child sticky note' : config.action || 'create_note'}
+        <div className="rounded-xl bg-blue-50 p-2.5 border border-blue-200 font-bold text-blue-950 flex items-center gap-1.5">
+          <MingIcon
+            name={config.action === 'create_watcher' ? 'radar_line' : 'quill_pen_line'}
+            size={14}
+            className="text-[#0050FF]"
+          />
+          <span>
+            {config.action === 'create_watcher'
+              ? `Spawn Peer Watcher (${config.params?.symbol || 'BBRI'})`
+              : 'Create Child Sticky Note'}
+          </span>
         </div>
 
-        <div className="text-[11px] text-slate-400">
-          Spawns a new connected sticky note when triggered.
+        <div className="text-[11px] text-slate-500 leading-relaxed">
+          {config.action === 'create_watcher'
+            ? 'Dynamically generates a related sector stock watcher on canvas.'
+            : 'Spawns a new connected sticky note when condition passes.'}
         </div>
       </div>
 

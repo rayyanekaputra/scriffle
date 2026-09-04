@@ -14,6 +14,7 @@ import {
   Node,
   BackgroundVariant,
   useReactFlow,
+  SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -501,6 +502,9 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         nodeTypes={nodeTypes}
+        multiSelectionKeyCode={['Shift', 'Control', 'Meta']}
+        selectionKeyCode="Shift"
+        selectionMode={SelectionMode.Partial}
         fitView
         colorMode="light"
         minZoom={0.2}

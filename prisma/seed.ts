@@ -131,8 +131,8 @@ async function seed() {
     },
   });
 
-  // 7. Action Node: Self-Mutating Canvas Automation (Spawns a child Sticky Note)
-  const actionMutator = await prisma.node.create({
+  // 7. Action Node A (First Step): Spawns a child Sticky Note
+  const actionNoteMutator = await prisma.node.create({
     data: {
       canvasId: canvas.id,
       type: 'action',
@@ -141,7 +141,7 @@ async function seed() {
       configJson: JSON.stringify({
         action: 'create_note',
         params: {
-          template: '✅ Breakout confirmed for ${symbol} at ${timestamp}. Auto-generated research thesis card.',
+          template: '✅ Step 1: Breakout confirmed for ${symbol} at ${timestamp}. Auto-generated research thesis card.',
         },
       }),
       stateJson: JSON.stringify({
@@ -150,13 +150,32 @@ async function seed() {
     },
   });
 
-  // 8. Sticker: Rocket on Action Node
+  // 8. Action Node B (Chained Direct Step 2): Connected directly to Action Node A to trigger peer watcher spawning in sequence
+  const actionWatcherMutator = await prisma.node.create({
+    data: {
+      canvasId: canvas.id,
+      type: 'action',
+      positionX: 1040,
+      positionY: 420,
+      configJson: JSON.stringify({
+        action: 'create_watcher',
+        params: {
+          symbol: 'BBRI',
+        },
+      }),
+      stateJson: JSON.stringify({
+        status: 'idle',
+      }),
+    },
+  });
+
+  // 9. Sticker: Rocket badge attached to the end of the action chain
   await prisma.node.create({
     data: {
       canvasId: canvas.id,
       type: 'sticker',
-      positionX: 700,
-      positionY: 530,
+      positionX: 1040,
+      positionY: 560,
       configJson: JSON.stringify({
         stickerType: 'rocket',
       }),
@@ -200,12 +219,21 @@ async function seed() {
     },
   });
 
-  // Volume Condition -> Action Mutator (Spawns Child Note on Canvas)
+  // Volume Condition -> Action A (Note Mutator)
   await prisma.edge.create({
     data: {
       canvasId: canvas.id,
       fromId: volumeCondition.id,
-      toId: actionMutator.id,
+      toId: actionNoteMutator.id,
+    },
+  });
+
+  // ⚡ DIRECT ACTION-TO-ACTION CHAIN: Action A -> Action B (Watcher Mutator)
+  await prisma.edge.create({
+    data: {
+      canvasId: canvas.id,
+      fromId: actionNoteMutator.id,
+      toId: actionWatcherMutator.id,
     },
   });
 

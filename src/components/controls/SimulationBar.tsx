@@ -88,9 +88,33 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
 
         {/* Action Controls List */}
         <div className="flex-1 overflow-y-auto pt-4 space-y-4">
+          {/* Continuous Auto-Streaming Loop Control */}
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/80 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <span className={`h-2 w-2 rounded-full ${autoTickActive ? 'bg-emerald-500 animate-ping' : 'bg-slate-400'}`} />
+                <span className="text-[11px] font-bold text-slate-800">Live Continuous Stream</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-semibold">Every 2.5s</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onToggleAutoTick?.(!autoTickActive, 2.5)}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all active:scale-95 shadow-xs ${
+                autoTickActive
+                  ? 'bg-rose-600 text-white hover:bg-rose-700'
+                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
+              }`}
+            >
+              <MingIcon name={autoTickActive ? 'pause_line' : 'play_line'} size={15} />
+              <span>{autoTickActive ? 'Stop Continuous Loop' : 'Start Continuous Loop'}</span>
+            </button>
+          </div>
+
           <div>
             <span className="text-[11px] font-bold text-slate-500 block mb-2">
-              Preset Spikes
+              Manual Preset Spikes
             </span>
             <div className="space-y-2">
               {/* Preset 1: BBCA Surge */}

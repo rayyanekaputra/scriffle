@@ -240,6 +240,55 @@ export async function executeGraphForEvent(
 
         mutationsCount++;
         logs.push(`Added new sticky note on canvas`);
+      } else if (nodeConfig.action === 'create_watcher') {
+        // Dynamic Sector Peer Spawning: If BBCA surges, spawn related peer watcher (e.g. BBRI or BMRI)
+        const targetSymbol = nodeConfig.params?.symbol || (curEvent.symbol === 'BBCA' ? 'BBRI' : 'BMRI');
+        
+        // Avoid duplicate watchers on canvas for same symbol
+        const alreadyExists = canvas.nodes.some((n) => {
+          if (n.type !== 'watcher') return false;
+          try {
+            const cfg = JSON.parse(n.configJson);
+            return cfg.symbol?.toUpperCase() === targetSymbol.toUpperCase();
+          } catch {
+            return false;
+          }
+        });
+
+        if (!alreadyExists) {
+          const newX = node.positionX + 280;
+          const newY = node.positionY + 20;
+
+          const newWatcher = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'watcher',
+              positionX: newX,
+              positionY: newY,
+              configJson: JSON.stringify({
+                symbol: targetSymbol,
+                metric: 'price_change',
+                interval: 180,
+              }),
+              stateJson: JSON.stringify({
+                status: 'idle',
+                cycleCount: 0,
+                lastValue: { price: targetSymbol === 'BBRI' ? 5100 : 6800, price_change: 0 },
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: node.id,
+              toId: newWatcher.id,
+            },
+          });
+
+          mutationsCount++;
+          logs.push(`Auto-spawned related sector watcher (${targetSymbol}) on canvas`);
+        }
       }
     }
 
