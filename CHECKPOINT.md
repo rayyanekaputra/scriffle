@@ -30,7 +30,16 @@
   * **Transparency:** Full support for transparent `.png` files with zero white background boxes.
   * **Interactive Resizing:** Click an image to drag corner `<NodeResizer />` handles (aspect-ratio locked & persisted to SQLite).
 
-### 2.2 Whiteboard Interactions & Shortcuts
+### 2.2 Whiteboard Interactions, Project Files & Shortcuts
+* **Project Save & Open (`.scriffle` Format):**
+  * **Save / Export:** 1-click **Save** button in top navbar creates and downloads `<canvas_name>.scriffle` (UTF-8 JSON formatted).
+  * **Open / Import:** **Open** button with native file picker (`.scriffle`, `.json`) + Drag & Drop `.scriffle` file directly onto the canvas to restore full graph.
+  * **Starter Presets:** Quick template dropdown in TopNav to load `"Momentum Breakout Loop"` or `"Banking Sector Trio"`.
+  * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0.
+* **Multi-Selection & Box Select:**
+  * `Shift + Click` or `Ctrl/Cmd + Click` to toggle select multiple elements concurrently.
+  * `Shift + Drag` marquee box selection to group-select cards and connectors.
+  * `Delete` / `Backspace` removes all selected elements in bulk.
 * **Keyboard Shortcuts:**
   * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
   * **`Ctrl+C` / `Cmd+C`:** Copy selected card.
@@ -52,10 +61,10 @@
 * **Toast Notifications:** Located at bottom-left with reverse stacking and slide-in animations.
 
 ### 2.3 Implementation Plans Saved in Working Directory
+* [`SAVE_OPEN_SCRIFFLE_PLAN.md`](file:///home/abzolute/Projects/hackathon/SAVE_OPEN_SCRIFFLE_PLAN.md): Details on `.scriffle` file schema, backend restore endpoint, and starter presets.
 * [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
 * [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.
-* [`FIGJAM_INTERACTIVE_PLAN.md`](file:///home/abzolute/Projects/hackathon/FIGJAM_INTERACTIVE_PLAN.md): Overall interactive whiteboard architecture.
-* [`SPIKE_DEVTOOL_PLAN.md`](file:///home/abzolute/Projects/hackathon/SPIKE_DEVTOOL_PLAN.md): Dev spike simulation tool plan.
+* [`ENDPOINTS.md`](file:///home/abzolute/Projects/hackathon/ENDPOINTS.md): Complete index of all 32 Indonesia v2 Sectors API endpoints.
 
 ---
 

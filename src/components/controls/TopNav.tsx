@@ -156,7 +156,7 @@ export const TopNav: React.FC<TopNavProps> = ({
         </button>
       </div>
 
-      {/* Right: Sidebar & Left Panel View Toggles + Future Options Area */}
+      {/* Right: Panel View Toggles */}
       <div className="flex items-center gap-2">
         <button
           onClick={onToggleControls}

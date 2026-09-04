@@ -261,6 +261,223 @@ function WhiteboardContent() {
     }
   };
 
+  // Export full project as .scriffle file (UTF-8 JSON formatted)
+  const handleExportScriffle = () => {
+    if (!canvas) {
+      showToast('Export Failed', 'No active canvas data to export', 'crashing');
+      return;
+    }
+
+    const payload = {
+      format: 'scriffle',
+      version: '1.0.0',
+      name: canvas.name || 'Market Automation Canvas',
+      createdAt: new Date().toISOString(),
+      nodes: canvas.nodes.map((n) => ({
+        id: n.id,
+        type: n.type,
+        position: n.position,
+        config: n.config,
+        state: { ...n.state, runCount: 0 },
+      })),
+      edges: canvas.edges.map((e) => ({
+        id: e.id,
+        from: e.from,
+        to: e.to,
+      })),
+    };
+
+    const jsonString = JSON.stringify(payload, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const safeTitle = (canvas.name || 'scriffle_project').replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${safeTitle}.scriffle`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast('Project Saved', `Exported ${canvas.nodes.length} cards and ${canvas.edges.length} connectors as ${safeTitle}.scriffle`, 'rising');
+  };
+
+  // Import .scriffle or .json file
+  const handleImportScriffle = async (file: File) => {
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const content = e.target?.result as string;
+          const parsed = JSON.parse(content);
+
+          if (!parsed.nodes && parsed.format !== 'scriffle') {
+            showToast('Invalid File', 'File is missing required Scriffle canvas nodes', 'crashing');
+            return;
+          }
+
+          const res = await fetch('/api/canvas/restore', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: content,
+          });
+
+          if (res.ok) {
+            mutate();
+            mutateLogs([], false);
+            showToast(
+              'Project Restored',
+              `Loaded "${parsed.name || file.name}" with ${parsed.nodes?.length || 0} cards`,
+              'rising'
+            );
+          } else {
+            const errData = await res.json();
+            showToast('Restore Failed', errData.error || 'Server rejected file payload', 'crashing');
+          }
+        } catch (err: any) {
+          console.error('JSON parse error:', err);
+          showToast('Corrupt File', 'Selected file contains invalid JSON', 'crashing');
+        }
+      };
+      reader.readAsText(file);
+    } catch (err) {
+      console.error('File read error:', err);
+      showToast('Import Error', 'Failed to read project file', 'crashing');
+    }
+  };
+
+  // Load built-in starter presets
+  const handleLoadPreset = async (presetKey: string) => {
+    let presetData: any = null;
+
+    if (presetKey === 'momentum') {
+      presetData = {
+        format: 'scriffle',
+        version: '1.0.0',
+        name: 'BBCA Momentum Breakout & Mutator Loop',
+        nodes: [
+          {
+            id: 'node-watcher-bbca',
+            type: 'watcher',
+            position: { x: 100, y: 150 },
+            config: { symbol: 'BBCA', metric: 'price_change', interval: 300 },
+          },
+          {
+            id: 'node-rule-surge',
+            type: 'condition',
+            position: { x: 420, y: 150 },
+            config: { rule: 'price_change > 5' },
+          },
+          {
+            id: 'node-alert-toast',
+            type: 'alert',
+            position: { x: 740, y: 80 },
+            config: { channel: 'ui', template: '🚀 BBCA Surge Detected: ${price_change}% at Rp${price}' },
+          },
+          {
+            id: 'node-action-spawn-note',
+            type: 'action',
+            position: { x: 740, y: 250 },
+            config: { action: 'create_note', noteTemplate: '📈 Breakout Confirmed for ${symbol} (+${price_change}%) at ${timestamp}!' },
+          },
+          {
+            id: 'node-action-spawn-peer',
+            type: 'action',
+            position: { x: 1060, y: 250 },
+            config: { action: 'create_watcher', targetSymbol: 'BBRI' },
+          },
+        ],
+        edges: [
+          { id: 'edge-1', from: 'node-watcher-bbca', to: 'node-rule-surge' },
+          { id: 'edge-2', from: 'node-rule-surge', to: 'node-alert-toast' },
+          { id: 'edge-3', from: 'node-rule-surge', to: 'node-action-spawn-note' },
+          { id: 'edge-4', from: 'node-action-spawn-note', to: 'node-action-spawn-peer' },
+        ],
+      };
+    } else if (presetKey === 'banking') {
+      presetData = {
+        format: 'scriffle',
+        version: '1.0.0',
+        name: 'IDX Big 3 Banking Comparison',
+        nodes: [
+          {
+            id: 'node-bbca',
+            type: 'watcher',
+            position: { x: 120, y: 120 },
+            config: { symbol: 'BBCA', metric: 'price_change', interval: 300 },
+          },
+          {
+            id: 'node-bbri',
+            type: 'watcher',
+            position: { x: 120, y: 350 },
+            config: { symbol: 'BBRI', metric: 'price_change', interval: 300 },
+          },
+          {
+            id: 'node-bmri',
+            type: 'watcher',
+            position: { x: 120, y: 580 },
+            config: { symbol: 'BMRI', metric: 'price_change', interval: 300 },
+          },
+          {
+            id: 'node-rule-bbca',
+            type: 'condition',
+            position: { x: 450, y: 120 },
+            config: { rule: 'price_change > 3' },
+          },
+          {
+            id: 'node-rule-bbri',
+            type: 'condition',
+            position: { x: 450, y: 350 },
+            config: { rule: 'price_change > 3' },
+          },
+          {
+            id: 'node-rule-bmri',
+            type: 'condition',
+            position: { x: 450, y: 580 },
+            config: { rule: 'price_change > 3' },
+          },
+          {
+            id: 'node-note-summary',
+            type: 'note',
+            position: { x: 800, y: 280 },
+            config: {
+              content: '🎯 Big 4 Banking Rotation:\nMonitoring capital rotation between BBCA, BBRI, and BMRI.',
+              color: 'blue',
+            },
+          },
+        ],
+        edges: [
+          { id: 'edge-b1', from: 'node-bbca', to: 'node-rule-bbca' },
+          { id: 'edge-b2', from: 'node-bbri', to: 'node-rule-bbri' },
+          { id: 'edge-b3', from: 'node-bmri', to: 'node-rule-bmri' },
+          { id: 'edge-b4', from: 'node-rule-bbca', to: 'node-note-summary' },
+          { id: 'edge-b5', from: 'node-rule-bbri', to: 'node-note-summary' },
+          { id: 'edge-b6', from: 'node-rule-bmri', to: 'node-note-summary' },
+        ],
+      };
+    }
+
+    if (!presetData) return;
+
+    try {
+      const res = await fetch('/api/canvas/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(presetData),
+      });
+
+      if (res.ok) {
+        mutate();
+        mutateLogs([], false);
+        showToast('Preset Loaded', `Template "${presetData.name}" is ready`, 'rising');
+      }
+    } catch (err) {
+      console.error('Failed to load preset:', err);
+      showToast('Preset Error', 'Failed to load starter template', 'crashing');
+    }
+  };
+
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F9FC] text-slate-900 antialiased font-sans">
       {/* Centered TopNav with view toggle buttons on the right */}
@@ -271,6 +488,9 @@ function WhiteboardContent() {
         onToggleFeed={() => setIsFeedOpen(!isFeedOpen)}
         isControlsOpen={isControlsOpen}
         onToggleControls={() => setIsControlsOpen(!isControlsOpen)}
+        onExportScriffle={handleExportScriffle}
+        onImportScriffle={handleImportScriffle}
+        onLoadPreset={handleLoadPreset}
       />
 
       <div className="relative flex flex-1 overflow-hidden">
@@ -282,6 +502,9 @@ function WhiteboardContent() {
           onSimulateCustom={handleSimulateCustom}
           autoTickActive={autoTickActive}
           onToggleAutoTick={handleToggleAutoTick}
+          onExportScriffle={handleExportScriffle}
+          onImportScriffle={handleImportScriffle}
+          onLoadPreset={handleLoadPreset}
         />
 
         {/* Main React Flow Canvas */}

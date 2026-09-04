@@ -1,0 +1,59 @@
+{
+  "format": "scriffle",
+  "version": "1.0.0",
+  "name": "BBCA Momentum Breakout & Mutator Loop",
+  "createdAt": "2026-09-05T01:00:00.000Z",
+  "nodes": [
+    {
+      "id": "node-watcher-bbca",
+      "type": "watcher",
+      "position": { "x": 100, "y": 150 },
+      "config": {
+        "symbol": "BBCA",
+        "metric": "price_change",
+        "interval": 300
+      }
+    },
+    {
+      "id": "node-rule-surge",
+      "type": "condition",
+      "position": { "x": 420, "y": 150 },
+      "config": {
+        "rule": "price_change > 5"
+      }
+    },
+    {
+      "id": "node-alert-toast",
+      "type": "alert",
+      "position": { "x": 740, "y": 80 },
+      "config": {
+        "channel": "ui",
+        "template": "🚀 BBCA Surge Detected: ${price_change}% at Rp${price}"
+      }
+    },
+    {
+      "id": "node-action-spawn-note",
+      "type": "action",
+      "position": { "x": 740, "y": 250 },
+      "config": {
+        "action": "create_note",
+        "noteTemplate": "📈 Breakout Confirmed for ${symbol} (+${price_change}%) at ${timestamp}!"
+      }
+    },
+    {
+      "id": "node-action-spawn-peer",
+      "type": "action",
+      "position": { "x": 1060, "y": 250 },
+      "config": {
+        "action": "create_watcher",
+        "targetSymbol": "BBRI"
+      }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "from": "node-watcher-bbca", "to": "node-rule-surge" },
+    { "id": "edge-2", "from": "node-rule-surge", "to": "node-alert-toast" },
+    { "id": "edge-3", "from": "node-rule-surge", "to": "node-action-spawn-note" },
+    { "id": "edge-4", "from": "node-action-spawn-note", "to": "node-action-spawn-peer" }
+  ]
+}

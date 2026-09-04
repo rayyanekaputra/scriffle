@@ -11,6 +11,9 @@ interface SimulationBarProps {
   onSimulateCustom?: (eventPayload: any) => void;
   autoTickActive?: boolean;
   onToggleAutoTick?: (active: boolean, intervalSec: number) => void;
+  onExportScriffle?: () => void;
+  onImportScriffle?: (file: File) => void;
+  onLoadPreset?: (presetName: string) => void;
 }
 
 export const SimulationBar: React.FC<SimulationBarProps> = ({
@@ -20,10 +23,22 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   onSimulateCustom,
   autoTickActive = false,
   onToggleAutoTick,
+  onExportScriffle,
+  onImportScriffle,
+  onLoadPreset,
 }) => {
   const [loading, setLoading] = useState(false);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [isDevToolOpen, setIsDevToolOpen] = useState(false);
+  const scriffleInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleScriffleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      onImportScriffle?.(files[0]);
+      e.target.value = '';
+    }
+  };
 
   const runSimulation = async (presetName: string, eventPayload: any) => {
     setLoading(true);
@@ -71,6 +86,15 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   return (
     <>
       <aside className="w-72 border-r-2 border-slate-200 bg-white p-4 flex flex-col h-full z-30 transition-all">
+        {/* Hidden File Input for .scriffle / .json */}
+        <input
+          ref={scriffleInputRef}
+          type="file"
+          accept=".scriffle,.json"
+          className="hidden"
+          onChange={handleScriffleUpload}
+        />
+
         {/* Panel Header */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
           <div className="flex items-center gap-2">
@@ -88,7 +112,73 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
 
         {/* Action Controls List */}
         <div className="flex-1 overflow-y-auto pt-4 space-y-4">
-          {/* Continuous Auto-Streaming Loop Control */}
+          {/* Section 1 (VERY TOP): Project File & Starter Presets */}
+          <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/40 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-indigo-950 flex items-center gap-1.5">
+                <MingIcon name="folder_open_line" size={14} className="text-indigo-600" />
+                Project File (.scriffle)
+              </span>
+              <span className="text-[10px] font-semibold text-indigo-500 bg-indigo-100/70 px-1.5 py-0.5 rounded-md">JSON</span>
+            </div>
+
+            {/* Save & Open Buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={onExportScriffle}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-white px-2.5 py-2 text-xs font-bold text-indigo-700 border-2 border-indigo-200 hover:bg-indigo-50 transition-all active:scale-95 shadow-xs"
+                title="Save current canvas as .scriffle file"
+              >
+                <MingIcon name="download_2_line" size={14} className="text-indigo-600" />
+                <span>Save File</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => scriffleInputRef.current?.click()}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-white px-2.5 py-2 text-xs font-bold text-slate-700 border-2 border-slate-200 hover:bg-slate-50 transition-all active:scale-95 shadow-xs"
+                title="Open or import .scriffle project file"
+              >
+                <MingIcon name="folder_open_line" size={14} className="text-slate-600" />
+                <span>Open File</span>
+              </button>
+            </div>
+
+            {/* Quick Demo Presets */}
+            <div className="pt-1 border-t border-indigo-100">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block mb-1.5">
+                Load Preset Template:
+              </span>
+              <div className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => onLoadPreset?.('momentum')}
+                  className="flex w-full items-center justify-between rounded-xl bg-white px-2.5 py-1.5 text-left text-xs font-bold text-slate-800 border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all active:scale-98"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <MingIcon name="rocket_line" size={13} className="text-indigo-600" />
+                    <span>Momentum Breakout</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">Loop</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onLoadPreset?.('banking')}
+                  className="flex w-full items-center justify-between rounded-xl bg-white px-2.5 py-1.5 text-left text-xs font-bold text-slate-800 border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all active:scale-98"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <MingIcon name="building_1_line" size={13} className="text-blue-600" />
+                    <span>Banking Sector Trio</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">Grid</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Continuous Auto-Streaming Loop Control */}
           <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/80 p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">

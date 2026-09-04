@@ -439,13 +439,40 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     [screenToFlowPosition]
   );
 
-  // Drag and drop image files onto canvas
+  // Drag and drop image files or .scriffle project files onto canvas
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
       const files = event.dataTransfer.files;
       if (files && files.length > 0) {
         const file = files[0];
+
+        // 1. If user drops a .scriffle or .json project file
+        if (file.name.endsWith('.scriffle') || file.name.endsWith('.json')) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            try {
+              const text = e.target?.result as string;
+              const parsed = JSON.parse(text);
+              if (parsed.nodes || parsed.format === 'scriffle') {
+                const res = await fetch('/api/canvas/restore', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: text,
+                });
+                if (res.ok) {
+                  onRefresh?.();
+                }
+              }
+            } catch (err) {
+              console.error('Failed to import dropped .scriffle project:', err);
+            }
+          };
+          reader.readAsText(file);
+          return;
+        }
+
+        // 2. If user drops an image file
         if (file.type.startsWith('image/')) {
           const reader = new FileReader();
           reader.onload = (e) => {
@@ -461,7 +488,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         }
       }
     },
-    [screenToFlowPosition, onAddNodeAtPosition]
+    [screenToFlowPosition, onAddNodeAtPosition, onRefresh]
   );
 
   const onDragOver = useCallback((event: React.DragEvent) => {

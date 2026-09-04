@@ -1,0 +1,81 @@
+{
+  "format": "scriffle",
+  "version": "1.0.0",
+  "name": "IDX Big 3 Banking Comparison",
+  "createdAt": "2026-09-05T01:00:00.000Z",
+  "nodes": [
+    {
+      "id": "node-bbca",
+      "type": "watcher",
+      "position": { "x": 120, "y": 120 },
+      "config": {
+        "symbol": "BBCA",
+        "metric": "price_change",
+        "interval": 300
+      }
+    },
+    {
+      "id": "node-bbri",
+      "type": "watcher",
+      "position": { "x": 120, "y": 350 },
+      "config": {
+        "symbol": "BBRI",
+        "metric": "price_change",
+        "interval": 300
+      }
+    },
+    {
+      "id": "node-bmri",
+      "type": "watcher",
+      "position": { "x": 120, "y": 580 },
+      "config": {
+        "symbol": "BMRI",
+        "metric": "price_change",
+        "interval": 300
+      }
+    },
+    {
+      "id": "node-rule-bbca",
+      "type": "condition",
+      "position": { "x": 450, "y": 120 },
+      "config": {
+        "rule": "price_change > 3"
+      }
+    },
+    {
+      "id": "node-rule-bbri",
+      "type": "condition",
+      "position": { "x": 450, "y": 350 },
+      "config": {
+        "rule": "price_change > 3"
+      }
+    },
+    {
+      "id": "node-rule-bmri",
+      "type": "condition",
+      "position": { "x": 450, "y": 580 },
+      "config": {
+        "rule": "price_change > 3"
+      }
+    },
+    {
+      "id": "node-note-summary",
+      "type": "note",
+      "position": { "x": 800, "y": 280 },
+      "config": {
+        "content": "🎯 Big 4 Banking Rotation:\nMonitoring capital rotation between BBCA, BBRI, and BMRI.",
+        "color": "blue",
+        "width": 320,
+        "height": 180
+      }
+    }
+  ],
+  "edges": [
+    { "id": "edge-b1", "from": "node-bbca", "to": "node-rule-bbca" },
+    { "id": "edge-b2", "from": "node-bbri", "to": "node-rule-bbri" },
+    { "id": "edge-b3", "from": "node-bmri", "to": "node-rule-bmri" },
+    { "id": "edge-b4", "from": "node-rule-bbca", "to": "node-note-summary" },
+    { "id": "edge-b5", "from": "node-rule-bbri", "to": "node-note-summary" },
+    { "id": "edge-b6", "from": "node-rule-bmri", "to": "node-note-summary" }
+  ]
+}
