@@ -34,7 +34,7 @@
 * **Project Save & Open (`.scriffle` Format):**
   * **Save / Export:** 1-click **Save** button in top navbar creates and downloads `<canvas_name>.scriffle` (UTF-8 JSON formatted).
   * **Open / Import:** **Open** button with native file picker (`.scriffle`, `.json`) + Drag & Drop `.scriffle` file directly onto the canvas to restore full graph.
-  * **Starter Presets:** Quick template dropdown in TopNav to load `"Momentum Breakout Loop"` or `"Banking Sector Trio"`.
+  * **Starter Presets:** Quick template dropdown in Demo Controls to load `"Rotation Engine"` (complex multi-branching pipeline), `"Momentum Breakout Loop"`, or `"Banking Sector Trio"`.
   * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0.
 * **Multi-Selection & Box Select:**
   * `Shift + Click` or `Ctrl/Cmd + Click` to toggle select multiple elements concurrently.
@@ -58,9 +58,16 @@
   * **Hover execution chain glow** illuminating active paths across the canvas.
   * **Drag-to-resize sidebar width** (280px to 750px) with quick reset.
   * **Clear Activity Feed button** with confirmation modal that pauses streaming and resets all card run counters to `0`.
+* **Sectors API Key & Live Watcher Polling:**
+  * **Session-Only Storage:** Managed in temporary React client state. Automatically wiped on tab close or refresh. Never saved to SQLite and excluded from `.scriffle` exports.
+  * **Masked Input & Reveal Toggle:** Password-style masked input with eye reveal toggle (`eye_line` / `eye_close_line`) and clear button.
+  * **Privacy Guarantee Banner:** User-facing shield notice assuring keys stay private and local to the browser session.
+  * **Live Mode vs. Mock Mode:** Mode pill dynamically switches between `🟢 Live API v2` and `⚪ Offline Mock`.
+  * **1-Click Live Poll Button:** Clicking **"Poll Live Sectors API"** sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV from `https://api.sectors.app/v2/daily/{symbol}/` for all active canvas Watchers (`BBCA`, `BBRI`, `TLKM`, etc.) and executing downstream conditions.
 * **Toast Notifications:** Located at bottom-left with reverse stacking and slide-in animations.
 
 ### 2.3 Implementation Plans Saved in Working Directory
+* [`SECTORS_API_KEY_LIVE_POLL_PLAN.md`](file:///home/abzolute/Projects/hackathon/SECTORS_API_KEY_LIVE_POLL_PLAN.md): Details on masked API key session management, live polling, and mode toggling.
 * [`SAVE_OPEN_SCRIFFLE_PLAN.md`](file:///home/abzolute/Projects/hackathon/SAVE_OPEN_SCRIFFLE_PLAN.md): Details on `.scriffle` file schema, backend restore endpoint, and starter presets.
 * [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
 * [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.

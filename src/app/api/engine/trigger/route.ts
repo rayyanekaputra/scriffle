@@ -6,9 +6,12 @@ import { executeGraphForEvent } from '@/server/services/graphEngine';
 export async function POST(req: Request) {
   try {
     let canvasId: string | undefined;
+    let apiKey: string | undefined;
+
     try {
       const body = await req.json();
       canvasId = body.canvasId;
+      apiKey = body.apiKey;
     } catch {}
 
     let targetCanvas = canvasId
@@ -39,7 +42,7 @@ export async function POST(req: Request) {
       symbols.push('BBCA');
     }
 
-    const events = await syncMarketSnapshots(symbols);
+    const { events, isLive } = await syncMarketSnapshots(symbols, apiKey);
     const results = [];
 
     for (const ev of events) {
@@ -49,6 +52,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
+      isLive,
       polledEvents: events,
       executionResults: results,
     });

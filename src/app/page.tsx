@@ -27,6 +27,9 @@ function WhiteboardContent() {
   const [autoTickInterval, setAutoTickInterval] = useState(3);
   const timerRef = useRef<any>(null);
 
+  // In-Memory Session API Key (Temporary for this session only, never saved to disk or export)
+  const [sectorsApiKey, setSectorsApiKey] = useState('');
+
   const handleAddNode = async (
     type: NodeType,
     position?: { x: number; y: number },
@@ -456,6 +459,168 @@ function WhiteboardContent() {
           { id: 'edge-b6', from: 'node-rule-bmri', to: 'node-note-summary' },
         ],
       };
+    } else if (presetKey === 'rotation') {
+      presetData = {
+        format: 'scriffle',
+        version: '1.0.0',
+        name: 'IDX Blue-Chip Rotation & Auto-Discovery Engine',
+        nodes: [
+          {
+            id: 'header-title',
+            type: 'text',
+            position: { x: 80, y: 40 },
+            config: {
+              text: 'IDX Market Research & Dynamic Rotation Matrix',
+              fontSize: 'large',
+              color: '#0F172A',
+            },
+          },
+          {
+            id: 'header-subtitle',
+            type: 'text',
+            position: { x: 80, y: 80 },
+            config: {
+              text: 'Live Sectors v2 API Watchers: /v2/daily/{symbol} → Multi-tier Thresholds → Automated Mutator Branching',
+              fontSize: 'small',
+              color: '#64748B',
+            },
+          },
+          {
+            id: 'sticker-bullish',
+            type: 'sticker',
+            position: { x: 80, y: 140 },
+            config: { stickerType: 'bullish' },
+          },
+          {
+            id: 'watcher-bbca',
+            type: 'watcher',
+            position: { x: 80, y: 220 },
+            config: {
+              symbol: 'BBCA',
+              metric: 'price_change',
+              interval: 300,
+            },
+          },
+          {
+            id: 'condition-bbca-surge',
+            type: 'condition',
+            position: { x: 420, y: 180 },
+            config: {
+              rule: 'price_change > 4 AND volume > 10000000',
+            },
+          },
+          {
+            id: 'condition-bbca-pullback',
+            type: 'condition',
+            position: { x: 420, y: 320 },
+            config: {
+              rule: 'price_change < -1.5',
+            },
+          },
+          {
+            id: 'alert-bbca-breakout',
+            type: 'alert',
+            position: { x: 760, y: 120 },
+            config: {
+              channel: 'ui',
+              template: '🚀 BBCA Massive Breakout: +${price_change}% at Rp${price} (Vol: ${volume})',
+            },
+          },
+          {
+            id: 'action-spawn-bbca-thesis',
+            type: 'action',
+            position: { x: 760, y: 240 },
+            config: {
+              action: 'create_note',
+              noteTemplate: '📈 BBCA Bullish Thesis Confirmed!\nPrice: Rp${price} (+${price_change}%)\nTimestamp: ${timestamp}\nForeign institutional inflow surging.',
+            },
+          },
+          {
+            id: 'action-spawn-peer-bbri',
+            type: 'action',
+            position: { x: 1100, y: 240 },
+            config: {
+              action: 'create_watcher',
+              targetSymbol: 'BBRI',
+            },
+          },
+          {
+            id: 'note-bbca-defense',
+            type: 'note',
+            position: { x: 760, y: 360 },
+            config: {
+              content: '⚠️ BBCA Pullback Strategy:\nWatch support level at Rp10,000.\nCheck if funds are rotating into Telco (TLKM) or Energy.',
+              color: 'pink',
+              width: 300,
+              height: 160,
+            },
+          },
+          {
+            id: 'watcher-tlkm',
+            type: 'watcher',
+            position: { x: 80, y: 560 },
+            config: {
+              symbol: 'TLKM',
+              metric: 'price_change',
+              interval: 300,
+            },
+          },
+          {
+            id: 'condition-tlkm-rebound',
+            type: 'condition',
+            position: { x: 420, y: 560 },
+            config: {
+              rule: 'price_change > 2',
+            },
+          },
+          {
+            id: 'alert-tlkm-toast',
+            type: 'alert',
+            position: { x: 760, y: 560 },
+            config: {
+              channel: 'ui',
+              template: '📡 TLKM Telco Rotation: Up ${price_change}% at Rp${price}',
+            },
+          },
+          {
+            id: 'action-spawn-tlkm-note',
+            type: 'action',
+            position: { x: 1100, y: 560 },
+            config: {
+              action: 'create_note',
+              noteTemplate: '🎯 TLKM Accumulation Signal\nPrice: Rp${price}\nTurnaround confirmation logged at ${timestamp}.',
+            },
+          },
+          {
+            id: 'note-macro-overview',
+            type: 'note',
+            position: { x: 1100, y: 40 },
+            config: {
+              content: '💡 Whiteboard Automation Protocol:\n1. BBCA breakout triggers real-time UI toast.\n2. Auto-spawns dynamic research note.\n3. Chains mutator to spawn peer watcher (BBRI).\n4. Parallel TLKM watcher tracks capital rotation.',
+              color: 'blue',
+              width: 340,
+              height: 180,
+            },
+          },
+          {
+            id: 'sticker-rocket',
+            type: 'sticker',
+            position: { x: 1020, y: 140 },
+            config: { stickerType: 'rocket' },
+          },
+        ],
+        edges: [
+          { id: 'e1', from: 'watcher-bbca', to: 'condition-bbca-surge' },
+          { id: 'e2', from: 'watcher-bbca', to: 'condition-bbca-pullback' },
+          { id: 'e3', from: 'condition-bbca-surge', to: 'alert-bbca-breakout' },
+          { id: 'e4', from: 'condition-bbca-surge', to: 'action-spawn-bbca-thesis' },
+          { id: 'e5', from: 'action-spawn-bbca-thesis', to: 'action-spawn-peer-bbri' },
+          { id: 'e6', from: 'condition-bbca-pullback', to: 'note-bbca-defense' },
+          { id: 'e7', from: 'watcher-tlkm', to: 'condition-tlkm-rebound' },
+          { id: 'e8', from: 'condition-tlkm-rebound', to: 'alert-tlkm-toast' },
+          { id: 'e9', from: 'condition-tlkm-rebound', to: 'action-spawn-tlkm-note' },
+        ],
+      };
     }
 
     if (!presetData) return;
@@ -495,6 +660,39 @@ function WhiteboardContent() {
     }
   };
 
+  // Live / Mock Market Polling
+  const handlePollMarket = async () => {
+    try {
+      const res = await fetch('/api/engine/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          canvasId: canvas?.id,
+          apiKey: sectorsApiKey.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        mutate();
+        mutateLogs();
+
+        const count = data.polledEvents?.length || 0;
+        const isLive = Boolean(data.isLive);
+        showToast(
+          isLive ? 'Market Polled (Live Sectors v2)' : 'Market Polled (Simulated)',
+          `Synced ${count} ticker${count !== 1 ? 's' : ''} across active Watchers`,
+          isLive ? 'rising' : 'info'
+        );
+      } else {
+        showToast('Poll Error', data.error || 'Failed to poll market data', 'crashing');
+      }
+    } catch (err: any) {
+      console.error('Failed to poll market:', err);
+      showToast('Poll Failed', err.message || 'Network error during poll', 'crashing');
+    }
+  };
+
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F9FC] text-slate-900 antialiased font-sans">
       {/* Centered TopNav with view toggle buttons on the right */}
@@ -520,6 +718,9 @@ function WhiteboardContent() {
           onExportScriffle={handleExportScriffle}
           onImportScriffle={handleImportScriffle}
           onLoadPreset={handleLoadPreset}
+          apiKey={sectorsApiKey}
+          onApiKeyChange={(key) => setSectorsApiKey(key)}
+          onPollMarket={handlePollMarket}
         />
 
         {/* Main React Flow Canvas */}

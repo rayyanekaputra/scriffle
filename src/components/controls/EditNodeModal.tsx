@@ -67,13 +67,31 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Polling Interval (seconds)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-slate-700 block">Polling Interval (seconds)</label>
+                  <span className="text-[10px] font-semibold text-slate-500 font-mono">
+                    {config.interval ? `${config.interval}s (${(config.interval / 60).toFixed(1)}m)` : '300s (5.0m)'}
+                  </span>
+                </div>
                 <input
                   type="number"
+                  min={5}
+                  max={86400}
                   value={config.interval || 300}
                   onChange={(e) => setConfig({ ...config, interval: Number(e.target.value) })}
                   className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-slate-800 focus:outline-none"
                 />
+
+                {/* Explanation Card */}
+                <div className="mt-2 rounded-xl bg-blue-50/70 p-2.5 border border-blue-200/70 text-[11px] text-blue-900 leading-relaxed space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-blue-950">
+                    <MingIcon name="time_line" size={13} className="text-[#0050FF]" />
+                    <span>What is Polling Interval?</span>
+                  </div>
+                  <p className="text-slate-600 text-[10px]">
+                    How often this card requests new market snapshot data from the <strong>Sectors API</strong> (e.g. every 300s = 5 minutes). Higher intervals save API rate limits, while shorter intervals provide faster alerts.
+                  </p>
+                </div>
               </div>
             </>
           )}
