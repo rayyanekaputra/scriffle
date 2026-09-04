@@ -202,10 +202,14 @@ export async function executeGraphForEvent(
       if (nodeConfig.action === 'create_note') {
         const rawContent = nodeConfig.params?.template || 'Breakout confirmed for ${symbol} at ${timestamp}.';
         const noteContent = interpolateTemplate(rawContent, curEvent);
-        
-        // Offset position to right of action node
-        const newX = node.positionX + 250;
-        const newY = node.positionY + 20;
+
+        // Count how many children this action node has already spawned to cascade cleanly
+        const existingSpawned = canvas.edges.filter((e) => e.fromId === node.id);
+        const spawnIndex = existingSpawned.length;
+
+        // Position neatly to the right (X: +280px) and staggered vertically (+180px per note), with slight organic offset
+        const newX = node.positionX + 280 + (spawnIndex % 2 === 1 ? 25 : 0);
+        const newY = node.positionY + spawnIndex * 190 - 40;
 
         const newNode = await prisma.node.create({
           data: {
@@ -215,7 +219,9 @@ export async function executeGraphForEvent(
             positionY: newY,
             configJson: JSON.stringify({
               content: noteContent,
-              color: 'mint',
+              color: spawnIndex % 2 === 0 ? 'mint' : 'pink',
+              width: 300,
+              height: 150,
             }),
             stateJson: JSON.stringify({
               status: 'passed',
