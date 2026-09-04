@@ -119,7 +119,6 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
                 <MingIcon name="folder_open_line" size={14} className="text-indigo-600" />
                 Project File (.scriffle)
               </span>
-              <span className="text-[10px] font-semibold text-indigo-500 bg-indigo-100/70 px-1.5 py-0.5 rounded-md">JSON</span>
             </div>
 
             {/* Save & Open Buttons */}

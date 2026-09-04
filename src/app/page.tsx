@@ -488,9 +488,6 @@ function WhiteboardContent() {
         onToggleFeed={() => setIsFeedOpen(!isFeedOpen)}
         isControlsOpen={isControlsOpen}
         onToggleControls={() => setIsControlsOpen(!isControlsOpen)}
-        onExportScriffle={handleExportScriffle}
-        onImportScriffle={handleImportScriffle}
-        onLoadPreset={handleLoadPreset}
       />
 
       <div className="relative flex flex-1 overflow-hidden">
