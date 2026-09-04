@@ -18,6 +18,11 @@
   filter: none !important;
 }
 
+/* MingCute font color override: inherit parent text color */
+[class^="mgc_"]:before, [class*=" mgc_"]:before {
+  color: inherit !important;
+}
+
 /* Custom Tape for Flat Sticky Notes */
 .flat-tape {
   position: absolute;
