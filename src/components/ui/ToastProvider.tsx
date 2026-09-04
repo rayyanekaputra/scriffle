@@ -65,14 +65,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ToastContext.Provider value={{ showToast }}>
       {children}
 
-      {/* Floating Toast Notification Container (Top-Right) */}
-      <div className="fixed top-20 right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+      {/* Floating Toast Notification Container (Bottom-Left) */}
+      <div className="fixed bottom-6 left-6 z-50 flex flex-col-reverse gap-2.5 max-w-sm w-full pointer-events-none">
         {toasts.map((toast) => {
           const style = TOAST_STYLES[toast.type || 'alert'] || TOAST_STYLES.alert;
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto flex items-start gap-3 rounded-2xl border-2 ${style.bg} p-4 shadow-md transition-all animate-in fade-in slide-in-from-top-4 duration-200`}
+              className={`pointer-events-auto flex items-start gap-3 rounded-2xl border-2 ${style.bg} p-4 shadow-md transition-all animate-in fade-in slide-in-from-bottom-4 duration-200`}
             >
               <div className="rounded-xl bg-white/20 p-2 text-white shrink-0 mt-0.5">
                 <MingIcon name={style.icon} size={18} />

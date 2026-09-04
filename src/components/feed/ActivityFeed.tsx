@@ -11,6 +11,7 @@ interface ActivityFeedProps {
   onClose: () => void;
   onSelectNode?: (nodeId: string) => void;
   onHoverNodes?: (nodeIds: string[]) => void;
+  onClearLogs?: () => void;
 }
 
 /**
@@ -94,9 +95,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   onClose,
   onSelectNode,
   onHoverNodes,
+  onClearLogs,
 }) => {
   const [width, setWidth] = React.useState(360);
   const [isResizing, setIsResizing] = React.useState(false);
+  const [isConfirmingClear, setIsConfirmingClear] = React.useState(false);
   const startXRef = React.useRef(0);
   const startWidthRef = React.useRef(360);
 
@@ -160,6 +163,16 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
           )}
         </div>
         <div className="flex items-center gap-1.5">
+          {logs.length > 0 && (
+            <button
+              onClick={() => setIsConfirmingClear(true)}
+              className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-semibold text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition"
+              title="Clear all activity feeds"
+            >
+              <MingIcon name="delete_2_line" size={12} className="text-rose-500" />
+              <span>Clear</span>
+            </button>
+          )}
           {width !== 360 && (
             <button
               onClick={() => setWidth(360)}
@@ -182,6 +195,40 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Clear Confirmation Prompt Modal */}
+      {isConfirmingClear && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-xs p-4">
+          <div className="w-full max-w-xs rounded-2xl border-2 border-slate-200 bg-white p-4 text-center shadow-lg animate-in fade-in zoom-in duration-150">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-200 mb-2.5">
+              <MingIcon name="delete_2_line" size={20} />
+            </div>
+            <h3 className="text-xs font-bold text-slate-900">Are you sure to clear?</h3>
+            <p className="mt-1 text-[11px] text-slate-500 leading-relaxed">
+              This will pause the streaming ticks and remove all {logs.length} activity feed entries.
+            </p>
+            <div className="mt-4 flex justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsConfirmingClear(false)}
+                className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsConfirmingClear(false);
+                  onClearLogs?.();
+                }}
+                className="flex-1 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 transition shadow-xs"
+              >
+                Yes, Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Log List */}
       <div className="flex-1 overflow-y-auto pt-3 space-y-2.5 pr-1">

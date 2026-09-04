@@ -35,3 +35,15 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE() {
+  try {
+    await prisma.log.deleteMany();
+    return NextResponse.json({ success: true, message: 'All execution logs cleared' });
+  } catch (error: any) {
+    console.error('Failed to clear logs:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+

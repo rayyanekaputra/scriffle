@@ -238,6 +238,28 @@ function WhiteboardContent() {
     mutateLogs();
   };
 
+  const handleClearLogs = async () => {
+    // 1. Immediately pause live streaming / auto-polling
+    if (autoTickActive) {
+      setAutoTickActive(false);
+      showToast('Streaming Paused', 'Market polling stopped before clearing logs', 'info');
+    }
+
+    // 2. Clear logs in backend and revalidate
+    try {
+      const res = await fetch('/api/logs', {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        mutateLogs([], false); // Instant optimistic update
+        mutateLogs();
+        showToast('Activity Feed Cleared', 'All previous trigger records have been cleared', 'info');
+      }
+    } catch (err) {
+      console.error('Failed to clear logs:', err);
+    }
+  };
+
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F9FC] text-slate-900 antialiased font-sans">
       {/* Centered TopNav with view toggle buttons on the right */}
@@ -284,6 +306,7 @@ function WhiteboardContent() {
           nodes={canvas?.nodes}
           isOpen={isFeedOpen}
           onClose={() => setIsFeedOpen(false)}
+          onClearLogs={handleClearLogs}
           onSelectNode={(nodeId) => {
             // Toggle / trigger focus
             setFocusedNodeId(nodeId);
