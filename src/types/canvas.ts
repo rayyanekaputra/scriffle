@@ -22,6 +22,8 @@ export interface NoteConfig {
   content: string;        // Text content
   template?: string;      // e.g. "${symbol} surged ${price_change}% at ${timestamp}"
   color?: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple';
+  width?: number;
+  height?: number;
 }
 
 export interface AlertConfig {

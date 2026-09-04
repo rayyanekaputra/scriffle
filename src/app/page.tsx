@@ -70,7 +70,7 @@ function WhiteboardContent() {
 
   const handleEditNode = (nodeId: string) => {
     const found = canvas?.nodes.find((n) => n.id === nodeId);
-    if (found && (found.type === 'watcher' || found.type === 'condition' || found.type === 'alert' || found.type === 'action')) {
+    if (found) {
       setEditingNode(found);
     }
   };

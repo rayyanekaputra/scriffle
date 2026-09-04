@@ -97,37 +97,54 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
           {node.type === 'note' && (
             <>
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Sticky Note Content</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-slate-700 block">Note Content (Markdown & Text)</label>
+                  <span className="text-[10px] text-slate-400 font-medium">
+                    {(config.content || '').length} chars • {(config.content || '').trim().split(/\s+/).filter(Boolean).length} words
+                  </span>
+                </div>
                 <textarea
-                  rows={4}
+                  rows={6}
                   value={config.content || ''}
                   onChange={(e) => setConfig({ ...config, content: e.target.value })}
-                  placeholder="Type note commentary..."
-                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 text-slate-900 focus:border-slate-800 focus:outline-none leading-relaxed"
+                  placeholder="Write your research notes, findings, or template..."
+                  className="w-full rounded-2xl border-2 border-slate-200 p-3 text-slate-900 focus:border-slate-800 focus:outline-none leading-relaxed text-xs"
                 />
               </div>
 
+              {/* Quick Template Tokens */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Template Expression (Optional)</label>
-                <input
-                  type="text"
-                  value={config.template || ''}
-                  onChange={(e) => setConfig({ ...config, template: e.target.value })}
-                  placeholder="${symbol} surged ${price_change}% at ${timestamp}"
-                  className="w-full rounded-xl border-2 border-slate-200 p-2.5 font-mono text-[11px] text-slate-900 focus:border-slate-800 focus:outline-none"
-                />
+                <label className="font-bold text-slate-700 block mb-1">Insert Dynamic Variable</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {['${symbol}', '${price}', '${price_change}', '${volume}', '${timestamp}'].map((token) => (
+                    <button
+                      key={token}
+                      type="button"
+                      onClick={() =>
+                        setConfig({
+                          ...config,
+                          content: (config.content || '') + (config.content ? ' ' : '') + token,
+                        })
+                      }
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-[10px] font-semibold text-slate-700 hover:bg-slate-200 transition"
+                    >
+                      + {token}
+                    </button>
+                  ))}
+                </div>
               </div>
 
+              {/* Note Color Palette */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Color</label>
+                <label className="font-bold text-slate-700 block mb-1.5">Color Theme</label>
                 <div className="flex gap-2">
                   {(['yellow', 'mint', 'pink', 'blue', 'purple'] as const).map((col) => (
                     <button
                       key={col}
                       type="button"
                       onClick={() => setConfig({ ...config, color: col })}
-                      className={`h-8 w-8 rounded-full border-2 transition ${
-                        config.color === col ? 'border-slate-900 scale-110' : 'border-transparent'
+                      className={`h-8 w-8 rounded-xl border-2 transition ${
+                        (config.color || 'yellow') === col ? 'border-slate-900 scale-110 shadow-xs' : 'border-transparent hover:scale-105'
                       } ${
                         col === 'yellow'
                           ? 'bg-amber-300'
@@ -142,6 +159,22 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                     />
                   ))}
                 </div>
+              </div>
+
+              {/* Canvas Dimensions & Reset */}
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>
+                  Size: {config.width ? `${config.width}px` : 'Default (288px)'} × {config.height ? `${config.height}px` : 'Auto'}
+                </span>
+                {(config.width || config.height) && (
+                  <button
+                    type="button"
+                    onClick={() => setConfig({ ...config, width: undefined, height: undefined })}
+                    className="text-indigo-600 hover:underline font-semibold"
+                  >
+                    Reset to auto size
+                  </button>
+                )}
               </div>
             </>
           )}
