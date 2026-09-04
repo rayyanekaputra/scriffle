@@ -106,6 +106,9 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     edgeId: string | null;
   } | null>(null);
 
+  // Internal clipboard buffer for copying canvas nodes
+  const clipboardNodeRef = useRef<{ type: NodeType; config: any } | null>(null);
+
   // Track global mouse coordinates for paste placement safely on client
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -119,9 +122,101 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Global Clipboard Paste Listener (Ctrl+V / Cmd+V)
+  // Keyboard Shortcuts: Delete, Copy (Ctrl+C), Paste (Ctrl+V), Duplicate (Ctrl+D), Deselect (Esc)
   useEffect(() => {
-    const handlePaste = (event: ClipboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInputActive =
+        target &&
+        (target.tagName === 'TEXTAREA' ||
+          target.tagName === 'INPUT' ||
+          target.isContentEditable ||
+          target.closest('.nodrag'));
+
+      // If user is typing inside a text box, do not trigger canvas shortcuts
+      if (isInputActive) {
+        if (e.key === 'Escape') {
+          target.blur();
+        }
+        return;
+      }
+
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const isCtrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+
+      // 1. Delete or Backspace -> Delete selected nodes and edges
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const selectedNodes = nodes.filter((n) => n.selected);
+        const selectedEdges = edges.filter((e) => e.selected);
+
+        if (selectedNodes.length > 0 || selectedEdges.length > 0) {
+          e.preventDefault();
+          selectedNodes.forEach((n) => onDeleteNode?.(n.id));
+          selectedEdges.forEach((ed) => onDeleteEdge?.(ed.id));
+        }
+        return;
+      }
+
+      // 2. Escape -> Close menus and deselect all
+      if (e.key === 'Escape') {
+        setMenu(null);
+        setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
+        setEdges((eds) => eds.map((ed) => ({ ...ed, selected: false })));
+        return;
+      }
+
+      // 3. Ctrl+C / Cmd+C -> Copy selected node
+      if (isCtrlOrCmd && (e.key === 'c' || e.key === 'C')) {
+        const selectedNode = nodes.find((n) => n.selected);
+        if (selectedNode) {
+          clipboardNodeRef.current = {
+            type: selectedNode.type as NodeType,
+            config: JSON.parse(JSON.stringify(selectedNode.data.config || {})),
+          };
+        }
+        return;
+      }
+
+      // 4. Ctrl+V / Cmd+V -> Paste copied node at mouse position
+      if (isCtrlOrCmd && (e.key === 'v' || e.key === 'V')) {
+        if (clipboardNodeRef.current) {
+          e.preventDefault();
+          const flowPos = screenToFlowPosition(mousePosRef.current);
+          onAddNodeAtPosition?.(
+            clipboardNodeRef.current.type,
+            flowPos,
+            JSON.parse(JSON.stringify(clipboardNodeRef.current.config))
+          );
+        }
+        return;
+      }
+
+      // 5. Ctrl+D / Cmd+D -> Duplicate selected node (+35px offset)
+      if (isCtrlOrCmd && (e.key === 'd' || e.key === 'D')) {
+        const selectedNode = nodes.find((n) => n.selected);
+        if (selectedNode) {
+          e.preventDefault();
+          const duplicatePos = {
+            x: selectedNode.position.x + 35,
+            y: selectedNode.position.y + 35,
+          };
+          onAddNodeAtPosition?.(
+            selectedNode.type as NodeType,
+            duplicatePos,
+            JSON.parse(JSON.stringify(selectedNode.data.config || {}))
+          );
+        }
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [nodes, edges, onDeleteNode, onDeleteEdge, onAddNodeAtPosition, screenToFlowPosition, setNodes, setEdges]);
+
+  // Global Clipboard Image Paste Listener
+  useEffect(() => {
+    const handleImagePaste = (event: ClipboardEvent) => {
       const target = event.target as HTMLElement;
       if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT')) {
         return;
@@ -152,8 +247,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       }
     };
 
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
+    window.addEventListener('paste', handleImagePaste);
+    return () => window.removeEventListener('paste', handleImagePaste);
   }, [screenToFlowPosition, onAddNodeAtPosition]);
 
   // Sync state when backend updates
@@ -373,6 +468,16 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     event.dataTransfer.dropEffect = 'copy';
   }, []);
 
+  // ReactFlow onNodesDelete callback
+  const onNodesDelete = useCallback(
+    async (deletedNodes: Node[]) => {
+      for (const node of deletedNodes) {
+        onDeleteNode?.(node.id);
+      }
+    },
+    [onDeleteNode]
+  );
+
   return (
     <div
       className="h-full w-full bg-[#F8F9FC]"
@@ -385,6 +490,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodesDelete={onNodesDelete}
         onEdgesDelete={onEdgesDelete}
         onNodeDragStop={onNodeDragStop}
         onNodeDoubleClick={onNodeDoubleClick}

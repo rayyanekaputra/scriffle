@@ -30,15 +30,32 @@
   * **Transparency:** Full support for transparent `.png` files with zero white background boxes.
   * **Interactive Resizing:** Click an image to drag corner `<NodeResizer />` handles (aspect-ratio locked & persisted to SQLite).
 
-### 2.2 Whiteboard Interactions
+### 2.2 Whiteboard Interactions & Shortcuts
+* **Keyboard Shortcuts:**
+  * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
+  * **`Ctrl+C` / `Cmd+C`:** Copy selected card.
+  * **`Ctrl+V` / `Cmd+V`:** Paste copied card at cursor position on canvas.
+  * **`Ctrl+D` / `Cmd+D`:** Quick duplicate adjacent to active card.
+  * **`Escape`:** Deselect nodes & close context menus.
 * **Right-Click on Canvas:** Context menu to drop Sticky Notes, Watchers, Conditions, Free Text, Image upload, Stickers, Alerts, or Actions at the exact mouse coordinates (`screenToFlowPosition`).
-* **Right-Click on Elements:** Context menu to Edit, Change Sticky Color, or Delete.
-* **Double-Click on Elements:** Opens `EditNodeModal` for structured cards (`Watcher`, `Condition`, `Alert`, `Action`). Sticky notes and free text are editable **directly on the canvas** without popups.
-* **Presenter Simulation Bar:** Floating bottom dock with quick demo triggers:
-  * `Simulate BBCA Surge (+6.37%)`
-  * `Simulate BBRI Volume Spike`
-  * `Poll Market Data` (Live Sectors API or Mock fallback)
-* **Activity Feed:** Live right sidebar logging events and execution runs with clickable card badges.
+* **Right-Click on Elements & Connectors:** Context menu to Edit, Change Sticky Color, or Delete element/connector.
+* **Sticky Notes Resizing & Edit Modal:**
+  * Interactive `<NodeResizer />` handles on canvas with overflow cropping.
+  * Right-click -> "Edit element" opens full detail modal with char/word counter, dynamic variable insertion, color picker, and dimension reset.
+* **Presenter Simulation Bar:** Floating bottom dock with quick demo triggers and continuous live ticker streaming.
+* **Activity Feed & Backtracking:**
+  * **Human-readable node chips** with MingCute icons (`Watcher (BBCA) → Rule → Toast`).
+  * **1-click smooth camera pan & zoom** to fly directly to any card.
+  * **Hover execution chain glow** illuminating active paths across the canvas.
+  * **Drag-to-resize sidebar width** (280px to 750px) with quick reset.
+  * **Clear Activity Feed button** with confirmation modal that pauses streaming and resets all card run counters to `0`.
+* **Toast Notifications:** Located at bottom-left with reverse stacking and slide-in animations.
+
+### 2.3 Implementation Plans Saved in Working Directory
+* [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
+* [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.
+* [`FIGJAM_INTERACTIVE_PLAN.md`](file:///home/abzolute/Projects/hackathon/FIGJAM_INTERACTIVE_PLAN.md): Overall interactive whiteboard architecture.
+* [`SPIKE_DEVTOOL_PLAN.md`](file:///home/abzolute/Projects/hackathon/SPIKE_DEVTOOL_PLAN.md): Dev spike simulation tool plan.
 
 ---
 
