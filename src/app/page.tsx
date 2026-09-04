@@ -14,6 +14,8 @@ import { CanvasNodeData, NodeType } from '@/types/canvas';
 function WhiteboardContent() {
   const { canvas, logs, mutate, mutateLogs } = useCanvasSync();
   const [editingNode, setEditingNode] = useState<CanvasNodeData | null>(null);
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
+  const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
   const { showToast } = useToast();
 
   // Panels visibility state (hideable Left Panel & Activity Feed)
@@ -264,6 +266,8 @@ function WhiteboardContent() {
           <ReactFlowProvider>
             <MarketCanvas
               canvasData={canvas}
+              focusedNodeId={focusedNodeId}
+              highlightedNodeIds={highlightedNodeIds}
               onRefresh={handleRefresh}
               onEditNode={handleEditNode}
               onAddNodeAtPosition={(type, pos, extra) => handleAddNode(type, pos, extra)}
@@ -277,8 +281,16 @@ function WhiteboardContent() {
         {/* Hideable Live Activity & Log Sidebar */}
         <ActivityFeed
           logs={logs}
+          nodes={canvas?.nodes}
           isOpen={isFeedOpen}
           onClose={() => setIsFeedOpen(false)}
+          onSelectNode={(nodeId) => {
+            // Toggle / trigger focus
+            setFocusedNodeId(nodeId);
+            // Reset focus trigger shortly after so it can be re-clicked
+            setTimeout(() => setFocusedNodeId(null), 1000);
+          }}
+          onHoverNodes={(nodeIds) => setHighlightedNodeIds(nodeIds)}
         />
       </div>
 

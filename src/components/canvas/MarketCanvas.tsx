@@ -30,6 +30,8 @@ import { CanvasData, NodeType } from '@/types/canvas';
 
 interface MarketCanvasProps {
   canvasData?: CanvasData;
+  focusedNodeId?: string | null;
+  highlightedNodeIds?: string[];
   onRefresh?: () => void;
   onEditNode?: (nodeId: string) => void;
   onAddNodeAtPosition?: (type: NodeType, position: { x: number; y: number }, extraConfig?: any) => void;
@@ -40,6 +42,8 @@ interface MarketCanvasProps {
 
 export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   canvasData,
+  focusedNodeId,
+  highlightedNodeIds = [],
   onRefresh,
   onEditNode,
   onAddNodeAtPosition,
@@ -47,7 +51,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   onDeleteEdge,
   onChangeNodeColor,
 }) => {
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, setCenter } = useReactFlow();
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 500, y: 300 });
 
   const nodeTypes = useMemo(
@@ -173,17 +177,50 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
 
     if (canvasData?.edges) {
       setEdges(
-        canvasData.edges.map((e) => ({
-          id: e.id,
-          source: e.from,
-          target: e.to,
-          animated: true,
-          interactionWidth: 24,
-          style: { stroke: '#0050FF', strokeWidth: 2.5, cursor: 'pointer' },
+        canvasData.edges.map((e) => {
+          const isHighlighted =
+            highlightedNodeIds.length > 0 &&
+            highlightedNodeIds.includes(e.from) &&
+            highlightedNodeIds.includes(e.to);
+
+          return {
+            id: e.id,
+            source: e.from,
+            target: e.to,
+            animated: true,
+            interactionWidth: 24,
+            style: {
+              stroke: isHighlighted ? '#6366F1' : '#0050FF',
+              strokeWidth: isHighlighted ? 4 : 2.5,
+              cursor: 'pointer',
+              transition: 'stroke 0.2s, stroke-width 0.2s',
+            },
+          };
+        })
+      );
+    }
+  }, [canvasData, highlightedNodeIds, setNodes, setEdges]);
+
+  // Smooth camera pan & zoom when a node is focused from Activity Feed
+  useEffect(() => {
+    if (!focusedNodeId || !canvasData?.nodes) return;
+    const target = canvasData.nodes.find((n) => n.id === focusedNodeId);
+    if (target) {
+      // Smoothly pan viewport center directly to the node
+      setCenter(target.position.x + 140, target.position.y + 100, {
+        zoom: 1.15,
+        duration: 800,
+      });
+
+      // Highlight the targeted node as selected
+      setNodes((nds) =>
+        nds.map((n) => ({
+          ...n,
+          selected: n.id === focusedNodeId,
         }))
       );
     }
-  }, [canvasData, setNodes, setEdges]);
+  }, [focusedNodeId, canvasData?.nodes, setCenter, setNodes]);
 
   // Connect two nodes
   const onConnect = useCallback(
