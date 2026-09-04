@@ -122,6 +122,17 @@ function WhiteboardContent() {
     }
   };
 
+  const handleDeleteEdge = async (edgeId: string) => {
+    try {
+      await fetch(`/api/canvas/edges/${edgeId}`, {
+        method: 'DELETE',
+      });
+      mutate();
+    } catch (err) {
+      console.error('Failed to delete edge:', err);
+    }
+  };
+
   const handleSimulateCustom = async (eventPayload: any, suppressInfoToast = false) => {
     try {
       const res = await fetch('/api/engine/simulate', {
@@ -257,6 +268,7 @@ function WhiteboardContent() {
               onEditNode={handleEditNode}
               onAddNodeAtPosition={(type, pos, extra) => handleAddNode(type, pos, extra)}
               onDeleteNode={handleDeleteNode}
+              onDeleteEdge={handleDeleteEdge}
               onChangeNodeColor={handleChangeNodeColor}
             />
           </ReactFlowProvider>

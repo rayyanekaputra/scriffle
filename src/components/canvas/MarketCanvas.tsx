@@ -34,6 +34,7 @@ interface MarketCanvasProps {
   onEditNode?: (nodeId: string) => void;
   onAddNodeAtPosition?: (type: NodeType, position: { x: number; y: number }, extraConfig?: any) => void;
   onDeleteNode?: (nodeId: string) => void;
+  onDeleteEdge?: (edgeId: string) => void;
   onChangeNodeColor?: (nodeId: string, color: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple') => void;
 }
 
@@ -43,6 +44,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   onEditNode,
   onAddNodeAtPosition,
   onDeleteNode,
+  onDeleteEdge,
   onChangeNodeColor,
 }) => {
   const { screenToFlowPosition } = useReactFlow();
@@ -82,7 +84,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       source: e.from,
       target: e.to,
       animated: true,
-      style: { stroke: '#0050FF', strokeWidth: 2.5 },
+      interactionWidth: 24, // Wider click/hover hitbox for easier selection
+      style: { stroke: '#0050FF', strokeWidth: 2.5, cursor: 'pointer' },
     }));
   }, [canvasData?.edges]);
 
@@ -96,6 +99,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     flowX: number;
     flowY: number;
     nodeId: string | null;
+    edgeId: string | null;
   } | null>(null);
 
   // Track global mouse coordinates for paste placement safely on client
@@ -174,7 +178,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           source: e.from,
           target: e.to,
           animated: true,
-          style: { stroke: '#0050FF', strokeWidth: 2.5 },
+          interactionWidth: 24,
+          style: { stroke: '#0050FF', strokeWidth: 2.5, cursor: 'pointer' },
         }))
       );
     }
@@ -184,7 +189,17 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   const onConnect = useCallback(
     async (params: Connection) => {
       if (!params.source || !params.target) return;
-      setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#0050FF', strokeWidth: 2.5 } }, eds));
+      setEdges((eds) =>
+        addEdge(
+          {
+            ...params,
+            animated: true,
+            interactionWidth: 24,
+            style: { stroke: '#0050FF', strokeWidth: 2.5, cursor: 'pointer' },
+          },
+          eds
+        )
+      );
 
       try {
         await fetch('/api/canvas/edges', {
@@ -202,6 +217,16 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       }
     },
     [canvasData?.id, onRefresh, setEdges]
+  );
+
+  // Keyboard delete (Backspace/Delete) or user edge deletion
+  const onEdgesDelete = useCallback(
+    async (deletedEdges: Edge[]) => {
+      for (const edge of deletedEdges) {
+        onDeleteEdge?.(edge.id);
+      }
+    },
+    [onDeleteEdge]
   );
 
   // Node position drag stop
@@ -241,6 +266,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         flowX: flowPos.x,
         flowY: flowPos.y,
         nodeId: null,
+        edgeId: null,
       });
     },
     [screenToFlowPosition]
@@ -257,6 +283,24 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         flowX: flowPos.x,
         flowY: flowPos.y,
         nodeId: node.id,
+        edgeId: null,
+      });
+    },
+    [screenToFlowPosition]
+  );
+
+  // Right click on specific edge
+  const onEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      event.preventDefault();
+      const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      setMenu({
+        x: event.clientX,
+        y: event.clientY,
+        flowX: flowPos.x,
+        flowY: flowPos.y,
+        nodeId: null,
+        edgeId: edge.id,
       });
     },
     [screenToFlowPosition]
@@ -304,12 +348,15 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onEdgesDelete={onEdgesDelete}
         onNodeDragStop={onNodeDragStop}
         onNodeDoubleClick={onNodeDoubleClick}
         onPaneClick={() => setMenu(null)}
         onNodeClick={() => setMenu(null)}
+        onEdgeClick={() => setMenu(null)}
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
         nodeTypes={nodeTypes}
         fitView
         colorMode="light"
@@ -331,6 +378,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           x={menu.x}
           y={menu.y}
           targetNodeId={menu.nodeId}
+          targetEdgeId={menu.edgeId}
           onClose={() => setMenu(null)}
           onAddElement={(type, extraConfig) =>
             onAddNodeAtPosition?.(type, { x: menu.flowX, y: menu.flowY }, extraConfig)
@@ -338,6 +386,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           onEditElement={(nodeId) => onEditNode?.(nodeId)}
           onChangeColor={(nodeId, color) => onChangeNodeColor?.(nodeId, color)}
           onDeleteElement={(nodeId) => onDeleteNode?.(nodeId)}
+          onDeleteEdge={(edgeId) => onDeleteEdge?.(edgeId)}
         />
       )}
     </div>

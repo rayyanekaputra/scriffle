@@ -8,22 +8,26 @@ interface ContextMenuProps {
   x: number;
   y: number;
   targetNodeId?: string | null;
+  targetEdgeId?: string | null;
   onClose: () => void;
   onAddElement: (type: NodeType, extraConfig?: any) => void;
   onEditElement?: (nodeId: string) => void;
   onChangeColor?: (nodeId: string, color: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple') => void;
   onDeleteElement?: (nodeId: string) => void;
+  onDeleteEdge?: (edgeId: string) => void;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
   targetNodeId,
+  targetEdgeId,
   onClose,
   onAddElement,
   onEditElement,
   onChangeColor,
   onDeleteElement,
+  onDeleteEdge,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,7 +71,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       className="fixed z-50 min-w-[200px] rounded-2xl border-2 border-slate-200 bg-white p-1.5 text-xs text-slate-800"
       onContextMenu={(e) => e.stopPropagation()}
     >
-      {targetNodeId ? (
+      {targetEdgeId ? (
+        // Connector/Edge Context Menu
+        <div className="space-y-1">
+          <div className="px-2.5 py-1 text-[11px] font-bold text-slate-400">Connector</div>
+          <button
+            onClick={() => {
+              onDeleteEdge?.(targetEdgeId);
+              onClose();
+            }}
+            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold text-rose-600 hover:bg-rose-50 transition"
+          >
+            <MingIcon name="delete_2_line" size={16} className="text-rose-500" />
+            <span>Delete connector</span>
+          </button>
+        </div>
+      ) : targetNodeId ? (
         // Element Context Menu
         <div className="space-y-1">
           <button

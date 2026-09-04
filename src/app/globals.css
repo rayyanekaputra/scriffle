@@ -35,3 +35,14 @@
   border: 1.5px solid #cbd5e1;
   border-radius: 2px;
 }
+
+/* React Flow Connector (Edge) Styling */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #ef4444 !important;
+  stroke-width: 3.5px !important;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 3.5px !important;
+}
+
