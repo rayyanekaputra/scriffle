@@ -17,7 +17,7 @@ export async function GET() {
 
     if (!canvas) {
       canvas = await prisma.canvas.create({
-        data: { name: 'Market Automation Canvas' },
+        data: { name: 'untitled board' },
         include: {
           nodes: true,
           edges: true,
@@ -75,13 +75,40 @@ export async function GET() {
 
     return NextResponse.json({
       id: canvas.id,
-      name: canvas.name,
+      name: canvas.name || 'untitled board',
       nodes: formattedNodes,
       edges: formattedEdges,
       logs: formattedLogs,
     });
   } catch (error: any) {
     console.error('Failed to get canvas:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+    const { name } = body;
+
+    let canvas = await prisma.canvas.findFirst();
+    if (!canvas) {
+      canvas = await prisma.canvas.create({
+        data: { name: name || 'untitled board' },
+      });
+    } else {
+      canvas = await prisma.canvas.update({
+        where: { id: canvas.id },
+        data: { name: name || 'untitled board' },
+      });
+    }
+
+    return NextResponse.json({
+      id: canvas.id,
+      name: canvas.name,
+    });
+  } catch (error: any) {
+    console.error('Failed to update canvas name:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

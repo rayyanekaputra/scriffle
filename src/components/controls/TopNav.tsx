@@ -6,6 +6,7 @@ import { MingIcon } from '@/components/ui/MingIcon';
 
 interface TopNavProps {
   canvasName: string;
+  onRenameCanvas?: (newName: string) => void;
   onAddNode: (type: NodeType, config?: any) => void;
   isFeedOpen: boolean;
   onToggleFeed: () => void;
@@ -15,6 +16,7 @@ interface TopNavProps {
 
 export const TopNav: React.FC<TopNavProps> = ({
   canvasName,
+  onRenameCanvas,
   onAddNode,
   isFeedOpen,
   onToggleFeed,
@@ -22,7 +24,24 @@ export const TopNav: React.FC<TopNavProps> = ({
   onToggleControls,
 }) => {
   const [showStickerMenu, setShowStickerMenu] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState(canvasName || 'untitled board');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync tempName when server updates canvasName
+  React.useEffect(() => {
+    setTempName(canvasName || 'untitled board');
+  }, [canvasName]);
+
+  const handleNameSubmit = () => {
+    setIsEditingName(false);
+    const trimmed = tempName.trim() || 'untitled board';
+    setTempName(trimmed);
+    if (trimmed !== canvasName) {
+      onRenameCanvas?.(trimmed);
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -43,14 +62,59 @@ export const TopNav: React.FC<TopNavProps> = ({
 
   return (
     <header className="relative flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
-      {/* Left: Brand & Canvas Title */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-1.5 text-white">
+      {/* Left: Brand & Canvas Title (Click to rename + Truncated) */}
+      <div className="flex items-center gap-3 max-w-[280px] lg:max-w-[340px]">
+        <div className="flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-1.5 text-white shrink-0">
           <MingIcon name="sparkles_line" size={18} />
           <span className="text-sm font-bold tracking-tight">Scriffle</span>
         </div>
-        <div className="h-5 w-[2px] bg-slate-200" />
-        <h1 className="text-sm font-semibold text-slate-800">{canvasName}</h1>
+        <div className="h-5 w-[2px] bg-slate-200 shrink-0" />
+
+        {/* Project Title with inline editing and UI truncation */}
+        {isEditingName ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleNameSubmit();
+            }}
+            className="flex items-center"
+          >
+            <input
+              ref={nameInputRef}
+              type="text"
+              autoFocus
+              value={tempName}
+              onChange={(e) => setTempName(e.target.value)}
+              onBlur={handleNameSubmit}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setTempName(canvasName || 'untitled board');
+                  setIsEditingName(false);
+                }
+              }}
+              placeholder="untitled board"
+              className="rounded-lg border-2 border-indigo-400 bg-indigo-50/50 px-2 py-0.5 text-sm font-semibold text-slate-900 outline-none w-48 shadow-xs"
+            />
+          </form>
+        ) : (
+          <div
+            onClick={() => {
+              setIsEditingName(true);
+              setTimeout(() => nameInputRef.current?.select(), 20);
+            }}
+            title="Click to rename project"
+            className="group flex items-center gap-1.5 rounded-lg px-2 py-1 hover:bg-slate-100 cursor-pointer transition min-w-0"
+          >
+            <h1 className="text-sm font-semibold text-slate-800 truncate max-w-[170px] lg:max-w-[220px]">
+              {canvasName || 'untitled board'}
+            </h1>
+            <MingIcon
+              name="edit_2_line"
+              size={13}
+              className="text-slate-400 opacity-0 group-hover:opacity-100 transition shrink-0"
+            />
+          </div>
+        )}
       </div>
 
       {/* Center: Absolute Centered FigJam Toolbar */}

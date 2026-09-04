@@ -478,11 +478,29 @@ function WhiteboardContent() {
     }
   };
 
+  // Rename Canvas / Project
+  const handleRenameCanvas = async (newName: string) => {
+    try {
+      const res = await fetch('/api/canvas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName }),
+      });
+      if (res.ok) {
+        mutate();
+        showToast('Project Renamed', `Project title set to "${newName}"`, 'rising');
+      }
+    } catch (err) {
+      console.error('Failed to rename canvas:', err);
+    }
+  };
+
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F9FC] text-slate-900 antialiased font-sans">
       {/* Centered TopNav with view toggle buttons on the right */}
       <TopNav
-        canvasName={canvas?.name || 'Scriffle Whiteboard'}
+        canvasName={canvas?.name || 'untitled board'}
+        onRenameCanvas={handleRenameCanvas}
         onAddNode={(type, config) => handleAddNode(type, undefined, config)}
         isFeedOpen={isFeedOpen}
         onToggleFeed={() => setIsFeedOpen(!isFeedOpen)}
