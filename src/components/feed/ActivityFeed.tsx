@@ -174,7 +174,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   return (
     <aside
       style={{ width: `${width}px` }}
-      className={`relative flex flex-col h-full z-30 border-l-2 select-text transition-colors ${asideBg} ${
+      className={`relative flex flex-col h-full z-30 border-l-2 p-4 select-text transition-colors ${asideBg} ${
         isResizing ? 'select-none transition-none' : 'transition-[width]'
       }`}
     >
@@ -275,7 +275,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
       )}
 
       {/* Log List */}
-      <div className="flex-1 overflow-y-auto pt-3 space-y-2.5 pr-1">
+      <div className="flex-1 overflow-y-auto pt-4 space-y-3 pr-0.5">
         {logs.length === 0 ? (
           <div className={`flex flex-col items-center justify-center h-48 text-center text-xs ${textMuted}`}>
             <MingIcon name="time_line" size={28} className={`mb-2 ${textMuted}`} />
