@@ -1,0 +1,256 @@
+{
+  "format": "scriffle",
+  "version": "1.0.0",
+  "name": "IDX Macro & Alpha Intelligence Dashboard",
+  "createdAt": "2026-09-05T12:00:00.000Z",
+  "nodes": [
+    {
+      "id": "title-main",
+      "type": "text",
+      "position": { "x": 60, "y": 40 },
+      "config": {
+        "text": "IDX Macro & Alpha Intelligence Whiteboard",
+        "fontSize": "large",
+        "color": "#0F172A"
+      }
+    },
+    {
+      "id": "subtitle-main",
+      "type": "text",
+      "position": { "x": 60, "y": 80 },
+      "config": {
+        "text": "Live Sectors v2 Multi-Pillar Research Matrix: Banking Hegemony, Energy Supercycle, Telco Turnaround & Brainstorming Canvas",
+        "fontSize": "small",
+        "color": "#64748B"
+      }
+    },
+
+    {
+      "id": "note-macro-thesis",
+      "type": "note",
+      "position": { "x": 60, "y": 140 },
+      "config": {
+        "content": "🧠 MACRO BRAINSTORMING & THESIS\n\n• BI Rate Cycle: Watching benchmark interest rate signals.\n• Foreign Flow Divergence: Big 4 Banks absorb 70% of foreign net flows.\n• Rotation Trigger: If Banks peak, watch liquidity rotate into Energy (ADRO) & Telco (TLKM).\n• Risk Margin: Strict stop-loss on breakdown below support levels.",
+        "color": "yellow",
+        "width": 380,
+        "height": 220
+      }
+    },
+    {
+      "id": "note-valuation-matrix",
+      "type": "note",
+      "position": { "x": 480, "y": 140 },
+      "config": {
+        "content": "📊 VALUATION & TARGET MATRIX\n\n• BBCA: Target Rp11,200 | PBV 4.8x | ROE 22.4%\n• BBRI: Target Rp6,100 | PBV 2.6x | ROE 19.8%\n• ADRO: High Dividend Yield (>14% est.) | Watch coal benchmark\n• TLKM: Undervalued at PBV < 2.5x | Cloud & Data Center catalyst",
+        "color": "mint",
+        "width": 360,
+        "height": 220
+      }
+    },
+    {
+      "id": "note-user-image-slot",
+      "type": "note",
+      "position": { "x": 880, "y": 140 },
+      "config": {
+        "content": "🖼️ [PLACEHOLDER: ADD CHARTS & IMAGES HERE]\n\nTip: You can drag & drop stock technical charts, financial statement screenshots, or broker summary heatmaps right into this section!",
+        "color": "purple",
+        "width": 340,
+        "height": 130
+      }
+    },
+    {
+      "id": "note-user-reaction-slot",
+      "type": "note",
+      "position": { "x": 880, "y": 290 },
+      "config": {
+        "content": "✨ [PLACEHOLDER: ADD REACTION STICKERS]\n\nAdd Bullish 🚀, Bearish 🐻, Target 🎯 or Approved ✅ stickers to highlight high-conviction signals across the board.",
+        "color": "pink",
+        "width": 340,
+        "height": 120
+      }
+    },
+
+    {
+      "id": "section-header-banking",
+      "type": "text",
+      "position": { "x": 60, "y": 420 },
+      "config": {
+        "text": "1. Banking Hegemony & Rotation Hub",
+        "fontSize": "medium",
+        "color": "#1E293B"
+      }
+    },
+    {
+      "id": "watcher-bbca",
+      "type": "watcher",
+      "position": { "x": 60, "y": 470 },
+      "config": {
+        "symbol": "BBCA",
+        "metric": "price_change",
+        "interval": 300
+      }
+    },
+    {
+      "id": "cond-bbca-surge",
+      "type": "condition",
+      "position": { "x": 380, "y": 450 },
+      "config": {
+        "rule": "price_change > 3.0 AND volume > 10000000"
+      }
+    },
+    {
+      "id": "cond-bbca-dip",
+      "type": "condition",
+      "position": { "x": 380, "y": 570 },
+      "config": {
+        "rule": "price_change < -1.8"
+      }
+    },
+    {
+      "id": "alert-bbca-breakout",
+      "type": "alert",
+      "position": { "x": 720, "y": 440 },
+      "config": {
+        "channel": "ui",
+        "template": "🏦 [BBCA BREAKOUT] Surging +${price_change}% at Rp${price} (Vol: ${volume})! Big bank volume expansion confirmed."
+      }
+    },
+    {
+      "id": "action-bbca-note",
+      "type": "action",
+      "position": { "x": 720, "y": 540 },
+      "config": {
+        "action": "create_note",
+        "noteTemplate": "💎 BBCA Institutional Accumulation\nPrice: Rp${price} (+${price_change}%)\nVolume: ${volume}\nTime: ${timestamp}\nVerdict: Strong foreign accumulation observed."
+      }
+    },
+    {
+      "id": "action-spawn-bbri",
+      "type": "action",
+      "position": { "x": 1040, "y": 540 },
+      "config": {
+        "action": "create_watcher",
+        "targetSymbol": "BBRI"
+      }
+    },
+    {
+      "id": "note-bbca-defense",
+      "type": "note",
+      "position": { "x": 720, "y": 660 },
+      "config": {
+        "content": "⚠️ BBCA Pullback Defense Zone:\n• Check 50-day EMA support.\n• Verify if foreign desks (AK/BK/KZ) are selling or just retail profit-taking.\n• Prepare dry powder for re-entry.",
+        "color": "pink",
+        "width": 320,
+        "height": 140
+      }
+    },
+
+    {
+      "id": "section-header-energy",
+      "type": "text",
+      "position": { "x": 60, "y": 790 },
+      "config": {
+        "text": "2. Energy & Commodity Dividend Radar",
+        "fontSize": "medium",
+        "color": "#1E293B"
+      }
+    },
+    {
+      "id": "watcher-adro",
+      "type": "watcher",
+      "position": { "x": 60, "y": 840 },
+      "config": {
+        "symbol": "ADRO",
+        "metric": "price_change",
+        "interval": 300
+      }
+    },
+    {
+      "id": "cond-adro-surge",
+      "type": "condition",
+      "position": { "x": 380, "y": 840 },
+      "config": {
+        "rule": "price_change > 3.5"
+      }
+    },
+    {
+      "id": "alert-adro-alert",
+      "type": "alert",
+      "position": { "x": 720, "y": 820 },
+      "config": {
+        "channel": "ui",
+        "template": "⚡ [ADRO ENERGY SURGE] Price jumped +${price_change}% to Rp${price}! Coal export margins expanding."
+      }
+    },
+    {
+      "id": "action-adro-note",
+      "type": "action",
+      "position": { "x": 720, "y": 920 },
+      "config": {
+        "action": "create_note",
+        "noteTemplate": "🔥 ADRO Commodity Momentum Alert\nPrice: Rp${price} (+${price_change}%)\nTimestamp: ${timestamp}\nAction: Evaluate upcoming dividend payout yield."
+      }
+    },
+
+    {
+      "id": "section-header-telco",
+      "type": "text",
+      "position": { "x": 60, "y": 1070 },
+      "config": {
+        "text": "3. Telco & Digital Infrastructure Turnaround",
+        "fontSize": "medium",
+        "color": "#1E293B"
+      }
+    },
+    {
+      "id": "watcher-tlkm",
+      "type": "watcher",
+      "position": { "x": 60, "y": 1120 },
+      "config": {
+        "symbol": "TLKM",
+        "metric": "price_change",
+        "interval": 300
+      }
+    },
+    {
+      "id": "cond-tlkm-rebound",
+      "type": "condition",
+      "position": { "x": 380, "y": 1120 },
+      "config": {
+        "rule": "price_change > 2.0"
+      }
+    },
+    {
+      "id": "alert-tlkm-toast",
+      "type": "alert",
+      "position": { "x": 720, "y": 1100 },
+      "config": {
+        "channel": "ui",
+        "template": "📡 [TLKM VALUE REBOUND] Telkom Indonesia bounced +${price_change}% to Rp${price}."
+      }
+    },
+    {
+      "id": "action-tlkm-note",
+      "type": "action",
+      "position": { "x": 720, "y": 1200 },
+      "config": {
+        "action": "create_note",
+        "noteTemplate": "🎯 TLKM Turnaround Confirmation\nPrice: Rp${price} (+${price_change}%)\nDate: ${timestamp}\nNotes: Telco price war subsiding, ARPU stabilizing."
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e-bbca-1", "from": "watcher-bbca", "to": "cond-bbca-surge" },
+    { "id": "e-bbca-2", "from": "watcher-bbca", "to": "cond-bbca-dip" },
+    { "id": "e-bbca-3", "from": "cond-bbca-surge", "to": "alert-bbca-breakout" },
+    { "id": "e-bbca-4", "from": "cond-bbca-surge", "to": "action-bbca-note" },
+    { "id": "e-bbca-5", "from": "action-bbca-note", "to": "action-spawn-bbri" },
+    { "id": "e-bbca-6", "from": "cond-bbca-dip", "to": "note-bbca-defense" },
+    { "id": "e-adro-1", "from": "watcher-adro", "to": "cond-adro-surge" },
+    { "id": "e-adro-2", "from": "cond-adro-surge", "to": "alert-adro-alert" },
+    { "id": "e-adro-3", "from": "cond-adro-surge", "to": "action-adro-note" },
+    { "id": "e-tlkm-1", "from": "watcher-tlkm", "to": "cond-tlkm-rebound" },
+    { "id": "e-tlkm-2", "from": "cond-tlkm-rebound", "to": "alert-tlkm-toast" },
+    { "id": "e-tlkm-3", "from": "cond-tlkm-rebound", "to": "action-tlkm-note" }
+  ]
+}
