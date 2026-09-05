@@ -196,7 +196,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
                 value={apiKey}
                 onChange={(e) => onApiKeyChange?.(e.target.value)}
                 placeholder="Enter Sectors API Key..."
-                className={`w-full rounded-xl border px-2.5 py-1.5 text-xs focus:outline-none pr-14 font-mono ${
+                className={`w-full rounded-xl border px-3 py-2 text-xs focus:outline-none pr-16 font-mono ${
                   isDark
                     ? 'bg-[#14151B] border-[#2C2E3A] text-[#E2E4E9] placeholder:text-[#5A5D6E]'
                     : isMono
@@ -204,13 +204,13 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
                     : 'bg-white border-slate-300 text-slate-800 placeholder:text-slate-400'
                 }`}
               />
-              <div className="absolute right-1.5 flex items-center gap-1">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
                 {apiKey && (
                   <button
                     type="button"
                     onClick={() => onApiKeyChange?.('')}
                     title="Clear API key"
-                    className={`p-1 transition ${textMuted}`}
+                    className={`!bg-transparent !border-0 p-1 transition cursor-pointer ${textMuted} hover:opacity-100 opacity-60`}
                   >
                     <MingIcon name="close_circle_line" size={13} />
                   </button>
@@ -219,7 +219,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
                   type="button"
                   onClick={() => setShowApiKey(!showApiKey)}
                   title={showApiKey ? 'Hide characters' : 'Show characters'}
-                  className={`p-1 transition ${textMuted}`}
+                  className={`!bg-transparent !border-0 p-1 transition cursor-pointer ${textMuted} hover:opacity-100 opacity-75`}
                 >
                   <MingIcon name={showApiKey ? 'eye_close_line' : 'eye_line'} size={14} />
                 </button>
