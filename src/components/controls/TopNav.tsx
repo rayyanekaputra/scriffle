@@ -64,9 +64,12 @@ export const TopNav: React.FC<TopNavProps> = ({
     <header className="relative flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
       {/* Left: Brand & Canvas Title (Click to rename + Truncated) */}
       <div className="flex items-center gap-3 max-w-[280px] lg:max-w-[340px]">
-        <div className="flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-1.5 text-white shrink-0">
-          <MingIcon name="sparkles_line" size={18} />
-          <span className="text-sm font-bold tracking-tight">Scriffle</span>
+        <div className="flex items-center shrink-0 pr-0.5">
+          <img
+            src="/logo.svg"
+            alt="Scriffle"
+            className="h-5 w-auto select-none"
+          />
         </div>
         <div className="h-5 w-[2px] bg-slate-200 shrink-0" />
 

@@ -4,6 +4,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Scriffle — Market Research Canvas',
   description: 'A visual FigJam-style whiteboard for event-driven market monitoring and automated research notes.',
+  icons: {
+    icon: '/logo.svg',
+    shortcut: '/logo.svg',
+    apple: '/logo.svg',
+  },
 };
 
 export default function RootLayout({
