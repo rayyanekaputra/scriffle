@@ -4,6 +4,7 @@ import React, { memo, useState, useEffect, useRef } from 'react';
 import { Handle, Position, NodeProps, NodeResizer } from '@xyflow/react';
 import { NoteConfig } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
+import { useTheme } from '@/context/ThemeContext';
 
 const COLOR_STYLES = {
   yellow: 'bg-[#FEF9C3] border-[#FACC15] text-amber-950',
@@ -22,6 +23,7 @@ const COLOR_OPTIONS: Array<'yellow' | 'mint' | 'pink' | 'blue' | 'purple'> = [
 ];
 
 export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
+  const { theme } = useTheme();
   const config = (data.config || {}) as NoteConfig;
   const state = (data.state || {}) as any;
   const isPassed = state.status === 'passed';
@@ -31,6 +33,9 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
   const [currentColor, setCurrentColor] = useState(colorKey);
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const isDark = theme === 'dark';
+  const isMono = theme === 'mono';
 
   useEffect(() => {
     setContent(config.content || '');
@@ -101,6 +106,24 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
   const customWidth = config.width ? `${config.width}px` : undefined;
   const customHeight = config.height ? `${config.height}px` : undefined;
 
+  const cardStyle = isDark
+    ? 'bg-[#181920] border-[#282A36] text-[#E2E4E9]'
+    : isMono
+    ? 'bg-[#FCFBF9] border-[#D1CEC4] text-[#242321]'
+    : COLOR_STYLES[currentColor] || COLOR_STYLES.yellow;
+
+  const cardBorderFocus = isDark
+    ? selected
+      ? 'border-[#8E95A5] ring-2 ring-[#8E95A5]/20'
+      : 'hover:border-[#383B4A]'
+    : isMono
+    ? selected
+      ? 'border-[#1D4ED8] ring-2 ring-[#1D4ED8]/20'
+      : 'hover:border-[#B5B0A2]'
+    : selected
+    ? 'ring-3 ring-slate-900/30'
+    : 'hover:border-slate-800';
+
   return (
     <>
       <NodeResizer
@@ -108,8 +131,8 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
         minWidth={180}
         minHeight={140}
         onResizeEnd={handleResizeEnd}
-        lineClassName="border-slate-800"
-        handleClassName="h-2.5 w-2.5 bg-white border-2 border-slate-900 rounded-sm"
+        lineClassName={isDark ? 'border-[#8E95A5]' : 'border-slate-800'}
+        handleClassName={isDark ? 'h-2.5 w-2.5 bg-[#181920] border-2 border-[#8E95A5] rounded-sm' : 'h-2.5 w-2.5 bg-white border-2 border-slate-900 rounded-sm'}
       />
 
       <div
@@ -119,11 +142,9 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           minWidth: 180,
           minHeight: 140,
         }}
-        className={`group relative flex flex-col rounded-2xl border-2 p-4 transition-shadow duration-150 ${
+        className={`group relative flex flex-col rounded-2xl border-2 p-4 transition-all duration-150 ${
           !config.width ? 'w-72' : ''
-        } ${COLOR_STYLES[currentColor] || COLOR_STYLES.yellow} ${
-          selected ? 'ring-3 ring-slate-900/30' : 'hover:border-slate-800'
-        }`}
+        } ${cardStyle} ${cardBorderFocus}`}
       >
         {/* Tape decoration */}
         <div className="flat-tape pointer-events-none" />
@@ -133,13 +154,17 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           type="target"
           id="target-left"
           position={Position.Left}
-          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 !z-50 opacity-0 group-hover:opacity-100 transition-opacity"
+          className={`!h-3.5 !w-3.5 !rounded-full !border-2 !z-50 opacity-0 group-hover:opacity-100 transition-opacity ${
+            isDark ? '!border-[#181920] !bg-[#8E95A5]' : '!border-[#FCFBF9] !bg-slate-700'
+          }`}
         />
         <Handle
           type="target"
           id="target-top"
           position={Position.Top}
-          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-700 !z-50 opacity-0 group-hover:opacity-100 transition-opacity"
+          className={`!h-3.5 !w-3.5 !rounded-full !border-2 !z-50 opacity-0 group-hover:opacity-100 transition-opacity ${
+            isDark ? '!border-[#181920] !bg-[#8E95A5]' : '!border-[#FCFBF9] !bg-slate-700'
+          }`}
         />
 
         {/* Outputs (Sources) - Right & Bottom */}
@@ -147,47 +172,61 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           type="source"
           id="source-right"
           position={Position.Right}
-          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-800 !z-50 opacity-0 group-hover:opacity-100 transition-opacity"
+          className={`!h-3.5 !w-3.5 !rounded-full !border-2 !z-50 opacity-0 group-hover:opacity-100 transition-opacity ${
+            isDark ? '!border-[#181920] !bg-[#8E95A5]' : '!border-[#FCFBF9] !bg-slate-800'
+          }`}
         />
         <Handle
           type="source"
           id="source-bottom"
           position={Position.Bottom}
-          className="!h-3.5 !w-3.5 !rounded-full !border-2 !border-white !bg-slate-800 !z-50 opacity-0 group-hover:opacity-100 transition-opacity"
+          className={`!h-3.5 !w-3.5 !rounded-full !border-2 !z-50 opacity-0 group-hover:opacity-100 transition-opacity ${
+            isDark ? '!border-[#181920] !bg-[#8E95A5]' : '!border-[#FCFBF9] !bg-slate-800'
+          }`}
         />
 
         {/* Header with Quick Color Palette & Update Badge */}
-        <div className="flex shrink-0 items-center justify-between pb-2 border-b border-black/10 pt-1">
-          <div className="flex items-center gap-1.5 opacity-60">
+        <div className={`flex shrink-0 items-center justify-between pb-2 border-b pt-1 ${
+          isDark ? 'border-[#262833]' : isMono ? 'border-[#EAE7DF]' : 'border-black/10'
+        }`}>
+          <div className={`flex items-center gap-1.5 ${isDark ? 'text-[#8C90A0]' : 'opacity-60'}`}>
             <MingIcon name="quill_pen_line" size={14} />
             <span className="text-[11px] font-bold">Note</span>
           </div>
 
-          {/* Color Switcher Dots */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {COLOR_OPTIONS.map((c) => {
-              const dotBg = {
-                yellow: 'bg-amber-300',
-                mint: 'bg-emerald-300',
-                pink: 'bg-rose-300',
-                blue: 'bg-sky-300',
-                purple: 'bg-purple-300',
-              }[c];
-              return (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => handleColorChange(c)}
-                  className={`h-3 w-3 rounded-full border border-black/20 ${dotBg} ${
-                    currentColor === c ? 'scale-125 ring-1 ring-black/40' : 'hover:scale-110'
-                  } transition-all`}
-                />
-              );
-            })}
-          </div>
+          {/* Color Switcher Dots (visible in light mode) */}
+          {!isDark && !isMono && (
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {COLOR_OPTIONS.map((c) => {
+                const dotBg = {
+                  yellow: 'bg-amber-300',
+                  mint: 'bg-emerald-300',
+                  pink: 'bg-rose-300',
+                  blue: 'bg-sky-300',
+                  purple: 'bg-purple-300',
+                }[c];
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => handleColorChange(c)}
+                    className={`h-3 w-3 rounded-full border border-black/20 ${dotBg} ${
+                      currentColor === c ? 'scale-125 ring-1 ring-black/40' : 'hover:scale-110'
+                    } transition-all`}
+                  />
+                );
+              })}
+            </div>
+          )}
 
           {isPassed && (
-            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold border border-black/10 flex items-center gap-1">
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold border flex items-center gap-1 ${
+              isDark
+                ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
+                : isMono
+                ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                : 'bg-white/90 text-black border-black/10'
+            }`}>
               <MingIcon name="sparkles_line" size={12} /> Live
             </span>
           )}
@@ -202,7 +241,9 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
             onFocus={() => setIsFocused(true)}
             onBlur={handleBlur}
             placeholder="Write research thoughts or template: ${symbol} surged ${price_change}%..."
-            className="w-full h-full resize-none bg-transparent text-sm font-medium leading-relaxed text-inherit placeholder:opacity-40 focus:outline-none nodrag nowheel"
+            className={`w-full h-full resize-none bg-transparent text-sm font-medium leading-relaxed ${
+              isDark ? 'text-[#E2E4E9] placeholder:text-[#5A5D6E]' : isMono ? 'text-[#242321] placeholder:text-[#9E9B93]' : 'text-inherit placeholder:opacity-40'
+            } focus:outline-none nodrag nowheel`}
           />
         </div>
       </div>

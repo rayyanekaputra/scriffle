@@ -9,6 +9,18 @@
     background-color: #f8f9fc;
     color: #0f172a;
   }
+
+  /* Mono: Warm-paper stone gray palette */
+  [data-theme="mono"] body {
+    background-color: #F4F3EF;
+    color: #242321;
+  }
+
+  /* Dark: Soft matte charcoal palette (low eye strain, no harsh pure white) */
+  [data-theme="dark"] body {
+    background-color: #0F1014;
+    color: #E2E4E9;
+  }
 }
 
 /* Strict Flat Outline System - Zero Shadows */
@@ -36,14 +48,71 @@
   border-radius: 2px;
 }
 
+[data-theme="mono"] .flat-tape {
+  background-color: #E8E5DC;
+  border: 1.5px solid #C8C4B8;
+}
+
+[data-theme="dark"] .flat-tape {
+  background-color: #242630;
+  border: 1.5px solid #363847;
+}
+
 /* React Flow Connector (Edge) Styling */
 .react-flow__edge.selected .react-flow__edge-path {
   stroke: #ef4444 !important;
   stroke-width: 3.5px !important;
 }
 
+[data-theme="dark"] .react-flow__edge.selected .react-flow__edge-path {
+  stroke: #C8CBD5 !important;
+  stroke-width: 3.5px !important;
+}
+
 .react-flow__edge:hover .react-flow__edge-path {
   stroke-width: 3.5px !important;
+}
+
+/* Mono theme specific React Flow overrides */
+[data-theme="mono"] .react-flow__controls {
+  background-color: #ECEAE4 !important;
+  border: 2px solid #D8D4CA !important;
+}
+
+[data-theme="mono"] .react-flow__controls-button {
+  background-color: #ECEAE4 !important;
+  border-bottom: 1px solid #D8D4CA !important;
+  fill: #242321 !important;
+}
+
+[data-theme="mono"] .react-flow__controls-button svg {
+  fill: #242321 !important;
+}
+
+[data-theme="mono"] .react-flow__minimap {
+  background-color: #ECEAE4 !important;
+  border: 2px solid #D8D4CA !important;
+}
+
+/* Dark mode specific React Flow overrides (soft matte) */
+[data-theme="dark"] .react-flow__controls {
+  background-color: #14151B !important;
+  border: 2px solid #282A36 !important;
+}
+
+[data-theme="dark"] .react-flow__controls-button {
+  background-color: #14151B !important;
+  border-bottom: 1px solid #282A36 !important;
+  fill: #A6AAB8 !important;
+}
+
+[data-theme="dark"] .react-flow__controls-button svg {
+  fill: #A6AAB8 !important;
+}
+
+[data-theme="dark"] .react-flow__minimap {
+  background-color: #14151B !important;
+  border: 2px solid #282A36 !important;
 }
 
 /* Ensure Handles / Connection dots are always above the resize bounding box & corner handles */
@@ -55,4 +124,120 @@
   z-index: 40 !important;
 }
 
+/* Theme overrides for Header, Sidebars, and Controls */
+[data-theme="mono"] header {
+  background-color: #ECEAE4 !important;
+  border-color: #D8D4CA !important;
+  color: #242321 !important;
+}
 
+[data-theme="mono"] aside {
+  background-color: #ECEAE4 !important;
+  border-color: #D8D4CA !important;
+  color: #242321 !important;
+}
+
+[data-theme="mono"] header button,
+[data-theme="mono"] aside button {
+  background-color: #F7F6F3;
+  border-color: #D8D4CA;
+  color: #242321;
+}
+
+[data-theme="mono"] header button:hover,
+[data-theme="mono"] aside button:hover {
+  background-color: #E2DFD6;
+  border-color: #C5C0B4;
+}
+
+[data-theme="mono"] .bg-slate-50,
+[data-theme="mono"] .bg-slate-50\/90,
+[data-theme="mono"] .bg-slate-50\/80,
+[data-theme="mono"] .bg-slate-50\/70,
+[data-theme="mono"] .bg-slate-100,
+[data-theme="mono"] .bg-slate-100\/80,
+[data-theme="mono"] .bg-indigo-50\/40 {
+  background-color: #F7F6F3 !important;
+  border-color: #D8D4CA !important;
+  color: #242321 !important;
+}
+
+[data-theme="mono"] .border-slate-100,
+[data-theme="mono"] .border-slate-200,
+[data-theme="mono"] .border-slate-300,
+[data-theme="mono"] .border-indigo-100,
+[data-theme="mono"] .border-indigo-200 {
+  border-color: #D8D4CA !important;
+}
+
+[data-theme="mono"] input {
+  background-color: #FCFBF9 !important;
+  border-color: #D8D4CA !important;
+  color: #242321 !important;
+}
+
+/* Soft Matte Charcoal Dark Theme */
+[data-theme="dark"] header {
+  background-color: #14151B !important;
+  border-color: #252730 !important;
+  color: #E2E4E9 !important;
+}
+
+[data-theme="dark"] aside {
+  background-color: #14151B !important;
+  border-color: #252730 !important;
+  color: #E2E4E9 !important;
+}
+
+[data-theme="dark"] header button,
+[data-theme="dark"] aside button {
+  background-color: #1B1C24;
+  border-color: #2C2E3A;
+  color: #D8DAE2;
+}
+
+[data-theme="dark"] header button:hover,
+[data-theme="dark"] aside button:hover {
+  background-color: #232530;
+  border-color: #3B3E4E;
+}
+
+[data-theme="dark"] .bg-slate-50,
+[data-theme="dark"] .bg-slate-50\/90,
+[data-theme="dark"] .bg-slate-50\/80,
+[data-theme="dark"] .bg-slate-50\/70,
+[data-theme="dark"] .bg-slate-100,
+[data-theme="dark"] .bg-slate-100\/80,
+[data-theme="dark"] .bg-indigo-50\/40 {
+  background-color: #191A22 !important;
+  border-color: #282A36 !important;
+  color: #E2E4E9 !important;
+}
+
+[data-theme="dark"] .border-slate-100,
+[data-theme="dark"] .border-slate-200,
+[data-theme="dark"] .border-slate-300,
+[data-theme="dark"] .border-indigo-100,
+[data-theme="dark"] .border-indigo-200 {
+  border-color: #282A36 !important;
+}
+
+[data-theme="dark"] .text-slate-800,
+[data-theme="dark"] .text-slate-900,
+[data-theme="dark"] .text-slate-700,
+[data-theme="dark"] .text-indigo-950 {
+  color: #E2E4E9 !important;
+}
+
+[data-theme="dark"] .text-slate-400,
+[data-theme="dark"] .text-slate-500,
+[data-theme="dark"] .text-slate-600,
+[data-theme="dark"] .text-indigo-400 {
+  color: #8C90A0 !important;
+}
+
+[data-theme="dark"] input {
+  background-color: #191A22 !important;
+  border-color: #2C2E3A !important;
+  color: #E2E4E9 !important;
+}

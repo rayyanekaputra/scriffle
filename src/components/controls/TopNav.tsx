@@ -3,6 +3,8 @@
 import React, { useState, useRef } from 'react';
 import { NodeType } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
+import { Logo } from '@/components/ui/Logo';
+import { useTheme } from '@/context/ThemeContext';
 
 interface TopNavProps {
   canvasName: string;
@@ -35,6 +37,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   canRedo = false,
   onOpenProjectHub,
 }) => {
+  const { theme, setTheme } = useTheme();
   const [showStickerMenu, setShowStickerMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(canvasName || 'untitled board');
@@ -77,13 +80,11 @@ export const TopNav: React.FC<TopNavProps> = ({
       {/* Left: Brand & Canvas Title & Undo/Redo & Project Hub */}
       <div className="flex items-center gap-2 max-w-[380px] lg:max-w-[460px]">
         <div className="flex items-center shrink-0 pr-0.5">
-          <img
-            src="/logo.svg"
-            alt="Scriffle"
-            className="h-5 w-auto select-none"
-          />
+          <Logo className="h-5 w-auto" />
         </div>
-        <div className="h-5 w-[2px] bg-slate-200 shrink-0" />
+        <div className={`h-5 w-[2px] shrink-0 ${
+          theme === 'dark' ? 'bg-[#252730]' : theme === 'mono' ? 'bg-[#D8D4CA]' : 'bg-slate-200'
+        }`} />
 
         {/* Project Title with inline editing and UI truncation */}
         {isEditingName ? (
@@ -266,8 +267,53 @@ export const TopNav: React.FC<TopNavProps> = ({
         </button>
       </div>
 
-      {/* Right: Panel View Toggles */}
+      {/* Right: Theme Switcher & Panel View Toggles */}
       <div className="flex items-center gap-2">
+        {/* 3-Mode Theme Switcher */}
+        <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100/80 p-0.5">
+          <button
+            type="button"
+            onClick={() => setTheme('light')}
+            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all ${
+              theme === 'light'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Light Mode (Default Colorful)"
+          >
+            <MingIcon name="sun_line" size={13} />
+            <span className="hidden sm:inline">Light</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTheme('mono')}
+            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all ${
+              theme === 'mono'
+                ? 'bg-white text-blue-600 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Monochrome Light (Black & White + Scriffle Blue)"
+          >
+            <MingIcon name="contrast_2_line" size={13} />
+            <span className="hidden sm:inline">Mono</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTheme('dark')}
+            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all ${
+              theme === 'dark'
+                ? 'bg-black text-white shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Monochrome Dark (Pure Black & White)"
+          >
+            <MingIcon name="moon_line" size={13} />
+            <span className="hidden sm:inline">Dark</span>
+          </button>
+        </div>
+
         <button
           onClick={onToggleControls}
           className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border-2 transition-all ${

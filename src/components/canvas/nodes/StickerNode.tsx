@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 import { NodeProps } from '@xyflow/react';
 import { StickerConfig } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
+import { useTheme } from '@/context/ThemeContext';
 
 const STICKER_META: Record<
   string,
@@ -61,16 +62,30 @@ const STICKER_META: Record<
 };
 
 export const StickerNode = memo(({ data, selected }: NodeProps) => {
+  const { theme } = useTheme();
   const config = (data.config || {}) as StickerConfig;
   const stickerType = config.stickerType || 'rocket';
   const meta = STICKER_META[stickerType] || STICKER_META.rocket;
 
+  const isDark = theme === 'dark';
+  const isMono = theme === 'mono';
+
+  const styleClass = isDark
+    ? 'bg-[#1D1E26] border-[#2C2E3A] text-[#D8DAE2]'
+    : isMono
+    ? 'bg-[#FCFBF9] border-[#D1CEC4] text-[#242321]'
+    : `${meta.bg} ${meta.border} ${meta.text}`;
+
+  const selectRing = isDark
+    ? 'ring-2 ring-[#8E95A5]/40 scale-105'
+    : isMono
+    ? 'ring-2 ring-[#1D4ED8]/40 scale-105'
+    : 'ring-2 ring-[#0050FF]/40 scale-105';
+
   return (
     <div
-      className={`flex items-center gap-2 rounded-2xl border-2 px-3.5 py-2 transition-all cursor-grab active:cursor-grabbing ${
-        meta.bg
-      } ${meta.border} ${meta.text} ${
-        selected ? 'ring-2 ring-[#0050FF]/40 scale-105' : 'hover:scale-102'
+      className={`flex items-center gap-2 rounded-2xl border-2 px-3.5 py-2 transition-all cursor-grab active:cursor-grabbing ${styleClass} ${
+        selected ? selectRing : 'hover:scale-102'
       }`}
     >
       <MingIcon name={meta.icon} size={20} className="shrink-0" />

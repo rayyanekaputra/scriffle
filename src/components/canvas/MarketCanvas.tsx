@@ -28,6 +28,7 @@ import { ImageNode } from './nodes/ImageNode';
 import { StickerNode } from './nodes/StickerNode';
 import { ContextMenu } from './ContextMenu';
 import { CanvasData, NodeType } from '@/types/canvas';
+import { useTheme } from '@/context/ThemeContext';
 
 interface MarketCanvasProps {
   canvasData?: CanvasData;
@@ -41,7 +42,7 @@ interface MarketCanvasProps {
   onChangeNodeColor?: (nodeId: string, color: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple') => void;
   onUndo?: () => void;
   onRedo?: () => void;
-  onRecordSnapshot?: () => void;
+  onRecordSnapshot?: (nodesOverride?: any[]) => void;
 }
 
 export const MarketCanvas: React.FC<MarketCanvasProps> = ({
@@ -58,6 +59,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   onRedo,
   onRecordSnapshot,
 }) => {
+  const { theme } = useTheme();
   const { screenToFlowPosition, setCenter } = useReactFlow();
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 500, y: 300 });
 
@@ -288,23 +290,20 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     return () => window.removeEventListener('paste', handleImagePaste);
   }, [screenToFlowPosition, onAddNodeAtPosition]);
 
-  // Sync state when backend updates
+  // Sync state when backend updates or restores from undo/redo
   useEffect(() => {
     if (canvasData?.nodes) {
-      setNodes((currentNodes) => {
-        return canvasData.nodes.map((serverNode) => {
-          const existing = currentNodes.find((n) => n.id === serverNode.id);
-          return {
-            id: serverNode.id,
-            type: serverNode.type,
-            position: existing?.position || serverNode.position,
-            data: {
-              config: serverNode.config,
-              state: serverNode.state,
-            },
-          };
-        });
-      });
+      setNodes(
+        canvasData.nodes.map((serverNode) => ({
+          id: serverNode.id,
+          type: serverNode.type,
+          position: { ...serverNode.position },
+          data: {
+            config: serverNode.config,
+            state: serverNode.state,
+          },
+        }))
+      );
     }
 
     if (canvasData?.edges) {
@@ -315,6 +314,11 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             highlightedNodeIds.includes(e.from) &&
             highlightedNodeIds.includes(e.to);
 
+          const defaultStroke =
+            theme === 'dark' ? '#525668' : theme === 'mono' ? '#1D4ED8' : '#0050FF';
+          const highlightStroke =
+            theme === 'dark' ? '#A8ACB8' : theme === 'mono' ? '#2563EB' : '#6366F1';
+
           return {
             id: e.id,
             source: e.from,
@@ -322,7 +326,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             animated: true,
             interactionWidth: 24,
             style: {
-              stroke: isHighlighted ? '#6366F1' : '#0050FF',
+              stroke: isHighlighted ? highlightStroke : defaultStroke,
               strokeWidth: isHighlighted ? 4 : 2.5,
               cursor: 'pointer',
               transition: 'stroke 0.2s, stroke-width 0.2s',
@@ -331,7 +335,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         })
       );
     }
-  }, [canvasData, highlightedNodeIds, setNodes, setEdges]);
+  }, [canvasData, highlightedNodeIds, theme, setNodes, setEdges]);
 
   // Smooth camera pan & zoom when a node is focused from Activity Feed
   useEffect(() => {
@@ -359,13 +363,15 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     async (params: Connection) => {
       if (!params.source || !params.target) return;
       onRecordSnapshot?.();
+      const edgeStroke =
+        theme === 'dark' ? '#525668' : theme === 'mono' ? '#1D4ED8' : '#0050FF';
       setEdges((eds) =>
         addEdge(
           {
             ...params,
             animated: true,
             interactionWidth: 24,
-            style: { stroke: '#0050FF', strokeWidth: 2.5, cursor: 'pointer' },
+            style: { stroke: edgeStroke, strokeWidth: 2.5, cursor: 'pointer' },
           },
           eds
         )
@@ -399,6 +405,22 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     [onDeleteEdge]
   );
 
+  // Node position drag start (record previous snapshot before movement)
+  const onNodeDragStart = useCallback(
+    (_event: any, _node: Node) => {
+      // Map current flow nodes positions to snapshot
+      const currentNodesState = nodes.map((n) => ({
+        id: n.id,
+        type: n.type,
+        position: { x: n.position.x, y: n.position.y },
+        config: n.data?.config,
+        state: n.data?.state,
+      }));
+      onRecordSnapshot?.(currentNodesState);
+    },
+    [nodes, onRecordSnapshot]
+  );
+
   // Node position drag stop
   const onNodeDragStop = useCallback(
     async (_event: any, node: Node) => {
@@ -410,11 +432,12 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             position: { x: node.position.x, y: node.position.y },
           }),
         });
+        onRefresh?.();
       } catch (err) {
         console.error('Failed to update node position:', err);
       }
     },
-    []
+    [onRefresh]
   );
 
   // Double click on node -> Edit Mode
@@ -543,9 +566,23 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     [onDeleteNode]
   );
 
+  const bgColor =
+    theme === 'dark' ? '#0F1014' : theme === 'mono' ? '#F4F3EF' : '#F8F9FC';
+  const dotColor =
+    theme === 'dark' ? '#252732' : theme === 'mono' ? '#D1CEC4' : '#CBD5E1';
+  const miniMapNodeColor =
+    theme === 'dark' ? '#8E95A5' : theme === 'mono' ? '#1D4ED8' : '#0050FF';
+  const miniMapMaskColor =
+    theme === 'dark'
+      ? 'rgba(15, 16, 20, 0.85)'
+      : theme === 'mono'
+      ? 'rgba(236, 234, 228, 0.75)'
+      : 'rgba(241, 245, 249, 0.7)';
+
   return (
     <div
-      className="h-full w-full bg-[#F8F9FC]"
+      className="h-full w-full transition-colors duration-200"
+      style={{ backgroundColor: bgColor }}
       onDrop={onDrop}
       onDragOver={onDragOver}
     >
@@ -557,7 +594,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onConnect={onConnect}
         onNodesDelete={onNodesDelete}
         onEdgesDelete={onEdgesDelete}
-        onNodeDragStart={() => onRecordSnapshot?.()}
+        onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
         onNodeDoubleClick={onNodeDoubleClick}
         onPaneClick={() => setMenu(null)}
@@ -571,16 +608,30 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         selectionKeyCode="Shift"
         selectionMode={SelectionMode.Partial}
         fitView
-        colorMode="light"
+        colorMode={theme === 'dark' ? 'dark' : 'light'}
         minZoom={0.2}
         maxZoom={2}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#CBD5E1" />
-        <Controls className="!border-2 !border-slate-300 !bg-white !fill-slate-700 !rounded-xl" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color={dotColor} />
+        <Controls
+          className={
+            theme === 'dark'
+              ? '!border-2 !border-[#282A36] !bg-[#14151B] !fill-[#BAC0D0] !rounded-xl'
+              : theme === 'mono'
+              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !fill-[#242321] !rounded-xl'
+              : '!border-2 !border-slate-300 !bg-white !fill-slate-700 !rounded-xl'
+          }
+        />
         <MiniMap
-          nodeColor="#0050FF"
-          maskColor="rgba(241, 245, 249, 0.7)"
-          className="!border-2 !border-slate-300 !bg-white !rounded-xl"
+          nodeColor={miniMapNodeColor}
+          maskColor={miniMapMaskColor}
+          className={
+            theme === 'dark'
+              ? '!border-2 !border-[#282A36] !bg-[#14151B] !rounded-xl'
+              : theme === 'mono'
+              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !rounded-xl'
+              : '!border-2 !border-slate-300 !bg-white !rounded-xl'
+          }
         />
       </ReactFlow>
 

@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
 };
 
+import { ThemeProvider } from '@/context/ThemeContext';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,7 +37,9 @@ export default function RootLayout({
         <link rel="stylesheet" href="/mingcute/Mingcute.css" />
       </head>
       <body className="antialiased bg-[#F8F9FC] text-slate-900 selection:bg-yellow-200">
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

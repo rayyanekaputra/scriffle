@@ -49,18 +49,18 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     setCanRedo(redoStackRef.current.length > 0);
   }, []);
 
-  const createSnapshot = useCallback(() => {
+  const createSnapshot = useCallback((nodesOverride?: any[]) => {
     if (!canvas) return null;
     return {
       format: 'scriffle',
       name: canvas.name || 'untitled board',
-      nodes: JSON.parse(JSON.stringify(canvas.nodes || [])),
+      nodes: JSON.parse(JSON.stringify(nodesOverride || canvas.nodes || [])),
       edges: JSON.parse(JSON.stringify(canvas.edges || [])),
     };
   }, [canvas]);
 
-  const recordSnapshot = useCallback(() => {
-    const snap = createSnapshot();
+  const recordSnapshot = useCallback((nodesOverride?: any[]) => {
+    const snap = createSnapshot(nodesOverride);
     if (snap) {
       undoStackRef.current.push(snap);
       if (undoStackRef.current.length > 50) {
