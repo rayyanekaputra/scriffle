@@ -5,10 +5,17 @@ export const metadata: Metadata = {
   title: 'Scriffle — Market Research Canvas',
   description: 'A visual FigJam-style whiteboard for event-driven market monitoring and automated research notes.',
   icons: {
-    icon: '/logo.svg',
-    shortcut: '/logo.svg',
-    apple: '/logo.svg',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
   },
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
