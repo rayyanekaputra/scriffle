@@ -267,14 +267,21 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
           </div>
 
           {/* Section 2: Live Market Poll (Real Data or Mock Data) */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-500 block mb-2">
-              Market Data Sync
-            </span>
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/90 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+                <MingIcon name="refresh_3_line" size={14} className="text-slate-600" />
+                Market Data Sync
+              </span>
+              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">
+                {isLiveMode ? 'Live API' : 'Simulated'}
+              </span>
+            </div>
+
             <button
               disabled={loading}
               onClick={runLivePoll}
-              className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold border-2 transition-all active:scale-98 shadow-xs ${
+              className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold border-2 transition-all active:scale-98 shadow-xs ${
                 isLiveMode
                   ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
                   : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800'
@@ -283,38 +290,41 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
               <div className="flex items-center gap-2">
                 <MingIcon
                   name={loading ? 'refresh_3_line' : isLiveMode ? 'radar_line' : 'refresh_3_line'}
-                  size={16}
+                  size={15}
                   className={loading ? 'animate-spin text-white' : 'text-white'}
                 />
                 <span>{isLiveMode ? 'Poll Live Sectors API' : 'Poll Market API (Mock)'}</span>
               </div>
-              <span className="text-[10px] opacity-80 font-mono">
+              <span className="text-[10px] opacity-80 font-mono px-1.5 py-0.5 rounded bg-black/20">
                 {isLiveMode ? 'LIVE' : 'MOCK'}
               </span>
             </button>
           </div>
 
           {/* Section 3: Continuous Auto-Streaming Loop Control */}
-          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/80 p-3">
-            <div className="flex items-center justify-between mb-2">
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/90 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <span
                   className={`h-2 w-2 rounded-full ${
                     autoTickActive ? 'bg-emerald-500 animate-ping' : 'bg-slate-400'
                   }`}
                 />
-                <span className="text-[11px] font-bold text-slate-800">Simulated Stream</span>
+                <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+                  <MingIcon name="time_line" size={14} className="text-slate-600" />
+                  Simulated Stream
+                </span>
               </div>
-              <span className="text-[10px] text-slate-400 font-semibold">Every 2.5s</span>
+              <span className="text-[10px] text-slate-400 font-semibold font-mono">2.5s loop</span>
             </div>
 
             <button
               type="button"
               onClick={() => onToggleAutoTick?.(!autoTickActive, 2.5)}
-              className={`flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all active:scale-95 shadow-xs ${
+              className={`flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all active:scale-95 shadow-xs border-2 ${
                 autoTickActive
-                  ? 'bg-rose-600 text-white hover:bg-rose-700'
-                  : 'bg-slate-700 text-white hover:bg-slate-800'
+                  ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700'
+                  : 'bg-slate-800 text-white border-slate-800 hover:bg-slate-900'
               }`}
             >
               <MingIcon name={autoTickActive ? 'pause_line' : 'play_line'} size={15} />
@@ -323,11 +333,15 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
           </div>
 
           {/* Section 4: Manual Preset Spikes & DevTools */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-500 block mb-2">
-              Manual Preset Spikes
-            </span>
-            <div className="space-y-2">
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/90 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+                <MingIcon name="flash_line" size={14} className="text-amber-500" />
+                Manual Preset Spikes
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
               {/* Preset 1: BBCA Surge */}
               <button
                 disabled={loading}
@@ -342,16 +356,17 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
                     rank: 1,
                   })
                 }
-                className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold border-2 transition-all active:scale-98 ${
+                className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs font-bold border transition-all active:scale-98 ${
                   activePreset === 'bbca_surge'
                     ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/70 hover:text-slate-900 shadow-2xs'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <MingIcon name="trending_up_line" size={16} className="text-emerald-600" />
+                  <MingIcon name="trending_up_line" size={15} className="text-emerald-600" />
                   <span>BBCA Surge (+6.37%)</span>
                 </div>
+                <span className="text-[10px] text-emerald-600 font-mono font-bold">+6.4%</span>
               </button>
 
               {/* Preset 2: BBRI Volume Spike */}
@@ -368,35 +383,37 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
                     rank: 2,
                   })
                 }
-                className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold border-2 transition-all active:scale-98 ${
+                className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs font-bold border transition-all active:scale-98 ${
                   activePreset === 'bbri_vol'
                     ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/70 hover:text-slate-900 shadow-2xs'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <MingIcon name="chart_bar_line" size={16} className="text-purple-600" />
+                  <MingIcon name="chart_bar_line" size={15} className="text-purple-600" />
                   <span>BBRI Volume Spike</span>
                 </div>
+                <span className="text-[10px] text-purple-600 font-mono font-bold">45M</span>
               </button>
 
               {/* Custom 4-Param DevTool Button */}
               <button
                 onClick={() => setIsDevToolOpen(true)}
-                className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2 text-xs font-bold border-2 transition-all active:scale-98 ${
+                className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs font-bold border transition-all active:scale-98 ${
                   autoTickActive
                     ? 'bg-emerald-50 text-emerald-900 border-emerald-400'
-                    : 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200'
+                    : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300 hover:bg-slate-100/70 shadow-2xs'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <MingIcon
                     name="tools_line"
                     size={15}
-                    className={autoTickActive ? 'text-emerald-600 animate-spin' : 'text-slate-700'}
+                    className={autoTickActive ? 'text-emerald-600 animate-spin' : 'text-slate-600'}
                   />
                   <span>{autoTickActive ? 'Streaming Active' : 'Custom Spike (DevTool)'}</span>
                 </div>
+                <MingIcon name="arrow_right_line" size={13} className="text-slate-400" />
               </button>
             </div>
           </div>
