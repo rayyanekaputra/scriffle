@@ -39,6 +39,9 @@ interface MarketCanvasProps {
   onDeleteNode?: (nodeId: string) => void;
   onDeleteEdge?: (edgeId: string) => void;
   onChangeNodeColor?: (nodeId: string, color: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple') => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  onRecordSnapshot?: () => void;
 }
 
 export const MarketCanvas: React.FC<MarketCanvasProps> = ({
@@ -51,6 +54,9 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   onDeleteNode,
   onDeleteEdge,
   onChangeNodeColor,
+  onUndo,
+  onRedo,
+  onRecordSnapshot,
 }) => {
   const { screenToFlowPosition, setCenter } = useReactFlow();
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 500, y: 300 });
@@ -209,11 +215,41 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         }
         return;
       }
+
+      // 6. Undo: Ctrl+Z / Cmd+Z (without Shift)
+      if (isCtrlOrCmd && (e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        onUndo?.();
+        return;
+      }
+
+      // 7. Redo: Ctrl+Shift+Z / Cmd+Shift+Z or Ctrl+Y / Cmd+Y
+      if (
+        (isCtrlOrCmd && e.shiftKey && (e.key === 'z' || e.key === 'Z')) ||
+        (isCtrlOrCmd && (e.key === 'y' || e.key === 'Y'))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        onRedo?.();
+        return;
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [nodes, edges, onDeleteNode, onDeleteEdge, onAddNodeAtPosition, screenToFlowPosition, setNodes, setEdges]);
+  }, [
+    nodes,
+    edges,
+    onDeleteNode,
+    onDeleteEdge,
+    onAddNodeAtPosition,
+    onUndo,
+    onRedo,
+    screenToFlowPosition,
+    setNodes,
+    setEdges,
+  ]);
 
   // Global Clipboard Image Paste Listener
   useEffect(() => {
@@ -322,6 +358,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   const onConnect = useCallback(
     async (params: Connection) => {
       if (!params.source || !params.target) return;
+      onRecordSnapshot?.();
       setEdges((eds) =>
         addEdge(
           {
@@ -520,6 +557,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onConnect={onConnect}
         onNodesDelete={onNodesDelete}
         onEdgesDelete={onEdgesDelete}
+        onNodeDragStart={() => onRecordSnapshot?.()}
         onNodeDragStop={onNodeDragStop}
         onNodeDoubleClick={onNodeDoubleClick}
         onPaneClick={() => setMenu(null)}

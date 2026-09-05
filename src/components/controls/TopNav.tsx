@@ -12,6 +12,10 @@ interface TopNavProps {
   onToggleFeed: () => void;
   isControlsOpen: boolean;
   onToggleControls: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -22,6 +26,10 @@ export const TopNav: React.FC<TopNavProps> = ({
   onToggleFeed,
   isControlsOpen,
   onToggleControls,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
 }) => {
   const [showStickerMenu, setShowStickerMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -62,8 +70,8 @@ export const TopNav: React.FC<TopNavProps> = ({
 
   return (
     <header className="relative flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
-      {/* Left: Brand & Canvas Title (Click to rename + Truncated) */}
-      <div className="flex items-center gap-3 max-w-[280px] lg:max-w-[340px]">
+      {/* Left: Brand & Canvas Title & Undo/Redo */}
+      <div className="flex items-center gap-2.5 max-w-[340px] lg:max-w-[420px]">
         <div className="flex items-center shrink-0 pr-0.5">
           <img
             src="/logo.svg"
@@ -108,7 +116,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             title="Click to rename project"
             className="group flex items-center gap-1.5 rounded-lg px-2 py-1 hover:bg-slate-100 cursor-pointer transition min-w-0"
           >
-            <h1 className="text-sm font-semibold text-slate-800 truncate max-w-[170px] lg:max-w-[220px]">
+            <h1 className="text-sm font-semibold text-slate-800 truncate max-w-[130px] lg:max-w-[180px]">
               {canvasName || 'untitled board'}
             </h1>
             <MingIcon
@@ -118,6 +126,26 @@ export const TopNav: React.FC<TopNavProps> = ({
             />
           </div>
         )}
+
+        {/* Undo / Redo Buttons */}
+        <div className="flex items-center gap-0.5 border-l-2 border-slate-200 pl-1.5 shrink-0">
+          <button
+            onClick={onUndo}
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z / Cmd+Z)"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent transition active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+          >
+            <MingIcon name="back_line" size={16} />
+          </button>
+          <button
+            onClick={onRedo}
+            disabled={!canRedo}
+            title="Redo (Ctrl+Shift+Z / Cmd+Shift+Z or Ctrl+Y)"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent transition active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+          >
+            <MingIcon name="forward_line" size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Center: Absolute Centered FigJam Toolbar */}

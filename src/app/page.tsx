@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { TopNav } from '@/components/controls/TopNav';
 import { MarketCanvas } from '@/components/canvas/MarketCanvas';
@@ -30,11 +30,103 @@ function WhiteboardContent() {
   // In-Memory Session API Key (Temporary for this session only, never saved to disk or export)
   const [sectorsApiKey, setSectorsApiKey] = useState('');
 
+  // Undo / Redo History Stacks
+  const undoStackRef = useRef<any[]>([]);
+  const redoStackRef = useRef<any[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const updateUndoRedoState = useCallback(() => {
+    setCanUndo(undoStackRef.current.length > 0);
+    setCanRedo(redoStackRef.current.length > 0);
+  }, []);
+
+  const createSnapshot = useCallback(() => {
+    if (!canvas) return null;
+    return {
+      format: 'scriffle',
+      name: canvas.name || 'untitled board',
+      nodes: JSON.parse(JSON.stringify(canvas.nodes || [])),
+      edges: JSON.parse(JSON.stringify(canvas.edges || [])),
+    };
+  }, [canvas]);
+
+  const recordSnapshot = useCallback(() => {
+    const snap = createSnapshot();
+    if (snap) {
+      undoStackRef.current.push(snap);
+      if (undoStackRef.current.length > 50) {
+        undoStackRef.current.shift();
+      }
+      redoStackRef.current = [];
+      updateUndoRedoState();
+    }
+  }, [createSnapshot, updateUndoRedoState]);
+
+  const handleUndo = useCallback(async () => {
+    if (undoStackRef.current.length === 0) {
+      showToast('Undo', 'Nothing to undo', 'info');
+      return;
+    }
+    const currentSnap = createSnapshot();
+    if (currentSnap) {
+      redoStackRef.current.push(currentSnap);
+    }
+    const prevSnap = undoStackRef.current.pop();
+    updateUndoRedoState();
+
+    if (prevSnap) {
+      try {
+        const res = await fetch('/api/canvas/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(prevSnap),
+        });
+        if (res.ok) {
+          mutate();
+          showToast('Undo', 'Reverted last canvas action', 'info');
+        }
+      } catch (err) {
+        console.error('Failed to undo:', err);
+      }
+    }
+  }, [createSnapshot, updateUndoRedoState, mutate, showToast]);
+
+  const handleRedo = useCallback(async () => {
+    if (redoStackRef.current.length === 0) {
+      showToast('Redo', 'Nothing to redo', 'info');
+      return;
+    }
+    const currentSnap = createSnapshot();
+    if (currentSnap) {
+      undoStackRef.current.push(currentSnap);
+    }
+    const nextSnap = redoStackRef.current.pop();
+    updateUndoRedoState();
+
+    if (nextSnap) {
+      try {
+        const res = await fetch('/api/canvas/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nextSnap),
+        });
+        if (res.ok) {
+          mutate();
+          showToast('Redo', 'Restored canvas action', 'info');
+        }
+      } catch (err) {
+        console.error('Failed to redo:', err);
+      }
+    }
+  }, [createSnapshot, updateUndoRedoState, mutate, showToast]);
+
   const handleAddNode = async (
     type: NodeType,
     position?: { x: number; y: number },
     customConfig?: any
   ) => {
+    recordSnapshot();
     let defaultConfig: any = customConfig || {};
     if (!customConfig) {
       if (type === 'watcher') {
@@ -81,6 +173,7 @@ function WhiteboardContent() {
   };
 
   const handleSaveNodeConfig = async (nodeId: string, updatedConfig: any) => {
+    recordSnapshot();
     try {
       await fetch(`/api/canvas/nodes/${nodeId}`, {
         method: 'PATCH',
@@ -99,6 +192,7 @@ function WhiteboardContent() {
   ) => {
     const node = canvas?.nodes.find((n) => n.id === nodeId);
     if (!node) return;
+    recordSnapshot();
     try {
       await fetch(`/api/canvas/nodes/${nodeId}`, {
         method: 'PATCH',
@@ -117,6 +211,7 @@ function WhiteboardContent() {
   };
 
   const handleDeleteNode = async (nodeId: string) => {
+    recordSnapshot();
     try {
       await fetch(`/api/canvas/nodes/${nodeId}`, {
         method: 'DELETE',
@@ -128,6 +223,7 @@ function WhiteboardContent() {
   };
 
   const handleDeleteEdge = async (edgeId: string) => {
+    recordSnapshot();
     try {
       await fetch(`/api/canvas/edges/${edgeId}`, {
         method: 'DELETE',
@@ -319,6 +415,8 @@ function WhiteboardContent() {
             showToast('Invalid File', 'File is missing required Scriffle canvas nodes', 'crashing');
             return;
           }
+
+          recordSnapshot();
 
           const res = await fetch('/api/canvas/restore', {
             method: 'POST',
@@ -625,6 +723,8 @@ function WhiteboardContent() {
 
     if (!presetData) return;
 
+    recordSnapshot();
+
     try {
       const res = await fetch('/api/canvas/restore', {
         method: 'POST',
@@ -704,6 +804,10 @@ function WhiteboardContent() {
         onToggleFeed={() => setIsFeedOpen(!isFeedOpen)}
         isControlsOpen={isControlsOpen}
         onToggleControls={() => setIsControlsOpen(!isControlsOpen)}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
 
       <div className="relative flex flex-1 overflow-hidden">
@@ -736,6 +840,9 @@ function WhiteboardContent() {
               onDeleteNode={handleDeleteNode}
               onDeleteEdge={handleDeleteEdge}
               onChangeNodeColor={handleChangeNodeColor}
+              onUndo={handleUndo}
+              onRedo={handleRedo}
+              onRecordSnapshot={recordSnapshot}
             />
           </ReactFlowProvider>
         </div>
