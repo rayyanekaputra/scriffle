@@ -11,7 +11,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid payload: Body must be an object' }, { status: 400 });
     }
 
-    const { format, name, nodes = [], edges = [] } = body;
+    const { searchParams } = new URL(req.url);
+    const { format, name, nodes = [], edges = [], canvasId: explicitCanvasId } = body;
+    const targetCanvasId = explicitCanvasId || searchParams.get('id');
 
     // Optional format check - allow standard .scriffle or raw canvas exports
     if (format && format !== 'scriffle') {
@@ -27,16 +29,31 @@ export async function POST(req: Request) {
     }
 
     // Find or create active canvas
-    let canvas = await prisma.canvas.findFirst();
-    if (!canvas) {
-      canvas = await prisma.canvas.create({
-        data: { name: name || 'Market Automation Canvas' },
-      });
-    } else if (name) {
-      await prisma.canvas.update({
-        where: { id: canvas.id },
-        data: { name },
-      });
+    let canvas: any = null;
+    if (targetCanvasId && targetCanvasId !== 'new') {
+      canvas = await prisma.canvas.findUnique({ where: { id: targetCanvasId } });
+      if (!canvas) {
+        canvas = await prisma.canvas.create({
+          data: { id: targetCanvasId, name: name || 'untitled board' },
+        });
+      } else if (name) {
+        await prisma.canvas.update({
+          where: { id: canvas.id },
+          data: { name },
+        });
+      }
+    } else {
+      canvas = await prisma.canvas.findFirst({ orderBy: { updatedAt: 'desc' } });
+      if (!canvas) {
+        canvas = await prisma.canvas.create({
+          data: { name: name || 'untitled board' },
+        });
+      } else if (name) {
+        await prisma.canvas.update({
+          where: { id: canvas.id },
+          data: { name },
+        });
+      }
     }
 
     const canvasId = canvas.id;

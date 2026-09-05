@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ExecutionLog } from '@/types/canvas';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const canvasId = searchParams.get('canvasId');
+
     const logs = await prisma.log.findMany({
+      where: canvasId ? { canvasId } : undefined,
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
@@ -36,13 +40,19 @@ export async function GET() {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
   try {
-    // 1. Delete all log records
-    await prisma.log.deleteMany();
+    const { searchParams } = new URL(req.url);
+    const canvasId = searchParams.get('canvasId');
 
-    // 2. Reset all node states and run counters to idle (0 runs)
+    // 1. Delete log records
+    await prisma.log.deleteMany({
+      where: canvasId ? { canvasId } : undefined,
+    });
+
+    // 2. Reset node states and run counters to idle (0 runs)
     await prisma.node.updateMany({
+      where: canvasId ? { canvasId } : undefined,
       data: {
         stateJson: JSON.stringify({
           status: 'idle',
@@ -55,7 +65,7 @@ export async function DELETE() {
 
     return NextResponse.json({
       success: true,
-      message: 'All execution logs and node run counters have been cleared and reset',
+      message: 'Execution logs and node run counters have been cleared and reset',
     });
   } catch (error: any) {
     console.error('Failed to clear logs and reset node states:', error);

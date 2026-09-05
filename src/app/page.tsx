@@ -7,12 +7,20 @@ import { MarketCanvas } from '@/components/canvas/MarketCanvas';
 import { ActivityFeed } from '@/components/feed/ActivityFeed';
 import { SimulationBar } from '@/components/controls/SimulationBar';
 import { EditNodeModal } from '@/components/controls/EditNodeModal';
+import { ProjectSwitcherModal } from '@/components/controls/ProjectSwitcherModal';
 import { ToastProvider, useToast } from '@/components/ui/ToastProvider';
 import { useCanvasSync } from '@/hooks/useCanvasSync';
 import { CanvasNodeData, NodeType } from '@/types/canvas';
 
-function WhiteboardContent() {
-  const { canvas, logs, mutate, mutateLogs } = useCanvasSync();
+export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
+  const [currentCanvasId, setCurrentCanvasId] = useState<string | undefined>(canvasId);
+  const [showProjectHub, setShowProjectHub] = useState(false);
+
+  useEffect(() => {
+    if (canvasId) setCurrentCanvasId(canvasId);
+  }, [canvasId]);
+
+  const { canvas, logs, mutate, mutateLogs } = useCanvasSync(currentCanvasId);
   const [editingNode, setEditingNode] = useState<CanvasNodeData | null>(null);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
@@ -793,11 +801,18 @@ function WhiteboardContent() {
     }
   };
 
+  const handleSwitchCanvas = (newId: string) => {
+    setCurrentCanvasId(newId);
+    window.history.pushState({}, '', `/b/${newId}`);
+    showToast('Switched Project', 'Whiteboard synced to selected project', 'info');
+  };
+
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F9FC] text-slate-900 antialiased font-sans">
       {/* Centered TopNav with view toggle buttons on the right */}
       <TopNav
         canvasName={canvas?.name || 'untitled board'}
+        canvasId={canvas?.id}
         onRenameCanvas={handleRenameCanvas}
         onAddNode={(type, config) => handleAddNode(type, undefined, config)}
         isFeedOpen={isFeedOpen}
@@ -808,6 +823,7 @@ function WhiteboardContent() {
         onRedo={handleRedo}
         canUndo={canUndo}
         canRedo={canRedo}
+        onOpenProjectHub={() => setShowProjectHub(true)}
       />
 
       <div className="relative flex flex-1 overflow-hidden">
@@ -870,6 +886,15 @@ function WhiteboardContent() {
         node={editingNode}
         onClose={() => setEditingNode(null)}
         onSave={handleSaveNodeConfig}
+      />
+
+      {/* Project Switcher & Hub Modal with Full Viewport Backdrop Blur */}
+      <ProjectSwitcherModal
+        isOpen={showProjectHub}
+        onClose={() => setShowProjectHub(false)}
+        currentCanvasId={canvas?.id || currentCanvasId}
+        onSwitchCanvas={handleSwitchCanvas}
+        onExportScriffle={handleExportScriffle}
       />
     </main>
   );

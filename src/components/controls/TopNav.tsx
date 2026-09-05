@@ -6,6 +6,7 @@ import { MingIcon } from '@/components/ui/MingIcon';
 
 interface TopNavProps {
   canvasName: string;
+  canvasId?: string;
   onRenameCanvas?: (newName: string) => void;
   onAddNode: (type: NodeType, config?: any) => void;
   isFeedOpen: boolean;
@@ -16,10 +17,12 @@ interface TopNavProps {
   onRedo?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
+  onOpenProjectHub?: () => void;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
   canvasName,
+  canvasId,
   onRenameCanvas,
   onAddNode,
   isFeedOpen,
@@ -30,6 +33,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onRedo,
   canUndo = false,
   canRedo = false,
+  onOpenProjectHub,
 }) => {
   const [showStickerMenu, setShowStickerMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -70,8 +74,8 @@ export const TopNav: React.FC<TopNavProps> = ({
 
   return (
     <header className="relative flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
-      {/* Left: Brand & Canvas Title & Undo/Redo */}
-      <div className="flex items-center gap-2.5 max-w-[340px] lg:max-w-[420px]">
+      {/* Left: Brand & Canvas Title & Undo/Redo & Project Hub */}
+      <div className="flex items-center gap-2 max-w-[380px] lg:max-w-[460px]">
         <div className="flex items-center shrink-0 pr-0.5">
           <img
             src="/logo.svg"
@@ -104,26 +108,37 @@ export const TopNav: React.FC<TopNavProps> = ({
                 }
               }}
               placeholder="untitled board"
-              className="rounded-lg border-2 border-indigo-400 bg-indigo-50/50 px-2 py-0.5 text-sm font-semibold text-slate-900 outline-none w-48 shadow-xs"
+              className="rounded-lg border-2 border-indigo-400 bg-indigo-50/50 px-2 py-0.5 text-sm font-semibold text-slate-900 outline-none w-44 shadow-xs"
             />
           </form>
         ) : (
-          <div
-            onClick={() => {
-              setIsEditingName(true);
-              setTimeout(() => nameInputRef.current?.select(), 20);
-            }}
-            title="Click to rename project"
-            className="group flex items-center gap-1.5 rounded-lg px-2 py-1 hover:bg-slate-100 cursor-pointer transition min-w-0"
-          >
-            <h1 className="text-sm font-semibold text-slate-800 truncate max-w-[130px] lg:max-w-[180px]">
-              {canvasName || 'untitled board'}
-            </h1>
-            <MingIcon
-              name="edit_2_line"
-              size={13}
-              className="text-slate-400 opacity-0 group-hover:opacity-100 transition shrink-0"
-            />
+          <div className="flex items-center gap-1 min-w-0">
+            <div
+              onClick={() => {
+                setIsEditingName(true);
+                setTimeout(() => nameInputRef.current?.select(), 20);
+              }}
+              title="Click to rename project"
+              className="group flex items-center gap-1 rounded-lg px-2 py-1 hover:bg-slate-100 cursor-pointer transition min-w-0"
+            >
+              <h1 className="text-sm font-semibold text-slate-800 truncate max-w-[110px] lg:max-w-[160px]">
+                {canvasName || 'untitled board'}
+              </h1>
+              <MingIcon
+                name="edit_2_line"
+                size={13}
+                className="text-slate-400 opacity-0 group-hover:opacity-100 transition shrink-0"
+              />
+            </div>
+
+            {/* Project Hub Dropdown Trigger */}
+            <button
+              onClick={() => onOpenProjectHub?.()}
+              title="Switch or create new project board (1 tab = 1 project)"
+              className="flex items-center justify-center h-6 w-6 rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition shrink-0 cursor-pointer"
+            >
+              <MingIcon name="down_line" size={14} />
+            </button>
           </div>
         )}
 

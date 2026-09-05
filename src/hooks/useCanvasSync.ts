@@ -5,13 +5,16 @@ import { CanvasData, ExecutionLog } from '@/types/canvas';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export function useCanvasSync() {
-  const { data, error, isLoading, mutate } = useSWR<CanvasData>('/api/canvas', fetcher, {
+export function useCanvasSync(canvasId?: string) {
+  const canvasUrl = canvasId ? `/api/canvas?id=${encodeURIComponent(canvasId)}` : '/api/canvas';
+  const logsUrl = canvasId ? `/api/logs?canvasId=${encodeURIComponent(canvasId)}` : '/api/logs';
+
+  const { data, error, isLoading, mutate } = useSWR<CanvasData>(canvasUrl, fetcher, {
     refreshInterval: 2000, // Poll every 2 seconds
     revalidateOnFocus: true,
   });
 
-  const { data: logs, mutate: mutateLogs } = useSWR<ExecutionLog[]>('/api/logs', fetcher, {
+  const { data: logs, mutate: mutateLogs } = useSWR<ExecutionLog[]>(logsUrl, fetcher, {
     refreshInterval: 2000,
   });
 
