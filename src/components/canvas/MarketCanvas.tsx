@@ -315,9 +315,9 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             highlightedNodeIds.includes(e.to);
 
           const defaultStroke =
-            theme === 'dark' ? '#525668' : theme === 'mono' ? '#1D4ED8' : '#0050FF';
+            theme === 'dark' ? '#525668' : theme === 'mono' ? '#78756D' : '#0050FF';
           const highlightStroke =
-            theme === 'dark' ? '#A8ACB8' : theme === 'mono' ? '#2563EB' : '#6366F1';
+            theme === 'dark' ? '#A8ACB8' : theme === 'mono' ? '#242321' : '#6366F1';
 
           return {
             id: e.id,
@@ -364,7 +364,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       if (!params.source || !params.target) return;
       onRecordSnapshot?.();
       const edgeStroke =
-        theme === 'dark' ? '#525668' : theme === 'mono' ? '#1D4ED8' : '#0050FF';
+        theme === 'dark' ? '#525668' : theme === 'mono' ? '#78756D' : '#0050FF';
       setEdges((eds) =>
         addEdge(
           {

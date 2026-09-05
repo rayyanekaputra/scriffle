@@ -23,9 +23,9 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
       : 'border-[#282A36] hover:border-[#383B4A]'
     : isMono
     ? selected
-      ? 'border-[#1D4ED8] ring-2 ring-[#1D4ED8]/20'
+      ? 'border-[#242321] ring-2 ring-[#242321]/20'
       : isPassed
-      ? 'border-[#1D4ED8]'
+      ? 'border-[#242321]'
       : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
     : selected
     ? 'border-[#0050FF] ring-2 ring-[#0050FF]/20'
@@ -51,7 +51,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
           isDark
             ? '!border-[#181920] !bg-[#8E95A5]'
             : isMono
-            ? '!border-[#FCFBF9] !bg-[#1D4ED8]'
+            ? '!border-[#FCFBF9] !bg-[#5A5852]'
             : '!border-white !bg-[#0050FF]'
         }`}
       />
@@ -65,7 +65,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
             isDark
               ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
               : isMono
-              ? 'bg-[#EFECE4] text-[#1D4ED8] border-[#D8D4CA]'
+              ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
               : 'bg-blue-50 text-[#0050FF] border-blue-200'
           }`}>
             <MingIcon name="flash_line" size={18} />
@@ -88,7 +88,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
           isDark
             ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
             : isMono
-            ? 'bg-[#EFECE4] text-[#1D4ED8] border-[#D8D4CA]'
+            ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
             : 'bg-blue-50 text-[#0050FF] border-blue-200'
         }`}>
           Auto
@@ -107,7 +107,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
           <MingIcon
             name={config.action === 'create_watcher' ? 'radar_line' : 'quill_pen_line'}
             size={14}
-            className={isDark ? 'text-[#BAC0D0]' : isMono ? 'text-[#1D4ED8]' : 'text-[#0050FF]'}
+            className={isDark ? 'text-[#BAC0D0]' : isMono ? 'text-[#242321]' : 'text-[#0050FF]'}
           />
           <span>
             {config.action === 'create_watcher'
@@ -133,7 +133,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
           isDark
             ? '!border-[#181920] !bg-[#8E95A5]'
             : isMono
-            ? '!border-[#FCFBF9] !bg-[#1D4ED8]'
+            ? '!border-[#FCFBF9] !bg-[#5A5852]'
             : '!border-white !bg-[#0050FF]'
         }`}
       />

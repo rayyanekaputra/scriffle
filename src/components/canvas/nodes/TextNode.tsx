@@ -42,17 +42,21 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
   };
 
   const selectedClass = isDark
-    ? 'border-2 border-dashed border-white bg-white/10'
+    ? 'border-2 border-dashed border-[#8E95A5] bg-white/5'
     : isMono
-    ? 'border-2 border-dashed border-[#0050FF] bg-blue-50/40'
+    ? 'border-2 border-dashed border-[#242321] bg-black/5'
     : 'border-2 border-dashed border-[#0050FF] bg-blue-50/40';
 
-  const textColor = isDark ? 'text-white placeholder:text-zinc-500' : 'text-slate-800 placeholder:text-slate-400';
+  const textColor = isDark
+    ? 'text-[#E2E4E9] placeholder:text-[#5A5D6E]'
+    : isMono
+    ? 'text-[#242321] placeholder:text-[#8C8980]'
+    : 'text-slate-800 placeholder:text-slate-400';
 
   return (
     <div
       className={`min-w-[140px] max-w-[400px] rounded-xl p-1.5 transition-all ${
-        selected ? selectedClass : isDark ? 'border border-transparent hover:border-[#333333]' : 'border border-transparent hover:border-slate-300'
+        selected ? selectedClass : isDark ? 'border border-transparent hover:border-[#252732]' : isMono ? 'border border-transparent hover:border-[#D1CEC4]' : 'border border-transparent hover:border-slate-300'
       }`}
     >
       <textarea

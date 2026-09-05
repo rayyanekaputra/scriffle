@@ -31,9 +31,9 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
       : 'border-[#282A36] hover:border-[#383B4A]'
     : isMono
     ? selected
-      ? 'border-[#1D4ED8] ring-2 ring-[#1D4ED8]/20'
+      ? 'border-[#242321] ring-2 ring-[#242321]/20'
       : isPassed
-      ? 'border-[#1D4ED8]'
+      ? 'border-[#242321]'
       : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
     : selected
     ? 'border-[#FFD728] ring-2 ring-[#FFD728]/40'
@@ -53,7 +53,7 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
           isDark
             ? '!border-[#181920] !bg-[#8E95A5]'
             : isMono
-            ? '!border-[#FCFBF9] !bg-[#1D4ED8]'
+            ? '!border-[#FCFBF9] !bg-[#5A5852]'
             : '!border-white !bg-[#FFD728]'
         }`}
       />
@@ -133,7 +133,7 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
           isDark
             ? '!border-[#181920] !bg-[#8E95A5]'
             : isMono
-            ? '!border-[#FCFBF9] !bg-[#1D4ED8]'
+            ? '!border-[#FCFBF9] !bg-[#5A5852]'
             : '!border-white !bg-[#FFD728]'
         }`}
       />
