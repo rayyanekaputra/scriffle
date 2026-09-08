@@ -7,11 +7,14 @@ export async function POST(req: Request) {
   try {
     let canvasId: string | undefined;
     let apiKey: string | undefined;
+    let requestedSymbols: string[] | undefined;
 
     try {
       const body = await req.json();
       canvasId = body.canvasId;
       apiKey = body.apiKey;
+      if (body.symbol) requestedSymbols = [body.symbol];
+      if (body.symbols && Array.isArray(body.symbols)) requestedSymbols = body.symbols;
     } catch {}
 
     let targetCanvas = canvasId
@@ -22,8 +25,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Canvas not found' }, { status: 404 });
     }
 
-    // Extract all monitored symbols from active Watcher nodes
-    const symbols = Array.from(
+    // Extract monitored symbols from active Watcher nodes (or filter to requestedSymbols if provided)
+    let symbols = Array.from(
       new Set(
         targetCanvas.nodes
           .filter((n) => n.type === 'watcher')
@@ -37,6 +40,14 @@ export async function POST(req: Request) {
           .filter(Boolean)
       )
     ) as string[];
+
+    if (requestedSymbols && requestedSymbols.length > 0) {
+      const upperReq = requestedSymbols.map((s) => s.toUpperCase());
+      symbols = symbols.filter((s) => upperReq.includes(s));
+      if (symbols.length === 0) {
+        symbols = upperReq;
+      }
+    }
 
     if (symbols.length === 0) {
       symbols.push('BBCA');

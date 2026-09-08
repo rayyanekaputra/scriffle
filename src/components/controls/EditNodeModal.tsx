@@ -97,16 +97,16 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                 </div>
                 <input
                   type="number"
-                  min={5}
+                  min={1}
                   max={3600}
                   value={config.interval || 300}
-                  onChange={(e) => setConfig({ ...config, interval: parseInt(e.target.value) || 300 })}
+                  onChange={(e) => setConfig({ ...config, interval: Math.max(1, parseInt(e.target.value) || 1) })}
                   className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
                 />
                 <div className={`mt-1.5 rounded-lg p-2 text-[11px] leading-relaxed border ${
                   isDark ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]' : 'bg-slate-50 border-slate-200 text-slate-500'
                 }`}>
-                  💡 <strong>How polling works:</strong> Scriffle tracks data via live Sectors API requests. Manual polls sync immediately, or you can run continuous stream simulations.
+                  💡 <strong>Per-Node Cadence:</strong> When Auto-Polling is started, this Watcher will poll its symbol every <strong>{config.interval || 300}s</strong> independently using the live Sectors API (or mock fallback).
                 </div>
               </div>
             </>

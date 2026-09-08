@@ -363,7 +363,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
             </button>
           </div>
 
-          {/* Section 3: Continuous Auto-Streaming Loop Control */}
+          {/* Section 3: Continuous Per-Node Auto Polling Loop */}
           <div className={`rounded-2xl border-2 p-3 space-y-2.5 ${cardContainer}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
@@ -376,11 +376,15 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
                 />
                 <span className={`text-[11px] font-bold flex items-center gap-1.5 ${textHeading}`}>
                   <MingIcon name="time_line" size={14} className={iconColor} />
-                  Simulated Stream
+                  Auto-Polling Stream
                 </span>
               </div>
-              <span className={`text-[10px] font-semibold font-mono ${textMuted}`}>2.5s loop</span>
+              <span className={`text-[10px] font-semibold font-mono ${textMuted}`}>Per-Node Cadence</span>
             </div>
+
+            <p className={`text-[11px] leading-tight ${textMuted}`}>
+              Polls each active Watcher node independently at its configured interval.
+            </p>
 
             <button
               type="button"
@@ -400,7 +404,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
               }`}
             >
               <MingIcon name={autoTickActive ? 'pause_line' : 'play_line'} size={15} />
-              <span>{autoTickActive ? 'Stop Stream' : 'Start Simulated Loop'}</span>
+              <span>{autoTickActive ? 'Stop Auto-Polling' : 'Start Auto-Polling'}</span>
             </button>
           </div>
 
