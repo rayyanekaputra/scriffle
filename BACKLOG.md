@@ -31,3 +31,15 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - **API**: `GET /v2/filings/`
 - **Description**: Real-time regulatory disclosures on insider stock transactions by directors, commissioners, and major shareholders (>5%).
 - **Canvas Integration**: Insider Trading Alert Node that generates instant event triggers when high-conviction insider buys or sales occur.
+
+---
+
+## 🎨 UI & Document Polish
+
+### 5. 📄 Redesign PDF & Export Brief Layout (Scriffle Design System)
+- **Issue**: The current exported research brief / PDF view layout looks generic and lacks Scriffle's signature visual design.
+- **Goal**: Redesign the `/api/export/report` document layout to adopt Scriffle's distinctive FigJam/sticker aesthetic:
+  - Flat 2px solid outlines (zero soft shadows, crisp high-contrast cards).
+  - FigJam brand typography, tag capsules, and clean metric grids.
+  - Scriffle Blue (`#0050FF`) and warm paper surfaces matching the canvas themes.
+  - Formatted print stylesheet (`@media print`) so physical/PDF printouts look institutional-grade.

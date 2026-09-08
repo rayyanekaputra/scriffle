@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { MarketEvent } from '@/types/canvas';
 import { evaluateCondition } from './dslEngine';
+import { getCompanyFundamentalReport } from './sectorsApi';
 
 export interface GraphExecutionResult {
   triggeredNodes: string[];
@@ -289,6 +290,78 @@ export async function executeGraphForEvent(
           mutationsCount++;
           logs.push(`Auto-spawned related sector watcher (${targetSymbol}) on canvas`);
         }
+      } else if (nodeConfig.action === 'fundamental_report') {
+        // Fetch real-time fundamentals via Sectors API v2 /company/report/{symbol}/
+        const report = await getCompanyFundamentalReport(curEvent.symbol);
+
+        const existingSpawned = canvas.edges.filter((e) => e.fromId === node.id);
+        const spawnIndex = existingSpawned.length;
+        const newX = node.positionX + 280;
+        const newY = node.positionY + spawnIndex * 210 - 40;
+
+        const fundamentalNoteContent = `📊 Fundamental Report: ${report.symbol}\n${report.companyName}\n• Sector: ${report.sector} (${report.subSector})\n• Market Cap: ${report.marketCapFormatted}\n• Valuation: P/E ${report.peRatio}x | P/B ${report.pbvRatio}x\n• Dividend Yield: ${report.dividendYield}%\n• Margin: ${report.netProfitMargin}%\nTriggered by ${curEvent.price_change >= 0 ? '+' : ''}${curEvent.price_change}% move at ${curEvent.timestamp || new Date().toLocaleTimeString()}`;
+
+        // 1. Spawn Fundamental Research Note
+        const noteNode = await prisma.node.create({
+          data: {
+            canvasId,
+            type: 'note',
+            positionX: newX,
+            positionY: newY,
+            configJson: JSON.stringify({
+              content: fundamentalNoteContent,
+              color: 'blue',
+              width: 320,
+              height: 180,
+            }),
+            stateJson: JSON.stringify({
+              status: 'passed',
+              lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
+            }),
+          },
+        });
+
+        await prisma.edge.create({
+          data: {
+            canvasId,
+            fromId: node.id,
+            toId: noteNode.id,
+          },
+        });
+
+        // 2. Spawn linked File Node attachment with real executable report URL
+        const reportUrl = `/api/export/report?symbol=${report.symbol}`;
+        const fileNode = await prisma.node.create({
+          data: {
+            canvasId,
+            type: 'file',
+            positionX: newX + 350,
+            positionY: newY + 20,
+            configJson: JSON.stringify({
+              fileName: `${report.symbol}_Fundamental_Brief.pdf`,
+              fileUrl: reportUrl,
+              filePath: `public/reports/${report.symbol}_Fundamental_Brief.pdf`,
+              fileSize: '145 KB',
+              fileCategory: 'pdf',
+              caption: `Live valuation snapshot for ${report.companyName}`,
+            }),
+            stateJson: JSON.stringify({
+              status: 'passed',
+              lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
+            }),
+          },
+        });
+
+        await prisma.edge.create({
+          data: {
+            canvasId,
+            fromId: noteNode.id,
+            toId: fileNode.id,
+          },
+        });
+
+        mutationsCount += 2;
+        logs.push(`Generated Fundamental Report (${report.symbol}: P/E ${report.peRatio}x, MCap ${report.marketCapFormatted}) & attached PDF card`);
       }
     }
 

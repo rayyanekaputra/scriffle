@@ -105,12 +105,20 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
             : 'bg-blue-50 border-blue-200 text-blue-950'
         }`}>
           <MingIcon
-            name={config.action === 'create_watcher' ? 'radar_line' : 'quill_pen_line'}
+            name={
+              config.action === 'fundamental_report'
+                ? 'file_pdf_2_line'
+                : config.action === 'create_watcher'
+                ? 'radar_line'
+                : 'quill_pen_line'
+            }
             size={14}
             className={isDark ? 'text-[#BAC0D0]' : isMono ? 'text-[#242321]' : 'text-[#0050FF]'}
           />
-          <span>
-            {config.action === 'create_watcher'
+          <span className="truncate">
+            {config.action === 'fundamental_report'
+              ? 'Fundamental Report (Sectors API)'
+              : config.action === 'create_watcher'
               ? `Spawn Peer Watcher (${config.params?.symbol || 'BBRI'})`
               : 'Create Child Sticky Note'}
           </span>
@@ -119,7 +127,9 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
         <div className={`text-[11px] leading-relaxed ${
           isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500'
         }`}>
-          {config.action === 'create_watcher'
+          {config.action === 'fundamental_report'
+            ? 'Fetches P/E, P/B & Market Cap from Sectors API v2 and auto-attaches research note & PDF card.'
+            : config.action === 'create_watcher'
             ? 'Dynamically generates a related sector stock watcher on canvas.'
             : 'Spawns a new connected sticky note when condition passes.'}
         </div>

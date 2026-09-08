@@ -33,7 +33,7 @@ export interface AlertConfig {
 }
 
 export interface ActionConfig {
-  action: 'create_note' | 'create_watcher' | 'export_canvas';
+  action: 'create_note' | 'create_watcher' | 'fundamental_report' | 'export_canvas';
   params?: Record<string, any>;
 }
 

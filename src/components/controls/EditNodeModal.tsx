@@ -221,6 +221,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
                 >
                   <option value="create_note">Auto-Spawn Research Note</option>
+                  <option value="fundamental_report">Generate Fundamental Report (Sectors API)</option>
                   <option value="create_watcher">Auto-Spawn Peer Watcher</option>
                 </select>
               </div>
@@ -241,6 +242,16 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                     placeholder="e.g. BBRI, BMRI, TLKM"
                     className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
                   />
+                </div>
+              ) : config.action === 'fundamental_report' ? (
+                <div className={`rounded-xl p-3 text-xs leading-relaxed border ${
+                  isDark
+                    ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]'
+                    : isMono
+                    ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
+                    : 'bg-blue-50 border-blue-200 text-blue-900'
+                }`}>
+                  💡 <strong>Automated Sectors API Brief:</strong> When triggered by an upstream event (e.g. +4% breakout), Scriffle queries <code>/v2/company/report/${'{symbol}'}/</code> to extract P/E, P/B, Market Cap, and Dividend Yield, then auto-spawns a formatted research sticky note and linked PDF brief.
                 </div>
               ) : (
                 <div>
