@@ -41,3 +41,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+    const { nodes } = body;
+
+    if (!nodes || !Array.isArray(nodes) || nodes.length === 0) {
+      return NextResponse.json({ success: true, count: 0 });
+    }
+
+    const updates = nodes.map((n: { id: string; position: { x: number; y: number } }) =>
+      prisma.node.update({
+        where: { id: n.id },
+        data: {
+          positionX: n.position.x,
+          positionY: n.position.y,
+        },
+      })
+    );
+
+    await prisma.$transaction(updates);
+
+    return NextResponse.json({ success: true, count: nodes.length });
+  } catch (error: any) {
+    console.error('Error batch updating nodes:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+

@@ -4,19 +4,37 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ---
 
-## 📌 Candidate Endpoints & Features
+## 🚀 Active / Completed in Recent Sprint
 
-### 1. 🤖 AI Natural Language Screener (`/v2/companies/?q=...`)
-- **API**: `GET /v2/companies/?q={natural_language_query}&include_query_values=true`
-- **Description**: Natural language company screener allowing users to type freeform queries (e.g. *"top 3 banks by market cap"*, *"mining companies with PE < 10 and dividend yield > 5%"*).
-- **Canvas Integration**: Dynamic Screener Node that dynamically resolves and streams multi-ticker event payloads to connected Condition and Action nodes.
+- [x] **⚡ Top Market Movers & Gainers Radar (`/v2/companies/top-changes/`)**
+  - Integrated into `WatcherNode.tsx`, `EditNodeModal.tsx`, `ContextMenu.tsx`, and `/api/engine/trigger`.
+  - Supports `Top Gainers` & `Top Losers` modes with custom % move threshold filtering and automated downstream graph execution.
+- [x] **📑 Universal File Node & Document Output (`FileNode.tsx`)**
+  - Universal visual file attachments with category icons, browser preview, copy link, and direct OS folder reveal (`/api/file/open-location`).
+- [x] **📊 Automated Fundamental Report Action (`/v2/company/report/{symbol}/`)**
+  - `ActionNode.tsx` triggers live fundamental report generation and automatically spawns an attached `FileNode` on the canvas.
+- [x] **⏱️ Independent Per-Watcher Polling Engine**
+  - Configurable polling cadences (1s–3600s) per watcher with automatic timer scheduling.
 
 ---
 
-### 2. ⚡ Top Market Movers & Gainers Radar (`/v2/companies/top-changes/`)
-- **API**: `GET /v2/companies/top-changes/`
-- **Description**: Automated leaderboard monitoring top gainers and losers across 1d, 7d, 30d, and 365d windows.
-- **Canvas Integration**: Market Mover Radar Node that continuously monitors the broader IDX exchange and triggers downstream actions when stocks hit threshold gains.
+## 📌 Open Candidate Endpoints & Features
+
+### 1. 📄 Redesign PDF & Export Brief Layout (Scriffle Design System) — High Priority
+- **Status**: 🟡 Open / Needs Polish
+- **Issue**: The current `/api/export/report` document layout looks too plain and does not use Scriffle's signature visual style.
+- **Goal**: Redesign the research brief to match Scriffle's FigJam/Neo-brutalist aesthetic:
+  - 2px solid dark borders, zero blurry drop shadows, crisp high-contrast cards.
+  - Distinctive tag capsules, company identity cards, and clear metric grids (Valuation, Financial Health, Profitability, Peer Comparison).
+  - Print-friendly layout (`@media print`) for institutional-grade PDF and physical printouts.
+  - Multi-theme preview support (Light, Warm Mono `#F4F3EF`, Dark `#181920`).
+
+---
+
+### 2. 🤖 AI Natural Language Screener (`/v2/companies/?q=...`)
+- **API**: `GET /v2/companies/?q={natural_language_query}&include_query_values=true`
+- **Description**: Natural language company screener allowing users to type freeform queries (e.g. *"top 3 banks by market cap"*, *"mining companies with PE < 10 and dividend yield > 5%"*).
+- **Canvas Integration**: Dynamic Screener Node that resolves and streams multi-ticker event payloads to downstream Condition and Action nodes.
 
 ---
 
@@ -34,12 +52,8 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ---
 
-## 🎨 UI & Document Polish
+### 5. 🏢 Broker Accumulation / Distribution Tracker (`/v2/broker-summary/{symbol}/top/`)
+- **API**: `GET /v2/broker-summary/{symbol}/top/`
+- **Description**: Identifies the top buyer and seller brokerages for any stock to detect retail vs institutional positioning.
+- **Canvas Integration**: Broker Radar Node that evaluates accumulation ratios and triggers warnings when smart money begins exiting.
 
-### 5. 📄 Redesign PDF & Export Brief Layout (Scriffle Design System)
-- **Issue**: The current exported research brief / PDF view layout looks generic and lacks Scriffle's signature visual design.
-- **Goal**: Redesign the `/api/export/report` document layout to adopt Scriffle's distinctive FigJam/sticker aesthetic:
-  - Flat 2px solid outlines (zero soft shadows, crisp high-contrast cards).
-  - FigJam brand typography, tag capsules, and clean metric grids.
-  - Scriffle Blue (`#0050FF`) and warm paper surfaces matching the canvas themes.
-  - Formatted print stylesheet (`@media print`) so physical/PDF printouts look institutional-grade.
