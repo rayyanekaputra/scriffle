@@ -9,6 +9,8 @@ export type NodeType =
   | 'sticker'
   | 'file';
 
+export type CanvasToolMode = 'select' | 'hand';
+
 export interface WatcherConfig {
   symbol: string;         // e.g. "BBCA", "BBRI", "BMRI"
   metric: 'price' | 'price_change' | 'volume' | 'rank';

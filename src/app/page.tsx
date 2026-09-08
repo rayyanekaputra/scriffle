@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { TopNav } from '@/components/controls/TopNav';
+import { NavToolbar } from '@/components/controls/NavToolbar';
 import { MarketCanvas } from '@/components/canvas/MarketCanvas';
 import { ActivityFeed } from '@/components/feed/ActivityFeed';
 import { SimulationBar } from '@/components/controls/SimulationBar';
@@ -10,7 +11,7 @@ import { EditNodeModal } from '@/components/controls/EditNodeModal';
 import { ProjectSwitcherModal } from '@/components/controls/ProjectSwitcherModal';
 import { ToastProvider, useToast } from '@/components/ui/ToastProvider';
 import { useCanvasSync } from '@/hooks/useCanvasSync';
-import { CanvasNodeData, NodeType } from '@/types/canvas';
+import { CanvasNodeData, CanvasToolMode, NodeType } from '@/types/canvas';
 
 export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   const [currentCanvasId, setCurrentCanvasId] = useState<string | undefined>(canvasId);
@@ -24,6 +25,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   const [editingNode, setEditingNode] = useState<CanvasNodeData | null>(null);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
+  const [toolMode, setToolMode] = useState<CanvasToolMode>('select');
   const { showToast } = useToast();
 
   // Panels visibility state (hideable Left Panel & Activity Feed)
@@ -817,12 +819,11 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
 
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F9FC] text-slate-900 antialiased font-sans">
-      {/* Centered TopNav with view toggle buttons on the right */}
+      {/* Header TopNav */}
       <TopNav
         canvasName={canvas?.name || 'untitled board'}
         canvasId={canvas?.id}
         onRenameCanvas={handleRenameCanvas}
-        onAddNode={(type, config) => handleAddNode(type, undefined, config)}
         isFeedOpen={isFeedOpen}
         onToggleFeed={() => setIsFeedOpen(!isFeedOpen)}
         isControlsOpen={isControlsOpen}
@@ -852,12 +853,14 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         />
 
         {/* Main React Flow Canvas */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full relative">
           <ReactFlowProvider>
             <MarketCanvas
               canvasData={canvas}
               focusedNodeId={focusedNodeId}
               highlightedNodeIds={highlightedNodeIds}
+              toolMode={toolMode}
+              onSetToolMode={(mode) => setToolMode(mode)}
               onRefresh={handleRefresh}
               onEditNode={handleEditNode}
               onAddNodeAtPosition={(type, pos, extra) => handleAddNode(type, pos, extra)}
@@ -869,6 +872,13 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
               onRecordSnapshot={recordSnapshot}
             />
           </ReactFlowProvider>
+
+          {/* Figma-style Floating Bottom NavToolbar */}
+          <NavToolbar
+            toolMode={toolMode}
+            onSetToolMode={(mode) => setToolMode(mode)}
+            onAddNode={(type, config) => handleAddNode(type, undefined, config)}
+          />
         </div>
 
         {/* Hideable Live Activity & Log Sidebar */}

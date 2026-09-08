@@ -28,13 +28,15 @@ import { ImageNode } from './nodes/ImageNode';
 import { StickerNode } from './nodes/StickerNode';
 import { FileNode } from './nodes/FileNode';
 import { ContextMenu } from './ContextMenu';
-import { CanvasData, NodeType } from '@/types/canvas';
+import { CanvasData, CanvasToolMode, NodeType } from '@/types/canvas';
 import { useTheme } from '@/context/ThemeContext';
 
 interface MarketCanvasProps {
   canvasData?: CanvasData;
   focusedNodeId?: string | null;
   highlightedNodeIds?: string[];
+  toolMode?: CanvasToolMode;
+  onSetToolMode?: (mode: CanvasToolMode) => void;
   onRefresh?: () => void;
   onEditNode?: (nodeId: string) => void;
   onAddNodeAtPosition?: (type: NodeType, position: { x: number; y: number }, extraConfig?: any) => void;
@@ -50,6 +52,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   canvasData,
   focusedNodeId,
   highlightedNodeIds = [],
+  toolMode = 'select',
+  onSetToolMode,
   onRefresh,
   onEditNode,
   onAddNodeAtPosition,
@@ -238,6 +242,20 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onRedo?.();
         return;
       }
+
+      // 8. Tool switching shortcuts (V -> Move / Select tool, H -> Hand / Pan tool)
+      if (!isCtrlOrCmd && !e.altKey && !e.shiftKey) {
+        if (e.key === 'v' || e.key === 'V') {
+          e.preventDefault();
+          onSetToolMode?.('select');
+          return;
+        }
+        if (e.key === 'h' || e.key === 'H') {
+          e.preventDefault();
+          onSetToolMode?.('hand');
+          return;
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -250,6 +268,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     onAddNodeAtPosition,
     onUndo,
     onRedo,
+    onSetToolMode,
     screenToFlowPosition,
     setNodes,
     setEdges,
@@ -292,25 +311,28 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     return () => window.removeEventListener('paste', handleImagePaste);
   }, [screenToFlowPosition, onAddNodeAtPosition]);
 
-  // Sync state when backend updates or restores from undo/redo
+  // Sync state when backend updates or restores from undo/redo, preserving user selection state
   useEffect(() => {
     if (canvasData?.nodes) {
-      setNodes(
-        canvasData.nodes.map((serverNode) => ({
+      setNodes((prevNodes) => {
+        const selectionMap = new Map(prevNodes.map((n) => [n.id, Boolean(n.selected)]));
+        return canvasData.nodes.map((serverNode) => ({
           id: serverNode.id,
           type: serverNode.type,
           position: { ...serverNode.position },
+          selected: selectionMap.has(serverNode.id) ? selectionMap.get(serverNode.id) : false,
           data: {
             config: serverNode.config,
             state: serverNode.state,
           },
-        }))
-      );
+        }));
+      });
     }
 
     if (canvasData?.edges) {
-      setEdges(
-        canvasData.edges.map((e) => {
+      setEdges((prevEdges) => {
+        const selectionMap = new Map(prevEdges.map((e) => [e.id, Boolean(e.selected)]));
+        return canvasData.edges.map((e) => {
           const isHighlighted =
             highlightedNodeIds.length > 0 &&
             highlightedNodeIds.includes(e.from) &&
@@ -325,6 +347,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             id: e.id,
             source: e.from,
             target: e.to,
+            selected: selectionMap.has(e.id) ? selectionMap.get(e.id) : false,
             animated: true,
             interactionWidth: 24,
             style: {
@@ -334,8 +357,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
               transition: 'stroke 0.2s, stroke-width 0.2s',
             },
           };
-        })
-      );
+        });
+      });
     }
   }, [canvasData, highlightedNodeIds, theme, setNodes, setEdges]);
 
@@ -423,20 +446,58 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     [nodes, onRecordSnapshot]
   );
 
-  // Node position drag stop
+  // Node position drag stop (supports single & multi-node moves)
   const onNodeDragStop = useCallback(
-    async (_event: any, node: Node) => {
+    async (_event: any, node: Node, draggedNodes?: Node[]) => {
       try {
-        await fetch(`/api/canvas/nodes/${node.id}`, {
+        const movedNodes = draggedNodes && draggedNodes.length > 0 ? draggedNodes : [node];
+        // If multiple nodes were moved together, batch update all of them
+        if (movedNodes.length > 1) {
+          await fetch('/api/canvas/nodes', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              nodes: movedNodes.map((n) => ({
+                id: n.id,
+                position: { x: n.position.x, y: n.position.y },
+              })),
+            }),
+          });
+        } else {
+          await fetch(`/api/canvas/nodes/${node.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              position: { x: node.position.x, y: node.position.y },
+            }),
+          });
+        }
+        onRefresh?.();
+      } catch (err) {
+        console.error('Failed to update node position:', err);
+      }
+    },
+    [onRefresh]
+  );
+
+  // Multi-selection drag stop
+  const onSelectionDragStop = useCallback(
+    async (_event: any, selectedNodes: Node[]) => {
+      try {
+        if (!selectedNodes || selectedNodes.length === 0) return;
+        await fetch('/api/canvas/nodes', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            position: { x: node.position.x, y: node.position.y },
+            nodes: selectedNodes.map((n) => ({
+              id: n.id,
+              position: { x: n.position.x, y: n.position.y },
+            })),
           }),
         });
         onRefresh?.();
       } catch (err) {
-        console.error('Failed to update node position:', err);
+        console.error('Failed to batch update selected nodes:', err);
       }
     },
     [onRefresh]
@@ -581,9 +642,11 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       ? 'rgba(236, 234, 228, 0.75)'
       : 'rgba(241, 245, 249, 0.7)';
 
+  const isHandMode = toolMode === 'hand';
+
   return (
     <div
-      className="h-full w-full transition-colors duration-200"
+      className={`h-full w-full transition-colors duration-200 ${isHandMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
       style={{ backgroundColor: bgColor }}
       onDrop={onDrop}
       onDragOver={onDragOver}
@@ -598,6 +661,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onEdgesDelete={onEdgesDelete}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
+        onSelectionDragStop={onSelectionDragStop}
         onNodeDoubleClick={onNodeDoubleClick}
         onPaneClick={() => setMenu(null)}
         onNodeClick={() => setMenu(null)}
@@ -606,6 +670,12 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         nodeTypes={nodeTypes}
+        panOnDrag={isHandMode ? true : [1, 2]}
+        nodesDraggable={!isHandMode}
+        nodesConnectable={!isHandMode}
+        elementsSelectable={!isHandMode}
+        panOnScroll={false}
+        selectionOnDrag={!isHandMode}
         multiSelectionKeyCode={['Shift', 'Control', 'Meta']}
         selectionKeyCode="Shift"
         selectionMode={SelectionMode.Partial}
@@ -616,23 +686,25 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color={dotColor} />
         <Controls
+          position="top-left"
           className={
             theme === 'dark'
-              ? '!border-2 !border-[#282A36] !bg-[#14151B] !fill-[#BAC0D0] !rounded-xl'
+              ? '!border-2 !border-[#282A36] !bg-[#14151B] !fill-[#BAC0D0] !rounded-xl !shadow-md !mt-3 !ml-3'
               : theme === 'mono'
-              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !fill-[#242321] !rounded-xl'
-              : '!border-2 !border-slate-300 !bg-white !fill-slate-700 !rounded-xl'
+              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !fill-[#242321] !rounded-xl !shadow-md !mt-3 !ml-3'
+              : '!border-2 !border-slate-300 !bg-white !fill-slate-700 !rounded-xl !shadow-md !mt-3 !ml-3'
           }
         />
         <MiniMap
+          position="bottom-right"
           nodeColor={miniMapNodeColor}
           maskColor={miniMapMaskColor}
           className={
             theme === 'dark'
-              ? '!border-2 !border-[#282A36] !bg-[#14151B] !rounded-xl'
+              ? '!border-2 !border-[#282A36] !bg-[#14151B] !rounded-xl !shadow-md !mb-20 !mr-4'
               : theme === 'mono'
-              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !rounded-xl'
-              : '!border-2 !border-slate-300 !bg-white !rounded-xl'
+              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !rounded-xl !shadow-md !mb-20 !mr-4'
+              : '!border-2 !border-slate-300 !bg-white !rounded-xl !shadow-md !mb-20 !mr-4'
           }
         />
       </ReactFlow>
