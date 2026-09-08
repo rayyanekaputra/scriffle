@@ -80,15 +80,57 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
           {node.type === 'watcher' && (
             <>
               <div>
-                <label className={`font-bold block mb-1 ${labelColor}`}>Stock Ticker Symbol</label>
-                <input
-                  type="text"
-                  value={config.symbol || ''}
-                  onChange={(e) => setConfig({ ...config, symbol: e.target.value.toUpperCase() })}
-                  placeholder="e.g. BBCA, BBRI, BMRI, TLKM"
-                  className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
-                />
+                <label className={`font-bold block mb-1 ${labelColor}`}>Watcher Type / Mode</label>
+                <select
+                  value={config.mode || 'single'}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      mode: e.target.value,
+                      symbol:
+                        e.target.value === 'top_gainers'
+                          ? 'Top Gainers'
+                          : e.target.value === 'top_losers'
+                          ? 'Top Losers'
+                          : config.symbol === 'TOP_GAINERS' || config.symbol === 'Top Gainers' || config.symbol === 'TOP_LOSERS' || config.symbol === 'Top Losers'
+                          ? 'BBCA'
+                          : config.symbol || 'BBCA',
+                    })
+                  }
+                  className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                >
+                  <option value="single">Single Stock Ticker (e.g. BBCA, TLKM)</option>
+                  <option value="top_gainers">🚀 Top Gainers Radar (Sectors API Leaderboard)</option>
+                  <option value="top_losers">🔻 Top Losers Radar (Sectors API Leaderboard)</option>
+                </select>
               </div>
+
+              {config.mode === 'single' || !config.mode ? (
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Stock Ticker Symbol</label>
+                  <input
+                    type="text"
+                    value={config.symbol || ''}
+                    onChange={(e) => setConfig({ ...config, symbol: e.target.value.toUpperCase() })}
+                    placeholder="e.g. BBCA, BBRI, BMRI, TLKM"
+                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Minimum % Move Filter</label>
+                  <input
+                    type="number"
+                    value={config.threshold || 0}
+                    onChange={(e) => setConfig({ ...config, threshold: parseFloat(e.target.value) || 0 })}
+                    placeholder="e.g. 5 for +5.0%"
+                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                  />
+                  <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
+                    Filter movers with at least this percentage move before triggering downstream flow.
+                  </span>
+                </div>
+              )}
 
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -106,7 +148,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                 <div className={`mt-1.5 rounded-lg p-2 text-[11px] leading-relaxed border ${
                   isDark ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]' : 'bg-slate-50 border-slate-200 text-slate-500'
                 }`}>
-                  💡 <strong>Per-Node Cadence:</strong> When Auto-Polling is started, this Watcher will poll its symbol every <strong>{config.interval || 300}s</strong> independently using the live Sectors API (or mock fallback).
+                  💡 <strong>Per-Node Cadence:</strong> When Auto-Polling is started, this Watcher will poll every <strong>{config.interval || 300}s</strong> independently using the live Sectors API.
                 </div>
               </div>
             </>

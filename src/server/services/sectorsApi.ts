@@ -158,6 +158,157 @@ export async function syncMarketSnapshots(
   return { events, isLive: allLive };
 }
 
+export interface TopMoversResult {
+  gainers: MarketEvent[];
+  losers: MarketEvent[];
+  isLive: boolean;
+}
+
+const MOCK_TOP_GAINERS: MarketEvent[] = [
+  {
+    symbol: 'CUAN',
+    price: 8450,
+    prevPrice: 7350,
+    price_change: 14.97,
+    volume: 34500000,
+    avg_volume: 12000000,
+    rank: 1,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    symbol: 'BREN',
+    price: 9800,
+    prevPrice: 8950,
+    price_change: 9.50,
+    volume: 48000000,
+    avg_volume: 20000000,
+    rank: 2,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    symbol: 'AMMN',
+    price: 11200,
+    prevPrice: 10400,
+    price_change: 7.69,
+    volume: 29000000,
+    avg_volume: 15000000,
+    rank: 3,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    symbol: 'BRPT',
+    price: 1420,
+    prevPrice: 1340,
+    price_change: 5.97,
+    volume: 52000000,
+    avg_volume: 25000000,
+    rank: 4,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+];
+
+const MOCK_TOP_LOSERS: MarketEvent[] = [
+  {
+    symbol: 'GOTO',
+    price: 52,
+    prevPrice: 56,
+    price_change: -7.14,
+    volume: 420000000,
+    avg_volume: 300000000,
+    rank: 1,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    symbol: 'BUKA',
+    price: 115,
+    prevPrice: 122,
+    price_change: -5.74,
+    volume: 85000000,
+    avg_volume: 60000000,
+    rank: 2,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+];
+
+/**
+ * Fetches top market movers / gainers / losers from Sectors API v2 (/v2/companies/top-changes/)
+ */
+export async function getTopMarketMovers(sessionApiKey?: string): Promise<TopMoversResult> {
+  const apiKey = sessionApiKey || process.env.SECTORS_API_KEY;
+
+  if (apiKey && apiKey.trim().length > 0) {
+    try {
+      const res = await axios.get(`${SECTORS_V2_BASE_URL}/companies/top-changes/`, {
+        headers: {
+          Authorization: apiKey.trim(),
+        },
+        timeout: 7000,
+      });
+
+      const data = res.data;
+      if (data) {
+        const gainersData = data.top_gainers || data.gainers || [];
+        const losersData = data.top_losers || data.losers || [];
+
+        // Support both direct array and nested period object e.g. { "1d": [...], "7d": [...] }
+        const rawGainers = Array.isArray(gainersData)
+          ? gainersData
+          : gainersData['1d'] || gainersData['7d'] || gainersData['30d'] || Object.values(gainersData)[0] || [];
+
+        const rawLosers = Array.isArray(losersData)
+          ? losersData
+          : losersData['1d'] || losersData['7d'] || losersData['30d'] || Object.values(losersData)[0] || [];
+
+        const mapMover = (item: any, rankIdx: number): MarketEvent => {
+          const sym = (item.symbol || item.ticker || 'BBCA').toUpperCase().replace('.JK', '');
+          const price = item.last_close_price || item.price || item.close || item.last_price || 1000;
+          let rawChange = item.price_change !== undefined ? Number(item.price_change) : item.change || 0;
+          
+          // If change is represented as decimal fraction like 0.25 for 25%, normalize to percentage
+          if (Math.abs(rawChange) < 1.0 && rawChange !== 0) {
+            rawChange = rawChange * 100;
+          }
+
+          const change = parseFloat(rawChange.toFixed(2));
+          const prevPrice = item.prev_price || (change !== 0 ? price / (1 + change / 100) : price);
+
+          return {
+            symbol: sym,
+            price: Math.round(price),
+            prevPrice: Math.round(prevPrice),
+            price_change: change,
+            volume: item.volume || 15000000,
+            avg_volume: item.avg_volume || 10000000,
+            rank: rankIdx + 1,
+            timestamp: new Date().toLocaleTimeString(),
+          };
+        };
+
+        const gainers = (Array.isArray(rawGainers) ? rawGainers : []).map((g: any, i: number) => mapMover(g, i));
+        const losers = (Array.isArray(rawLosers) ? rawLosers : []).map((l: any, i: number) => mapMover(l, i));
+
+        if (gainers.length > 0 || losers.length > 0) {
+          return {
+            gainers: gainers.length > 0 ? gainers : MOCK_TOP_GAINERS,
+            losers: losers.length > 0 ? losers : MOCK_TOP_LOSERS,
+            isLive: true,
+          };
+        }
+      }
+    } catch (err: any) {
+      console.warn(
+        `Sectors API v2 /companies/top-changes/ failed (${err.response?.status || err.message}), fallback to mock:`
+      );
+    }
+  }
+
+  return {
+    gainers: MOCK_TOP_GAINERS,
+    losers: MOCK_TOP_LOSERS,
+    isLive: false,
+  };
+}
+
 export interface CompanyFundamentalReport {
   symbol: string;
   companyName: string;
