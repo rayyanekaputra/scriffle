@@ -42,6 +42,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(canvasName || 'untitled board');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Sync tempName when server updates canvasName
@@ -69,6 +70,25 @@ export const TopNav: React.FC<TopNavProps> = ({
           url: dataUrl,
           caption: file.name,
           isTransparent: file.type.includes('png'),
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGenericFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const sizeKB = Math.round(file.size / 1024);
+      const sizeStr = sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB} KB`;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        onAddNode('file', {
+          fileName: file.name,
+          fileUrl: dataUrl,
+          fileSize: sizeStr,
         });
       };
       reader.readAsDataURL(file);
@@ -196,6 +216,21 @@ export const TopNav: React.FC<TopNavProps> = ({
           accept="image/*"
           className="hidden"
           onChange={handleFileUpload}
+        />
+
+        {/* Universal File Attachment Button */}
+        <button
+          onClick={() => docInputRef.current?.click()}
+          className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
+        >
+          <MingIcon name="attachment_line" size={16} className="text-slate-600" />
+          <span>File</span>
+        </button>
+        <input
+          ref={docInputRef}
+          type="file"
+          className="hidden"
+          onChange={handleGenericFileUpload}
         />
 
         <button

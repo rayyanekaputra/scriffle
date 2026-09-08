@@ -80,15 +80,57 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
           {node.type === 'watcher' && (
             <>
               <div>
-                <label className={`font-bold block mb-1 ${labelColor}`}>Stock Ticker Symbol</label>
-                <input
-                  type="text"
-                  value={config.symbol || ''}
-                  onChange={(e) => setConfig({ ...config, symbol: e.target.value.toUpperCase() })}
-                  placeholder="e.g. BBCA, BBRI, BMRI, TLKM"
-                  className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
-                />
+                <label className={`font-bold block mb-1 ${labelColor}`}>Watcher Type / Mode</label>
+                <select
+                  value={config.mode || 'single'}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      mode: e.target.value,
+                      symbol:
+                        e.target.value === 'top_gainers'
+                          ? 'Top Gainers'
+                          : e.target.value === 'top_losers'
+                          ? 'Top Losers'
+                          : config.symbol === 'TOP_GAINERS' || config.symbol === 'Top Gainers' || config.symbol === 'TOP_LOSERS' || config.symbol === 'Top Losers'
+                          ? 'BBCA'
+                          : config.symbol || 'BBCA',
+                    })
+                  }
+                  className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                >
+                  <option value="single">Single Stock Ticker (e.g. BBCA, TLKM)</option>
+                  <option value="top_gainers">🚀 Top Gainers Radar (Sectors API Leaderboard)</option>
+                  <option value="top_losers">🔻 Top Losers Radar (Sectors API Leaderboard)</option>
+                </select>
               </div>
+
+              {config.mode === 'single' || !config.mode ? (
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Stock Ticker Symbol</label>
+                  <input
+                    type="text"
+                    value={config.symbol || ''}
+                    onChange={(e) => setConfig({ ...config, symbol: e.target.value.toUpperCase() })}
+                    placeholder="e.g. BBCA, BBRI, BMRI, TLKM"
+                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Minimum % Move Filter</label>
+                  <input
+                    type="number"
+                    value={config.threshold || 0}
+                    onChange={(e) => setConfig({ ...config, threshold: parseFloat(e.target.value) || 0 })}
+                    placeholder="e.g. 5 for +5.0%"
+                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                  />
+                  <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
+                    Filter movers with at least this percentage move before triggering downstream flow.
+                  </span>
+                </div>
+              )}
 
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -97,16 +139,16 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                 </div>
                 <input
                   type="number"
-                  min={5}
+                  min={1}
                   max={3600}
                   value={config.interval || 300}
-                  onChange={(e) => setConfig({ ...config, interval: parseInt(e.target.value) || 300 })}
+                  onChange={(e) => setConfig({ ...config, interval: Math.max(1, parseInt(e.target.value) || 1) })}
                   className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
                 />
                 <div className={`mt-1.5 rounded-lg p-2 text-[11px] leading-relaxed border ${
                   isDark ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]' : 'bg-slate-50 border-slate-200 text-slate-500'
                 }`}>
-                  💡 <strong>How polling works:</strong> Scriffle tracks data via live Sectors API requests. Manual polls sync immediately, or you can run continuous stream simulations.
+                  💡 <strong>Per-Node Cadence:</strong> When Auto-Polling is started, this Watcher will poll every <strong>{config.interval || 300}s</strong> independently using the live Sectors API.
                 </div>
               </div>
             </>
@@ -221,6 +263,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
                 >
                   <option value="create_note">Auto-Spawn Research Note</option>
+                  <option value="fundamental_report">Generate Fundamental Report (Sectors API)</option>
                   <option value="create_watcher">Auto-Spawn Peer Watcher</option>
                 </select>
               </div>
@@ -242,6 +285,16 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                     className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
                   />
                 </div>
+              ) : config.action === 'fundamental_report' ? (
+                <div className={`rounded-xl p-3 text-xs leading-relaxed border ${
+                  isDark
+                    ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]'
+                    : isMono
+                    ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
+                    : 'bg-blue-50 border-blue-200 text-blue-900'
+                }`}>
+                  💡 <strong>Automated Sectors API Brief:</strong> When triggered by an upstream event (e.g. +4% breakout), Scriffle queries <code>/v2/company/report/${'{symbol}'}/</code> to extract P/E, P/B, Market Cap, and Dividend Yield, then auto-spawns a formatted research sticky note and linked PDF brief.
+                </div>
               ) : (
                 <div>
                   <label className={`font-bold block mb-1 ${labelColor}`}>Dynamic Note Template</label>
@@ -254,6 +307,85 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   />
                 </div>
               )}
+            </>
+          )}
+
+          {node.type === 'file' && (
+            <>
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>File Name</label>
+                <input
+                  type="text"
+                  value={config.fileName || ''}
+                  onChange={(e) => setConfig({ ...config, fileName: e.target.value })}
+                  placeholder="e.g. BBCA_Research_Report.pdf"
+                  className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>File URL / Direct Link</label>
+                <input
+                  type="text"
+                  value={config.fileUrl || ''}
+                  onChange={(e) => setConfig({ ...config, fileUrl: e.target.value })}
+                  placeholder="e.g. https://... or /exports/report.pdf"
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Local Disk Path (Open Location)</label>
+                <input
+                  type="text"
+                  value={config.filePath || ''}
+                  onChange={(e) => setConfig({ ...config, filePath: e.target.value })}
+                  placeholder="e.g. /home/user/Downloads/report.pdf or C:\Reports\report.pdf"
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Category</label>
+                  <select
+                    value={config.fileCategory || 'pdf'}
+                    onChange={(e) => setConfig({ ...config, fileCategory: e.target.value })}
+                    className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                  >
+                    <option value="pdf">PDF Document</option>
+                    <option value="presentation">Presentation / Slides</option>
+                    <option value="document">Word / Text Document</option>
+                    <option value="spreadsheet">Spreadsheet / CSV</option>
+                    <option value="audio">Music / Audio</option>
+                    <option value="code">Code / JSON</option>
+                    <option value="archive">Archive / ZIP</option>
+                    <option value="generic">Other / Generic</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>File Size</label>
+                  <input
+                    type="text"
+                    value={config.fileSize || ''}
+                    onChange={(e) => setConfig({ ...config, fileSize: e.target.value })}
+                    placeholder="e.g. 1.8 MB"
+                    className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Caption (Optional)</label>
+                <input
+                  type="text"
+                  value={config.caption || ''}
+                  onChange={(e) => setConfig({ ...config, caption: e.target.value })}
+                  placeholder="e.g. Generated during morning breakout scan"
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
             </>
           )}
         </div>

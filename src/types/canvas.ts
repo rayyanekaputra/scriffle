@@ -6,7 +6,8 @@ export type NodeType =
   | 'action'
   | 'text'
   | 'image'
-  | 'sticker';
+  | 'sticker'
+  | 'file';
 
 export interface WatcherConfig {
   symbol: string;         // e.g. "BBCA", "BBRI", "BMRI"
@@ -32,7 +33,7 @@ export interface AlertConfig {
 }
 
 export interface ActionConfig {
-  action: 'create_note' | 'create_watcher' | 'export_canvas';
+  action: 'create_note' | 'create_watcher' | 'fundamental_report' | 'export_canvas';
   params?: Record<string, any>;
 }
 
@@ -55,6 +56,27 @@ export interface StickerConfig {
   size?: number;
 }
 
+export type FileCategory =
+  | 'pdf'
+  | 'presentation'
+  | 'document'
+  | 'spreadsheet'
+  | 'audio'
+  | 'code'
+  | 'archive'
+  | 'generic';
+
+export interface FileConfig {
+  fileName: string;
+  fileUrl: string;
+  filePath?: string;        // Local file path on disk (e.g. /home/user/Downloads/report.pdf)
+  fileSize?: string;
+  fileCategory?: FileCategory;
+  extension?: string;
+  caption?: string;
+  createdAt?: string;
+}
+
 export type NodeConfig =
   | WatcherConfig
   | ConditionConfig
@@ -63,7 +85,8 @@ export type NodeConfig =
   | ActionConfig
   | TextConfig
   | ImageConfig
-  | StickerConfig;
+  | StickerConfig
+  | FileConfig;
 
 export interface CanvasNodeData {
   id: string;

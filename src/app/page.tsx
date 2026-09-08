@@ -32,8 +32,6 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
 
   // Auto-stream continuous market ticker state
   const [autoTickActive, setAutoTickActive] = useState(false);
-  const [autoTickInterval, setAutoTickInterval] = useState(3);
-  const timerRef = useRef<any>(null);
 
   // In-Memory Session API Key (Temporary for this session only, never saved to disk or export)
   const [sectorsApiKey, setSectorsApiKey] = useState('');
@@ -151,6 +149,13 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         defaultConfig = { channel: 'ui' };
       } else if (type === 'action') {
         defaultConfig = { action: 'create_note' };
+      } else if (type === 'file') {
+        defaultConfig = {
+          fileName: 'BBCA_Equity_Research_Brief.pdf',
+          fileUrl: '#',
+          fileSize: '1.4 MB',
+          fileCategory: 'pdf',
+        };
       }
     }
 
@@ -278,65 +283,68 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     }
   };
 
-  // Continuous Auto-Ticker Stream Loop
+  // Per-Watcher Node Auto-Polling Engine
+  const nodeTimersRef = useRef<{ [nodeId: string]: NodeJS.Timeout }>({});
+
   useEffect(() => {
-    if (!autoTickActive) {
-      if (timerRef.current) clearInterval(timerRef.current);
+    // Clear any active timers
+    Object.values(nodeTimersRef.current).forEach((timer) => clearInterval(timer));
+    nodeTimersRef.current = {};
+
+    if (!autoTickActive || !canvas?.nodes) {
       return;
     }
 
-    const availableSymbols = Array.from(
-      new Set(
-        canvas?.nodes
-          ?.filter((n) => n.type === 'watcher')
-          ?.map((n: any) => n.config?.symbol?.toUpperCase())
-          ?.filter(Boolean) || ['BBCA', 'TLKM', 'BMRI']
-      )
-    );
+    const watcherNodes = canvas.nodes.filter((n) => n.type === 'watcher');
+    if (watcherNodes.length === 0) return;
 
-    if (availableSymbols.length === 0) availableSymbols.push('BBCA');
+    watcherNodes.forEach((node) => {
+      const cfg = (node.config || {}) as any;
+      const symbol = (cfg.symbol || 'BBCA').toUpperCase();
+      const intervalSec = Math.max(1, Number(cfg.interval) || 300);
 
-    timerRef.current = setInterval(() => {
-      const randomSymbol = availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
-      const isSpike = Math.random() < 0.25;
-      const priceChange = isSpike
-        ? parseFloat((5.5 + Math.random() * 3.5).toFixed(2))
-        : parseFloat(((Math.random() - 0.4) * 3.2).toFixed(2));
+      // Function to execute a single targeted poll for this watcher's symbol
+      const pollWatcher = async () => {
+        try {
+          const res = await fetch('/api/engine/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              canvasId: canvas.id,
+              apiKey: sectorsApiKey.trim(),
+              symbol,
+            }),
+          });
+          if (res.ok) {
+            mutate();
+            mutateLogs();
+          }
+        } catch (err) {
+          console.error(`Auto-polling failed for ${symbol}:`, err);
+        }
+      };
 
-      const volume = isSpike
-        ? Math.floor(18000000 + Math.random() * 20000000)
-        : Math.floor(5000000 + Math.random() * 10000000);
-
-      const basePrice = randomSymbol === 'TLKM' ? 3200 : randomSymbol === 'BBRI' ? 5100 : 10200;
-      const currentPrice = Math.round(basePrice * (1 + priceChange / 100));
-
-      handleSimulateCustom(
-        {
-          symbol: randomSymbol,
-          price: currentPrice,
-          prevPrice: basePrice,
-          price_change: priceChange,
-          volume,
-          avg_volume: 10000000,
-          rank: 1,
-          timestamp: new Date().toLocaleTimeString(),
-        },
-        true // suppress info toasts during stream, only show alert toasts
-      );
-    }, autoTickInterval * 1000);
+      // Set recurring interval for this watcher
+      nodeTimersRef.current[node.id] = setInterval(pollWatcher, intervalSec * 1000);
+    });
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      Object.values(nodeTimersRef.current).forEach((timer) => clearInterval(timer));
+      nodeTimersRef.current = {};
     };
-  }, [autoTickActive, autoTickInterval, canvas?.nodes]);
+  }, [autoTickActive, canvas?.nodes, canvas?.id, sectorsApiKey]);
 
-  const handleToggleAutoTick = (active: boolean, intervalSec: number) => {
+  const handleToggleAutoTick = (active: boolean, intervalSec?: number) => {
     setAutoTickActive(active);
-    setAutoTickInterval(intervalSec);
     if (active) {
-      showToast('Live Streaming Started', `Mimicking live market ticks every ${intervalSec}s`, 'rising');
+      const count = canvas?.nodes?.filter((n) => n.type === 'watcher').length || 0;
+      showToast(
+        'Auto-Polling Started',
+        `Active on ${count} Watcher node${count !== 1 ? 's' : ''}, polling each at its configured interval.`,
+        'rising'
+      );
     } else {
-      showToast('Streaming Paused', 'Market tick loop stopped', 'info');
+      showToast('Auto-Polling Paused', 'All watcher node polling schedules stopped', 'info');
     }
   };
 

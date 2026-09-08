@@ -196,6 +196,23 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             <span>Upload picture</span>
           </button>
 
+          {/* Add File Attachment Option */}
+          <button
+            onClick={() => {
+              onAddElement('file', {
+                fileName: 'Market_Research_Report.pdf',
+                fileUrl: '#',
+                fileSize: '1.2 MB',
+                fileCategory: 'pdf',
+              });
+              onClose();
+            }}
+            className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}
+          >
+            <MingIcon name="attachment_line" size={16} className={iconColor} />
+            <span>File attachment</span>
+          </button>
+
           <button
             onClick={() => {
               onAddElement('watcher', { symbol: 'BBCA' });
