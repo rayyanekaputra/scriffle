@@ -149,6 +149,13 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         defaultConfig = { channel: 'ui' };
       } else if (type === 'action') {
         defaultConfig = { action: 'create_note' };
+      } else if (type === 'file') {
+        defaultConfig = {
+          fileName: 'BBCA_Equity_Research_Brief.pdf',
+          fileUrl: '#',
+          fileSize: '1.4 MB',
+          fileCategory: 'pdf',
+        };
       }
     }
 

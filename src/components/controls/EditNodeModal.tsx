@@ -256,6 +256,85 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
               )}
             </>
           )}
+
+          {node.type === 'file' && (
+            <>
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>File Name</label>
+                <input
+                  type="text"
+                  value={config.fileName || ''}
+                  onChange={(e) => setConfig({ ...config, fileName: e.target.value })}
+                  placeholder="e.g. BBCA_Research_Report.pdf"
+                  className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>File URL / Direct Link</label>
+                <input
+                  type="text"
+                  value={config.fileUrl || ''}
+                  onChange={(e) => setConfig({ ...config, fileUrl: e.target.value })}
+                  placeholder="e.g. https://... or /exports/report.pdf"
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Local Disk Path (Open Location)</label>
+                <input
+                  type="text"
+                  value={config.filePath || ''}
+                  onChange={(e) => setConfig({ ...config, filePath: e.target.value })}
+                  placeholder="e.g. /home/user/Downloads/report.pdf or C:\Reports\report.pdf"
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Category</label>
+                  <select
+                    value={config.fileCategory || 'pdf'}
+                    onChange={(e) => setConfig({ ...config, fileCategory: e.target.value })}
+                    className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                  >
+                    <option value="pdf">PDF Document</option>
+                    <option value="presentation">Presentation / Slides</option>
+                    <option value="document">Word / Text Document</option>
+                    <option value="spreadsheet">Spreadsheet / CSV</option>
+                    <option value="audio">Music / Audio</option>
+                    <option value="code">Code / JSON</option>
+                    <option value="archive">Archive / ZIP</option>
+                    <option value="generic">Other / Generic</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>File Size</label>
+                  <input
+                    type="text"
+                    value={config.fileSize || ''}
+                    onChange={(e) => setConfig({ ...config, fileSize: e.target.value })}
+                    placeholder="e.g. 1.8 MB"
+                    className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Caption (Optional)</label>
+                <input
+                  type="text"
+                  value={config.caption || ''}
+                  onChange={(e) => setConfig({ ...config, caption: e.target.value })}
+                  placeholder="e.g. Generated during morning breakout scan"
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Footer Actions */}

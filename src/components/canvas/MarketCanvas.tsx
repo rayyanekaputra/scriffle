@@ -26,6 +26,7 @@ import { ActionNode } from './nodes/ActionNode';
 import { TextNode } from './nodes/TextNode';
 import { ImageNode } from './nodes/ImageNode';
 import { StickerNode } from './nodes/StickerNode';
+import { FileNode } from './nodes/FileNode';
 import { ContextMenu } from './ContextMenu';
 import { CanvasData, NodeType } from '@/types/canvas';
 import { useTheme } from '@/context/ThemeContext';
@@ -73,6 +74,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       text: TextNode,
       image: ImageNode,
       sticker: StickerNode,
+      file: FileNode,
     }),
     []
   );
