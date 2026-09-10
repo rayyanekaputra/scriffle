@@ -130,15 +130,19 @@ hackathon/
 │   │   ├── canvas/
 │   │   │   ├── MarketCanvas.tsx       # React Flow canvas, clipboard paste, context menus & drop events
 │   │   │   ├── ContextMenu.tsx        # Right-click context menus for canvas and nodes
+│   │   │   ├── SelectionBoundingBox.tsx # Figma-style 8-point bounding box handles & group pills
 │   │   │   └── nodes/
 │   │   │       ├── WatcherNode.tsx    # Watcher sticker + cycle counter
 │   │   │       ├── ConditionNode.tsx  # Condition rule capsule
 │   │   │       ├── NoteNode.tsx       # Direct inline editable FigJam sticky note
 │   │   │       ├── AlertNode.tsx      # Alert sticker
 │   │   │       ├── ActionNode.tsx     # Mutation automation sticker
-│   │   │       ├── TextNode.tsx       # Direct inline editable free text
+│   │   │       ├── TextNode.tsx       # Direct inline editable free text with markdown triggers
 │   │   │       ├── StickerNode.tsx    # Transparent badge stickers
-│   │   │       └── ImageNode.tsx      # Resizable transparent Image node with NodeResizer
+│   │   │       ├── ImageNode.tsx      # Resizable transparent Image node with NodeResizer
+│   │   │       ├── FileNode.tsx       # Universal attached file & PDF brief preview
+│   │   │       └── text/
+│   │   │           └── TextFormatToolbar.tsx # Floating formatting toolbar (typography, highlight, container)
 │   │   ├── controls/
 │   │   │   ├── TopNav.tsx             # Floating whiteboard toolbar & sticker/image picker
 │   │   │   ├── SimulationBar.tsx      # Presenter demo dock (BBCA surge, volume spike)

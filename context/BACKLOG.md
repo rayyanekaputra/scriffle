@@ -16,9 +16,11 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [x] **⏱️ Independent Per-Watcher Polling Engine**
   - Configurable polling cadences (1s–3600s) per watcher with automatic timer scheduling.
 - [x] **✍️ FigJam × Miro Rich Free-Text Whiteboard Tooling**
-  - Interactive floating formatting toolbar (`TextFormatToolbar`), 4-tier font scale, bold/italic/underline/strike, text alignment, pastel highlighter pens (`Yellow`, `Mint`, `Coral`, `Purple`), container modes (`Plain`, `Callout Banner`, `Card`), auto-growing textarea, interactive `<NodeResizer />`, markdown prefix triggers (`# `, `## `, `- `), and `T` hotkey canvas placement.
+  - Interactive floating formatting toolbar (`TextFormatToolbar`), 4-tier font scale (`Title`, `Header`, `Body`, `Caption`), bold/italic/underline/strike, text alignment, pastel highlighter pens (`Yellow`, `Mint`, `Coral`, `Purple`), container modes (`Plain`, `Callout Banner`, `Card`), 1:1 true WYSIWYG parity, auto-growing textarea, interactive `<NodeResizer />`, markdown prefix triggers (`# `, `## `, `- `), and `T` hotkey canvas placement.
 - [x] **📦 FigJam & Miro-Style Group / Ungroup & Deep Isolation Mode**
   - Grouping selected elements with `Cmd+G`, ungrouping with `Cmd+Shift+G`, cohesive group drag/selection, group-aware copy & paste (`Cmd+C` / `Cmd+V`) preserving internal connectors and spatial layout, and double-click isolation focus mode for sub-element editing and `Shift+Click` intra-group selections.
+- [x] **📐 Figma-Style Multi-Selection Bounding Box & Transform Handles**
+  - Interactive 8-point corner and edge midpoint handles overlay around all selected elements with live object counter and quick `Group` / `Ungroup` action buttons.
 
 ---
 
@@ -60,24 +62,4 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - **API**: `GET /v2/broker-summary/{symbol}/top/`
 - **Description**: Identifies the top buyer and seller brokerages for any stock to detect retail vs institutional positioning.
 - **Canvas Integration**: Broker Radar Node that evaluates accumulation ratios and triggers warnings when smart money begins exiting.
----
 
-### 6. ✍️ FigJam × Miro Rich Free-Text Whiteboard Tooling — High Priority
-- **Status**: 🟡 Open / UX Freedom Enhancement
-- **Goal**: Elevate the existing basic `TextNode` into a flexible, tactile whiteboard text experience matching Miro & FigJam.
-- **Key Capabilities**:
-  * **Quick Floating Formatting Bar**: Appears on node selection / text focus with:
-    * **Typography Scale**: Pre-set hierarchy pills (`Huge Title 36px`, `Section Header 24px`, `Body 14px`, `Caption/Note 11px`) or slider.
-    * **Text Styling**: Bold, Italic, Strikethrough, Underline, and Code badge.
-    * **Alignment & Lists**: Left, Center, Right, Bullet points (`•`), and Numbered lists.
-    * **Highlighter & Text Color Palette**: Marker highlights (Pastel Yellow `#FEF08A`, Mint `#A7F3D0`, Coral `#FECDD3`, Blue `#BFDBFE`) and text tones.
-  * **Dynamic Auto-Fit & Interactive Resizing**:
-    * Corner drag handles to freely resize container width, with auto-height adjustment.
-    * Double-click border to toggle auto-width fit vs. fixed-width text wrapping.
-  * **Visual Container Modes**:
-    * **Pure Transparent**: Frameless floating text that blends directly onto the dot grid.
-    * **Callout Capsule / Banner**: Subtle background fill with left accent border (e.g. key thesis statement, quote, or risk disclaimer).
-  * **Markdown & Hotkey Quick-Triggers**:
-    * Typing `# `, `## `, `### ` auto-converts to corresponding font scale.
-    * Typing `- ` or `1. ` auto-starts bulleted/numbered lists.
-    * Pressing `T` on canvas immediately enters text placement mode at mouse cursor.

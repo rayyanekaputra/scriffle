@@ -157,17 +157,20 @@ hackathon/
     ├── components/
     │   ├── canvas/
     │   │   ├── MarketCanvas.tsx    ← React Flow, clipboard paste, context menus, drop events
-    │   │   ├── ContextMenu.tsx     ← Right-click menus (canvas + node/edge)
+    │   │   ├── ContextMenu.tsx     ← Right-click menus (canvas + node/edge + group/ungroup)
+    │   │   ├── SelectionBoundingBox.tsx ← Figma-style 8-point bounding box handles & group action pills
     │   │   └── nodes/
     │   │       ├── WatcherNode.tsx   ← Cycle counter ⚡, Radar/Top-Movers mode
     │   │       ├── ConditionNode.tsx ← expr-eval rule capsule
     │   │       ├── NoteNode.tsx      ← Inline editable, 5 pastel colors, resizable
     │   │       ├── AlertNode.tsx     ← Toast + log trigger
     │   │       ├── ActionNode.tsx    ← Canvas mutations + fundamental_report
-    │   │       ├── TextNode.tsx      ← Freeform inline text
+    │   │       ├── TextNode.tsx      ← Freeform WYSIWYG text with markdown triggers
     │   │       ├── StickerNode.tsx   ← Transparent badge stickers
     │   │       ├── ImageNode.tsx     ← NodeResizer, transparent PNG
-    │   │       └── FileNode.tsx      ← File attachment with preview
+    │   │       ├── FileNode.tsx      ← File attachment with preview
+    │   │       └── text/
+    │   │           └── TextFormatToolbar.tsx ← Floating formatting toolbar (typography, highlight, container)
     │   ├── controls/
     │   │   ├── TopNav.tsx          ← Floating whiteboard toolbar
     │   │   ├── NavToolbar.tsx      ← Secondary toolbar
@@ -241,13 +244,22 @@ hackathon/
 
 ## 9. Key Features Implemented (Complete List)
 
-### Canvas Interactions
+### Canvas Interactions & Grouping System
 - **Right-click on canvas** → context menu to insert any node type at cursor coordinates
-- **Right-click on node/edge** → Edit, Change Color, Delete
-- **Double-click node** → `EditNodeModal` opens
+- **Right-click on node/edge** → Edit, Change Color, Delete, Group, Ungroup
+- **Double-click node** → `EditNodeModal` opens; for TextNode / Grouped nodes, enters inline edit mode or group isolation focus
 - **Shift+Click / Ctrl+Click** → multi-select; **Shift+Drag** → box marquee select
+- **Figma-Style Selection Bounding Box (`SelectionBoundingBox.tsx`):** 8-point corner and edge midpoint handles with dashed outline and quick `Group` / `Ungroup` action buttons when 2+ elements are selected
+- **Group & Ungroup (`Cmd+G` / `Cmd+Shift+G`):** Cohesive multi-node dragging, group-aware copy & paste (`Cmd+C` / `Cmd+V`) preserving internal connectors and relative offsets
+- **Double-Click Isolation Mode:** Isolates group into focus mode with top banner to edit individual elements or make `Shift+Click` sub-selections (`Esc` to exit)
 - **Delete / Backspace** → bulk delete selected
 - **Ctrl+C / Ctrl+V** → Copy/paste nodes; **Ctrl+D** → Duplicate
+
+### Free-Text Tooling (`TextNode.tsx` & `TextFormatToolbar.tsx`)
+- **1:1 True WYSIWYG Parity:** Zero dimensional jump between typing and display modes, auto-growing height with zero internal scrollbars
+- **Floating Contextual Toolbar:** Docks above active card with 4-level typography scale (`Title`, `Header`, `Body`, `Caption`), text styling (`Bold`, `Italic`, `Underline`, `Strikethrough`), text alignment, pastel highlighter markers, and container styles (`Plain`, `Callout Banner`, `Card`)
+- **Markdown Triggers:** `# ` auto-converts to Title, `## ` to Header, `- ` to bulleted list
+- **`T` Hotkey Placement:** Press `T` anywhere on canvas to immediately drop free-text at mouse cursor with auto-focus
 
 ### Note Nodes
 - **Direct inline edit** on canvas (no popup)
