@@ -22,7 +22,12 @@
 * **`note` (FigJam Sticky Note):** **Direct inline editable on canvas** without popups. Supports pastel color themes (`yellow`, `mint`, `pink`, `blue`, `purple`) and template interpolation (e.g. `${symbol} surged ${price_change}%`).
 * **`alert` (Notification sticker):** Emits UI notifications and logs them to the activity feed.
 * **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes or watchers when upstream conditions pass.
-* **`text` (Freeform Text):** **Direct inline editable on canvas** floating text blocks.
+* **`text` (FigJam × Miro Rich Freeform Text):**
+  * **Direct inline editable on canvas** with auto-growing textarea and zero awkward scrollbars.
+  * **Floating Contextual Formatting Toolbar (`TextFormatToolbar`):** Docks above active card with 4-level typography scale (`H1 Title`, `H2 Header`, `Body`, `Note/Caption`), styling toggles (`Bold`, `Italic`, `Underline`, `Strikethrough`), text alignment (`Left`, `Center`, `Right`), pastel highlighter markers (`Yellow`, `Mint`, `Coral`, `Purple`), and container styles (`Plain`, `Callout Banner`, `Card Box`).
+  * **Interactive Width Resizing:** Corner `<NodeResizer />` drag handles to set custom wrapping boundaries persisted to SQLite.
+  * **Markdown Prefix Triggers:** `# ` auto-converts to H1 Title, `## ` auto-converts to H2 Header, `- ` / `* ` starts bulleted lists with `Enter` continuation.
+  * **`T` Hotkey Placement:** Press `T` anywhere on canvas to immediately drop free-text at mouse cursor with auto-focus.
 * **`sticker` (Market Stickers):** Flat badge stickers with MingCute icons (`Bullish`, `Bearish`, `Breakout Ready`, `Target Hit`, `Top Pick`, `High Volatility`, `Thesis Approved`).
 * **`image` (Image Studio Node):**
   * **Upload:** Via top toolbar button, right-click context menu, or file drop.

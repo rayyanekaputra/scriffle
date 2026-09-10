@@ -39,10 +39,24 @@ export interface ActionConfig {
   params?: Record<string, any>;
 }
 
+export type TextFontSize = 'title' | 'header' | 'body' | 'caption' | 'small' | 'medium' | 'large';
+export type TextAlignment = 'left' | 'center' | 'right';
+export type TextContainerStyle = 'plain' | 'callout' | 'card';
+export type TextHighlightColor = 'none' | 'yellow' | 'mint' | 'coral' | 'purple';
+
 export interface TextConfig {
   text: string;
-  fontSize?: 'small' | 'medium' | 'large';
+  fontSize?: TextFontSize;
+  align?: TextAlignment;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strike?: boolean;
+  highlight?: TextHighlightColor;
+  containerStyle?: TextContainerStyle;
   color?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface ImageConfig {

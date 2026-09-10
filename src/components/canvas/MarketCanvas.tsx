@@ -243,7 +243,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         return;
       }
 
-      // 8. Tool switching shortcuts (V -> Move / Select tool, H -> Hand / Pan tool)
+      // 8. Tool switching shortcuts (V -> Move / Select tool, H -> Hand / Pan tool, T -> Quick Free-Text placement)
       if (!isCtrlOrCmd && !e.altKey && !e.shiftKey) {
         if (e.key === 'v' || e.key === 'V') {
           e.preventDefault();
@@ -253,6 +253,12 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         if (e.key === 'h' || e.key === 'H') {
           e.preventDefault();
           onSetToolMode?.('hand');
+          return;
+        }
+        if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          const flowPos = screenToFlowPosition(mousePosRef.current);
+          onAddNodeAtPosition?.('text', flowPos, { text: '' });
           return;
         }
       }
