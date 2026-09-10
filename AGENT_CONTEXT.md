@@ -263,6 +263,7 @@ hackathon/
 - **Floating Contextual Toolbar:** Docks above active card with 4-level typography scale (`Title`, `Header`, `Body`, `Caption`), text styling (`Bold`, `Italic`, `Underline`, `Strikethrough`), text alignment, pastel highlighter markers, and container styles (`Plain`, `Callout Banner`, `Card`)
 - **Markdown Triggers:** `# ` auto-converts to Title, `## ` to Header, `- ` to bulleted list
 - **`T` Hotkey Placement:** Press `T` anywhere on canvas to immediately drop free-text at mouse cursor with auto-focus
+- **Keyboard Commit:** `Enter` applies changes and exits edit mode. `Shift+Enter` inserts a new line (with bullet continuation). `Escape` also commits and exits.
 
 ### Note Nodes
 - **Direct inline edit** on canvas (no popup)
@@ -313,15 +314,18 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
-### 🔴 High Priority
-1. **PDF Report Redesign** — Current `/api/export/report` layout is too plain. Needs Scriffle's FigJam/Neo-brutalist aesthetic: 2px borders, no blur, crisp cards, metric grids, multi-theme support (`@media print`).
+### ✅ Recently Completed (This Session)
+- **PDF / Fundamental Report Redesign** — Fully redesigned `/api/export/report` to a clean, borderless institutional document: white canvas, subtle hairline dividers, selective colour highlights (Mint for gains, Coral for losses, Blue for ratings bar), metric glossary & quick reference section at the bottom, and `@media print` CSS.
+- **Auto-Export Reports to Disk** — When `ActionNode` fires `fundamental_report`, the report is automatically saved to `reports/{project_name}/{symbol}_Fundamental_Brief.html` via `src/server/services/reportExporter.ts`. No manual download required.
+- **FileNode Download Status Indicator** — `FileNode.tsx` now shows a green `✓ Saved` pill when `savedLocally: true` or `isDownloaded: true` in `FileConfig`. Eliminates confusion about whether a file is on-disk or just a web link.
+- **Free-Text `Enter` to Commit** — In `TextNode.tsx`, `Enter` now commits and exits edit mode. `Shift+Enter` creates a new line (with bullet list continuation). `Escape` also commits and exits.
 
 ### 🟡 Medium Priority (Planned Sectors API Integrations)
-2. **AI Natural Language Screener** — `ScreenerNode.tsx` using `GET /v2/companies/?q={query}&include_query_values=true`
-3. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-4. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-5. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-6. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+1. **AI Natural Language Screener** — `ScreenerNode.tsx` using `GET /v2/companies/?q={query}&include_query_values=true`
+2. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+3. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+4. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+5. **Volume Breakout Scanner** — `GET /v2/most-traded/`
 
 ---
 
@@ -358,7 +362,8 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 | File | What It Covers |
 |---|---|
-| `CHECKPOINT.md` | Most up-to-date implementation status snapshot |
+| `SESSION_CHANGELOG.md` | ⭐ Most recent session changes — read this first for a quick catch-up |
+| `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
 | `CURRENT_ENDPOINT.md` | Active vs. planned Sectors API endpoint mapping |
 | `ENDPOINTS.md` | All 32 Sectors API v2 endpoints reference |
@@ -373,3 +378,5 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `KEYBOARD_SHORTCUTS_PLAN.md` | All keyboard shortcuts |
 | `SECTORS_API_KEY_LIVE_POLL_PLAN.md` | API key session management |
 | `FILE_NODE_PLAN.md` | Universal FileNode architecture |
+| `AUTO_EXPORT_AND_DOWNLOAD_STATUS_PLAN.md` | Auto-export to disk & FileNode download status indicator |
+

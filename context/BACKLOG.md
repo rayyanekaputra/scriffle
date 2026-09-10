@@ -6,6 +6,14 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⭐ Clean Borderless PDF Report Layout (`/api/export/report`)**
+  - Full redesign to a clean institutional document: white canvas, hairline dividers, selective colour highlights (Mint/Coral for price direction, Blue for ratings bar), metric glossary at the bottom, `@media print` CSS. No outer card border, no all-caps, no letter-spacing.
+- [x] **⭐ Auto-Export Reports to Disk (`reportExporter.ts`)**
+  - Reports are automatically saved to `reports/{project_name}/{symbol}_Fundamental_Brief.html` on disk when `ActionNode` fires `fundamental_report`. No manual print/save step required.
+- [x] **⭐ FileNode Download / Saved Status Indicator (`FileNode.tsx`)**
+  - `FileNode` now shows a green `✓ Saved` pill when `savedLocally: true` or `isDownloaded: true` in `FileConfig`. Eliminates confusion about whether a file exists on disk or is a web-only link.
+- [x] **⭐ Free-Text `Enter` to Commit (`TextNode.tsx`)**
+  - `Enter` now commits changes and exits edit mode. `Shift+Enter` creates a new line (with bullet continuation). `Escape` also commits.
 - [x] **⚡ Top Market Movers & Gainers Radar (`/v2/companies/top-changes/`)**
   - Integrated into `WatcherNode.tsx`, `EditNodeModal.tsx`, `ContextMenu.tsx`, and `/api/engine/trigger`.
   - Supports `Top Gainers` & `Top Losers` modes with custom % move threshold filtering and automated downstream graph execution.
