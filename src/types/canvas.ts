@@ -93,7 +93,13 @@ export interface FileConfig {
   createdAt?: string;
 }
 
-export type NodeConfig =
+export interface BaseNodeConfig {
+  _groupId?: string | null;
+  _groupName?: string | null;
+  [key: string]: any;
+}
+
+export type NodeConfig = (
   | WatcherConfig
   | ConditionConfig
   | NoteConfig
@@ -102,11 +108,14 @@ export type NodeConfig =
   | TextConfig
   | ImageConfig
   | StickerConfig
-  | FileConfig;
+  | FileConfig
+) & BaseNodeConfig;
 
 export interface CanvasNodeData {
   id: string;
   canvasId: string;
+  groupId?: string | null;
+  groupName?: string | null;
   type: NodeType;
   position: { x: number; y: number };
   config: NodeConfig;

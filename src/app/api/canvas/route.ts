@@ -72,9 +72,14 @@ export async function GET(req: Request) {
         if (node.stateJson) state = JSON.parse(node.stateJson);
       } catch {}
 
+      const groupId = config._groupId || null;
+      const groupName = config._groupName || null;
+
       return {
         id: node.id,
         canvasId: node.canvasId,
+        groupId,
+        groupName,
         type: node.type as any,
         position: { x: node.positionX, y: node.positionY },
         config,

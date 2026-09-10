@@ -17,6 +17,8 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - Configurable polling cadences (1s–3600s) per watcher with automatic timer scheduling.
 - [x] **✍️ FigJam × Miro Rich Free-Text Whiteboard Tooling**
   - Interactive floating formatting toolbar (`TextFormatToolbar`), 4-tier font scale, bold/italic/underline/strike, text alignment, pastel highlighter pens (`Yellow`, `Mint`, `Coral`, `Purple`), container modes (`Plain`, `Callout Banner`, `Card`), auto-growing textarea, interactive `<NodeResizer />`, markdown prefix triggers (`# `, `## `, `- `), and `T` hotkey canvas placement.
+- [x] **📦 FigJam & Miro-Style Group / Ungroup & Deep Isolation Mode**
+  - Grouping selected elements with `Cmd+G`, ungrouping with `Cmd+Shift+G`, cohesive group drag/selection, group-aware copy & paste (`Cmd+C` / `Cmd+V`) preserving internal connectors and spatial layout, and double-click isolation focus mode for sub-element editing and `Shift+Click` intra-group selections.
 
 ---
 

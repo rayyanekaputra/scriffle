@@ -41,9 +41,15 @@
   * **Open / Import:** **Open** button with native file picker (`.scriffle`, `.json`) + Drag & Drop `.scriffle` file directly onto the canvas to restore full graph.
   * **Starter Presets:** Quick template dropdown in Demo Controls to load `"Rotation Engine"` (complex multi-branching pipeline), `"Momentum Breakout Loop"`, or `"Banking Sector Trio"`.
   * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0.
-* **Multi-Selection & Box Select:**
+* **Group & Ungroup System (`Cmd+G` / `Cmd+Shift+G`):**
+  * **Cohesive Selection & Dragging:** Multi-select nodes and press `Cmd+G` to group them into a single cohesive unit. Clicking any member node selects and drags the whole group synchronously.
+  * **Group-Aware Copy & Paste (`Cmd+C` / `Cmd+V` / `Cmd+D`):** Copies group members, their relative spatial offsets, and internal connecting edges. Pasting assigns a fresh `groupId` and recreates the internal connections at the cursor position.
+  * **Double-Click Isolation Focus Mode:** Double-clicking an element in a group isolates the canvas into that group with a top status banner, allowing individual element editing and `Shift+Click` sub-selections. Press `Escape` or click the empty canvas to exit.
+  * **Ungroup (`Cmd+Shift+G`):** Dissolves groups back into standalone elements.
+* **Multi-Selection, Box Select & Figma Bounding Box Handles:**
   * `Shift + Click` or `Ctrl/Cmd + Click` to toggle select multiple elements concurrently.
   * `Shift + Drag` marquee box selection to group-select cards and connectors.
+  * **Figma-Style Selection Bounding Box (`SelectionBoundingBox`):** Automatically frames multi-selected elements with 8 tactile square corner & midpoint handles, a dashed boundary outline, and floating interactive quick `Group` / `Ungroup` action pills.
   * `Delete` / `Backspace` removes all selected elements in bulk.
 * **Keyboard Shortcuts:**
   * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
@@ -71,12 +77,14 @@
   * **1-Click Live Poll Button:** Clicking **"Poll Live Sectors API"** sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV from `https://api.sectors.app/v2/daily/{symbol}/` for all active canvas Watchers (`BBCA`, `BBRI`, `TLKM`, etc.) and executing downstream conditions.
 * **Toast Notifications:** Located at bottom-left with reverse stacking and slide-in animations.
 
-### 2.3 Implementation Plans Saved in Working Directory
-* [`SECTORS_API_KEY_LIVE_POLL_PLAN.md`](file:///home/abzolute/Projects/hackathon/SECTORS_API_KEY_LIVE_POLL_PLAN.md): Details on masked API key session management, live polling, and mode toggling.
-* [`SAVE_OPEN_SCRIFFLE_PLAN.md`](file:///home/abzolute/Projects/hackathon/SAVE_OPEN_SCRIFFLE_PLAN.md): Details on `.scriffle` file schema, backend restore endpoint, and starter presets.
-* [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
-* [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.
-* [`ENDPOINTS.md`](file:///home/abzolute/Projects/hackathon/ENDPOINTS.md): Complete index of all 32 Indonesia v2 Sectors API endpoints.
+### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`FREE_TEXT_EXPERIENCE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/FREE_TEXT_EXPERIENCE_PLAN.md): FigJam × Miro rich free-text whiteboard tooling, floating formatting toolbar, typography hierarchy, highlighter pens, and container styles.
+* [`GROUP_UNGROUP_IMPLEMENTATION_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/GROUP_UNGROUP_IMPLEMENTATION_PLAN.md): Group & ungroup architecture, group-aware copy/paste with internal connectors, and double-click group isolation focus.
+* [`SECTORS_API_KEY_LIVE_POLL_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SECTORS_API_KEY_LIVE_POLL_PLAN.md): Details on masked API key session management, live polling, and mode toggling.
+* [`SAVE_OPEN_SCRIFFLE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SAVE_OPEN_SCRIFFLE_PLAN.md): Details on `.scriffle` file schema, backend restore endpoint, and starter presets.
+* [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
+* [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.
+* [`ENDPOINTS.md`](file:///home/abzolute/Projects/hackathon/context/ENDPOINTS.md): Complete index of all 32 Indonesia v2 Sectors API endpoints.
 
 ---
 

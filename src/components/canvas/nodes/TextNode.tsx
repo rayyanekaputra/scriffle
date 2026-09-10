@@ -14,7 +14,7 @@ import { TextFormatToolbar } from './text/TextFormatToolbar';
 
 export const TextNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
-  const { deleteElements } = useReactFlow();
+  const { deleteElements, getNodes } = useReactFlow();
   const config = (data.config || {}) as TextConfig;
 
   const [text, setText] = useState(config.text || '');
@@ -28,7 +28,7 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
   const [containerStyle, setContainerStyle] = useState<TextContainerStyle>(
     config.containerStyle || 'plain'
   );
-  const [isFocused, setIsFocused] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isDark = theme === 'dark';
@@ -71,17 +71,27 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
     setContainerStyle(config.containerStyle || 'plain');
   }, [config.containerStyle]);
 
-  // Auto-resize textarea height as user types
+  // When node gets deselected, always exit editing mode
+  useEffect(() => {
+    if (!selected) {
+      setIsEditing(false);
+    }
+  }, [selected]);
+
+  // Auto-resize textarea height to match EXACT content scrollHeight
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      textareaRef.current.style.height = '0px';
+      const nextHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${nextHeight}px`;
     }
   }, []);
 
   useEffect(() => {
-    adjustHeight();
-  }, [text, fontSize, adjustHeight]);
+    if (isEditing) {
+      adjustHeight();
+    }
+  }, [text, fontSize, isEditing, adjustHeight]);
 
   const saveConfig = async (newConfig: Partial<TextConfig>) => {
     try {
@@ -101,7 +111,7 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
   };
 
   const handleBlur = async () => {
-    setIsFocused(false);
+    setIsEditing(false);
     if (
       text !== config.text ||
       fontSize !== config.fontSize ||
@@ -127,31 +137,27 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
     }
   };
 
-  // Live Markdown Prefix Handler (e.g. typing "# " or "- ")
+  // Live Markdown Prefix Handler
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     let val = e.target.value;
 
-    // Check for title trigger "# "
     if (val.startsWith('# ') && fontSize !== 'title') {
       val = val.slice(2);
       setFontSize('title');
       saveConfig({ text: val, fontSize: 'title' });
-    }
-    // Check for header trigger "## "
-    else if (val.startsWith('## ') && fontSize !== 'header') {
+    } else if (val.startsWith('## ') && fontSize !== 'header') {
       val = val.slice(3);
       setFontSize('header');
       saveConfig({ text: val, fontSize: 'header' });
-    }
-    // Check for bullet list trigger "- " or "* "
-    else if ((val.startsWith('- ') || val.startsWith('* ')) && !val.startsWith('• ')) {
+    } else if ((val.startsWith('- ') || val.startsWith('* ')) && !val.startsWith('• ')) {
       val = '• ' + val.slice(2);
     }
 
     setText(val);
+    adjustHeight();
   };
 
-  // Key handlers: Enter continuation for bullet lists
+  // Bullet continuation on Enter
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       const cursor = textareaRef.current?.selectionStart || 0;
@@ -159,7 +165,6 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
 
       if (currentLine.startsWith('• ')) {
         e.preventDefault();
-        // If bullet is empty, clear bullet on Enter
         if (currentLine.trim() === '•') {
           const before = text.substring(0, cursor - currentLine.length);
           const after = text.substring(cursor);
@@ -174,6 +179,7 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
           if (textareaRef.current) {
             textareaRef.current.selectionStart = cursor + 3;
             textareaRef.current.selectionEnd = cursor + 3;
+            adjustHeight();
           }
         }, 0);
       }
@@ -190,6 +196,18 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
     }
   };
 
+  // Double-click to enter editing mode & focus textarea
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        adjustHeight();
+      }
+    }, 20);
+  };
+
   // Font size classes
   const normalizedSize: 'title' | 'header' | 'body' | 'caption' =
     fontSize === 'large' || fontSize === 'title'
@@ -202,23 +220,20 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
 
   const fontClass =
     normalizedSize === 'title'
-      ? 'text-2xl lg:text-3xl font-bold tracking-tight'
+      ? 'text-2xl lg:text-3xl font-bold tracking-tight leading-[1.3]'
       : normalizedSize === 'header'
-      ? 'text-lg lg:text-xl font-bold'
+      ? 'text-lg lg:text-xl font-bold leading-[1.35]'
       : normalizedSize === 'caption'
-      ? 'text-xs font-medium'
-      : 'text-sm lg:text-base font-medium';
+      ? 'text-xs font-medium leading-[1.45]'
+      : 'text-sm lg:text-base font-medium leading-[1.5]';
 
-  // Alignment classes
   const alignClass =
     align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left';
 
-  // Text decorations
   const decorationClass = `${bold ? 'font-bold' : ''} ${italic ? 'italic' : ''} ${
     underline ? 'underline' : ''
   } ${strike ? 'line-through' : ''}`;
 
-  // Highlight markers
   const highlightClass =
     highlight === 'yellow'
       ? isDark
@@ -246,7 +261,6 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
         : 'bg-[#E9D5FF] text-purple-950 px-1.5 py-0.5 rounded-md'
       : '';
 
-  // Container styling
   const containerClass =
     containerStyle === 'callout'
       ? isDark
@@ -260,7 +274,7 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
         : isMono
         ? 'bg-[#FCFBF9] border-2 border-[#D1CEC4] rounded-2xl p-3.5 shadow-xs'
         : 'bg-white border-2 border-slate-300 rounded-2xl p-3.5 shadow-xs'
-      : 'p-1.5';
+      : 'p-1';
 
   const selectedBorder = selected
     ? isDark
@@ -278,14 +292,22 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
 
   const customWidth = config.width ? `${config.width}px` : undefined;
 
+  const allNodes = getNodes();
+  const selectedCount = allNodes.filter((n) => n.selected).length;
+  const showToolbar = isEditing && selectedCount === 1;
+
+  // Exact shared typography styles across textarea and display div
+  const sharedTypographyClasses = `w-full bg-transparent ${fontClass} ${alignClass} ${decorationClass} ${highlightClass} ${textColor} m-0 p-0 border-0 outline-none`;
+
   return (
     <div
       style={{ width: customWidth, minWidth: 160, maxWidth: 850 }}
+      onDoubleClick={handleDoubleClick}
       className={`relative group transition-all duration-150 ${containerClass} ${selectedBorder}`}
     >
-      {/* NodeResizer for interactive width control */}
+      {/* NodeResizer */}
       <NodeResizer
-        isVisible={selected}
+        isVisible={selected && selectedCount === 1}
         minWidth={160}
         maxWidth={850}
         onResizeEnd={handleResizeEnd}
@@ -300,7 +322,7 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
       />
 
       {/* Floating Formatting Toolbar */}
-      {(selected || isFocused) && (
+      {showToolbar && (
         <TextFormatToolbar
           fontSize={fontSize}
           align={align}
@@ -346,18 +368,30 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
         />
       )}
 
-      {/* Direct inline editable free text area */}
-      <textarea
-        ref={textareaRef}
-        value={text}
-        onChange={handleTextChange}
-        onKeyDown={handleKeyDown}
-        onFocus={() => setIsFocused(true)}
-        onBlur={handleBlur}
-        placeholder="Type anything freely... (or # for Title, - for bullet)"
-        rows={1}
-        className={`w-full resize-none overflow-hidden bg-transparent ${fontClass} ${alignClass} ${decorationClass} ${highlightClass} ${textColor} leading-relaxed focus:outline-none nodrag nowheel`}
-      />
+      {/* WYSIWYG 1:1 Rendering Engine */}
+      {isEditing ? (
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={handleTextChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          placeholder="Type anything freely..."
+          rows={1}
+          autoFocus
+          className={`${sharedTypographyClasses} resize-none overflow-hidden block nodrag nowheel`}
+          style={{ boxSizing: 'border-box' }}
+        />
+      ) : (
+        <div
+          className={`${sharedTypographyClasses} select-none break-words whitespace-pre-wrap block ${
+            !text ? 'opacity-40 italic' : ''
+          }`}
+          style={{ boxSizing: 'border-box' }}
+        >
+          {text || 'Double-click to edit text...'}
+        </div>
+      )}
     </div>
   );
 });

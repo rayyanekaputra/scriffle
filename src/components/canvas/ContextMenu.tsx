@@ -10,10 +10,14 @@ interface ContextMenuProps {
   y: number;
   targetNodeId?: string | null;
   targetEdgeId?: string | null;
+  hasGroupSelected?: boolean;
+  hasMultiSelection?: boolean;
   onClose: () => void;
   onAddElement: (type: NodeType, extraConfig?: any) => void;
   onEditElement?: (nodeId: string) => void;
   onChangeColor?: (nodeId: string, color: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple') => void;
+  onGroupSelected?: () => void;
+  onUngroupSelected?: () => void;
   onDeleteElement?: (nodeId: string) => void;
   onDeleteEdge?: (edgeId: string) => void;
 }
@@ -23,10 +27,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   y,
   targetNodeId,
   targetEdgeId,
+  hasGroupSelected = false,
+  hasMultiSelection = false,
   onClose,
   onAddElement,
   onEditElement,
   onChangeColor,
+  onGroupSelected,
+  onUngroupSelected,
   onDeleteElement,
   onDeleteEdge,
 }) => {
@@ -88,7 +96,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     <div
       ref={menuRef}
       style={{ left: `${x}px`, top: `${y}px` }}
-      className={`fixed z-50 min-w-[200px] rounded-2xl border-2 p-1.5 text-xs shadow-none transition-colors ${menuBg}`}
+      className={`fixed z-50 min-w-[210px] rounded-2xl border-2 p-1.5 text-xs shadow-xl select-none transition-colors ${menuBg}`}
       onContextMenu={(e) => e.stopPropagation()}
     >
       {targetEdgeId ? (
@@ -119,6 +127,39 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             <MingIcon name="edit_line" size={16} className={iconColor} />
             <span>Edit element</span>
           </button>
+
+          {/* Group / Ungroup Actions */}
+          {hasMultiSelection && !hasGroupSelected && (
+            <button
+              onClick={() => {
+                onGroupSelected?.();
+                onClose();
+              }}
+              className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}
+            >
+              <div className="flex items-center gap-2">
+                <MingIcon name="group_line" size={16} className={iconColor} />
+                <span>Group selection</span>
+              </div>
+              <span className={`text-[10px] ${textLabel}`}>Cmd+G</span>
+            </button>
+          )}
+
+          {hasGroupSelected && (
+            <button
+              onClick={() => {
+                onUngroupSelected?.();
+                onClose();
+              }}
+              className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}
+            >
+              <div className="flex items-center gap-2">
+                <MingIcon name="ungroup_line" size={16} className={iconColor} />
+                <span>Ungroup</span>
+              </div>
+              <span className={`text-[10px] ${textLabel}`}>Cmd+Shift+G</span>
+            </button>
+          )}
 
           {/* Color changer for sticky notes */}
           <div className={`px-2.5 py-1 text-[11px] font-bold ${textLabel}`}>Color</div>
@@ -181,7 +222,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}
           >
             <MingIcon name="font_size_line" size={16} className={iconColor} />
-            <span>Free text</span>
+            <span>Free text (T)</span>
           </button>
 
           {/* Upload Image Option */}
