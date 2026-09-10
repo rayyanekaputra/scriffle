@@ -38,7 +38,10 @@
 
 1. **Zero drop shadows** — no `shadow-md`, `shadow-xl`, `drop-shadow` anywhere
 2. **Flat outline** — 2px solid borders (`border-slate-300`, `border-slate-800`)
-3. **Font: Stack Sans Text** — strictly sentence/title case only. NO `uppercase`, NO `tracking-wider`
+3. **Font: Stack Sans Text & Typography Hierarchy** — strictly sentence/title case only.
+   - **NO all-caps / uppercase** (`text-transform: uppercase`, `uppercase` class) — only allow uppercase for necessary acronyms/tickers (e.g. `BBCA`, `IDX`, `ROE`, `P/E`, `ESG`, `LQ45`, `PDF`, `SOE`, `CAGR`).
+   - **NO spaced-out letters** (`letter-spacing`, `tracking-wider`, `tracking-widest`, `l e t t e r s`).
+   - Header labels, brand titles, section headings, and buttons must always use clean Sentence Case or Title Case.
 4. **Icons: MingCute only** — `<MingIcon name="mgc_..." />` from `src/components/ui/MingIcon.tsx`
 5. **Color palette:**
    - Primary: `#0050FF` (Electric Blue)

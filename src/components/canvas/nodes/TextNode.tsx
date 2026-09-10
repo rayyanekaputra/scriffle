@@ -157,32 +157,43 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
     adjustHeight();
   };
 
-  // Bullet continuation on Enter
+  // Enter to apply/commit, Shift+Enter for new line (with bullet continuation)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
-      const cursor = textareaRef.current?.selectionStart || 0;
-      const currentLine = text.substring(0, cursor).split('\n').pop() || '';
+      if (e.shiftKey) {
+        // Shift+Enter -> Insert new line (handle bullet continuation if applicable)
+        const cursor = textareaRef.current?.selectionStart || 0;
+        const currentLine = text.substring(0, cursor).split('\n').pop() || '';
 
-      if (currentLine.startsWith('• ')) {
-        e.preventDefault();
-        if (currentLine.trim() === '•') {
-          const before = text.substring(0, cursor - currentLine.length);
-          const after = text.substring(cursor);
-          setText(before + after);
-          return;
-        }
-        const before = text.substring(0, cursor);
-        const after = text.substring(cursor);
-        const newText = before + '\n• ' + after;
-        setText(newText);
-        setTimeout(() => {
-          if (textareaRef.current) {
-            textareaRef.current.selectionStart = cursor + 3;
-            textareaRef.current.selectionEnd = cursor + 3;
-            adjustHeight();
+        if (currentLine.startsWith('• ')) {
+          e.preventDefault();
+          if (currentLine.trim() === '•') {
+            const before = text.substring(0, cursor - currentLine.length);
+            const after = text.substring(cursor);
+            setText(before + after);
+            return;
           }
-        }, 0);
+          const before = text.substring(0, cursor);
+          const after = text.substring(cursor);
+          const newText = before + '\n• ' + after;
+          setText(newText);
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.selectionStart = cursor + 3;
+              textareaRef.current.selectionEnd = cursor + 3;
+              adjustHeight();
+            }
+          }, 0);
+        }
+        // If not a bullet list, default textarea behavior naturally adds a newline with Shift+Enter
+      } else {
+        // Plain Enter -> Commit changes and exit edit mode
+        e.preventDefault();
+        textareaRef.current?.blur();
       }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      textareaRef.current?.blur();
     }
   };
 
