@@ -208,7 +208,7 @@ export const FileNode = memo(({ data, selected }: NodeProps) => {
             {fileName}
           </h4>
 
-          <div className="mt-1 flex items-center gap-2 text-[10px] font-medium">
+          <div className="mt-1 flex items-center gap-1.5 text-[10px] font-medium flex-wrap">
             <span
               className={`font-mono ${
                 isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500'
@@ -217,13 +217,28 @@ export const FileNode = memo(({ data, selected }: NodeProps) => {
               {fileSize}
             </span>
             <span className={`text-[9px] ${isDark ? 'text-[#4A4D5E]' : isMono ? 'text-[#C8C4B8]' : 'text-slate-300'}`}>•</span>
-            <span
-              className={`capitalize ${
-                isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500'
-              }`}
-            >
-              {meta.category}
-            </span>
+            
+            {/* Download / Local Disk Status Indicator */}
+            {config.savedLocally || config.isDownloaded ? (
+              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded font-semibold text-[9px] ${
+                isDark
+                  ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/60'
+                  : isMono
+                  ? 'bg-[#E5E0D0] text-[#242321] border border-[#C8C4B8]'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              }`}>
+                <MingIcon name="check_circle_line" size={10} />
+                <span>Saved</span>
+              </span>
+            ) : (
+              <span
+                className={`capitalize ${
+                  isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500'
+                }`}
+              >
+                {meta.category}
+              </span>
+            )}
           </div>
         </div>
 

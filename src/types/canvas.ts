@@ -90,6 +90,9 @@ export interface FileConfig {
   fileCategory?: FileCategory;
   extension?: string;
   caption?: string;
+  savedLocally?: boolean;
+  isDownloaded?: boolean;
+  downloadedAt?: string;
   createdAt?: string;
 }
 

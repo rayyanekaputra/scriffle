@@ -1,64 +1,79 @@
-import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { getCompanyFundamentalReport } from '@/server/services/sectorsApi';
 
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const symbol = searchParams.get('symbol')?.toUpperCase() || 'BBCA';
-    const report = await getCompanyFundamentalReport(symbol);
+export interface ExportedReportResult {
+  fileName: string;
+  filePath: string;
+  fileUrl: string;
+  fileSize: string;
+  savedLocally: boolean;
+}
 
-    const price = report.lastClosePrice ? `Rp ${report.lastClosePrice.toLocaleString()}` : 'N/A';
-    const priceChange = report.dailyCloseChange !== undefined
-      ? `${report.dailyCloseChange >= 0 ? '+' : ''}${(report.dailyCloseChange * 100).toFixed(2)}%`
-      : '0.00%';
-    const isPriceUp = (report.dailyCloseChange || 0) >= 0;
+/**
+ * Sanitizes project name to safe directory name
+ */
+function sanitizeProjectSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '') || 'default_project';
+}
 
-    const analyst = report.futureForecasts?.analystRating;
-    const analystTotal = analyst?.totalAnalysts || 0;
-    const buyPct = analystTotal > 0 ? Math.round(((analyst?.strongBuy || 0) + (analyst?.buy || 0)) / analystTotal * 100) : 85;
+/**
+ * Generates and saves a standalone fundamental report HTML directly to disk:
+ * reports/{project_slug}/{symbol}_Fundamental_Brief.html
+ */
+export async function exportReportToDisk(
+  projectName: string,
+  symbol: string
+): Promise<ExportedReportResult> {
+  const cleanSymbol = symbol.toUpperCase();
+  const projectSlug = sanitizeProjectSlug(projectName);
 
-    const tagsHtml = (report.tags || ['blue-chip', 'idx-leader', 'top-volume'])
-      .slice(0, 5)
-      .map((t) => `<span class="tag">#${t.replace(/-/g, ' ')}</span>`)
-      .join('');
+  // Target directory: <cwd>/reports/{projectSlug}
+  const reportsDir = path.join(process.cwd(), 'reports', projectSlug);
+  if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir, { recursive: true });
+  }
 
-    const indicesHtml = (report.indices || ['LQ45', 'IDX30', 'KOMPAS100'])
-      .slice(0, 6)
-      .map((idx) => `<span class="index-pill">${idx}</span>`)
-      .join('');
+  const report = await getCompanyFundamentalReport(cleanSymbol);
 
-    const executivesHtml = (report.management?.keyExecutives || [
-      { name: 'Board of Directors', position: 'Executive Committee' }
-    ])
-      .slice(0, 3)
-      .map(
-        (exec) => `
-        <div class="list-item">
-          <div>
-            <div class="item-title">${exec.name}</div>
-            <div class="item-sub">${exec.position}</div>
-          </div>
-          <span class="status-pill">Executive</span>
-        </div>
-      `
-      )
-      .join('');
+  const price = report.lastClosePrice ? `Rp ${report.lastClosePrice.toLocaleString()}` : 'N/A';
+  const priceChange = report.dailyCloseChange !== undefined
+    ? `${report.dailyCloseChange >= 0 ? '+' : ''}${(report.dailyCloseChange * 100).toFixed(2)}%`
+    : '0.00%';
+  const isPriceUp = (report.dailyCloseChange || 0) >= 0;
 
-    const shareholdersHtml = (report.ownership?.majorShareholders || [
-      { name: 'Public / Free Float', sharePercentage: '45.0%' }
-    ])
-      .slice(0, 3)
-      .map(
-        (sh) => `
-        <div class="list-item">
-          <div class="item-title">${sh.name}</div>
-          <span class="share-pct">${typeof sh.sharePercentage === 'number' ? `${(sh.sharePercentage * 100).toFixed(2)}%` : sh.sharePercentage}</span>
-        </div>
-      `
-      )
-      .join('');
+  const analyst = report.futureForecasts?.analystRating;
+  const analystTotal = analyst?.totalAnalysts || 0;
+  const buyPct = analystTotal > 0 ? Math.round(((analyst?.strongBuy || 0) + (analyst?.buy || 0)) / analystTotal * 100) : 85;
 
-    const html = `<!DOCTYPE html>
+  const tagsHtml = (report.tags || ['blue-chip', 'idx-leader', 'top-volume'])
+    .slice(0, 5)
+    .map((t) => `<span class="tag">#${t.replace(/-/g, ' ')}</span>`)
+    .join('');
+
+  const indicesHtml = (report.indices || ['LQ45', 'IDX30', 'KOMPAS100'])
+    .slice(0, 6)
+    .map((idx) => `<span class="index-pill">${idx}</span>`)
+    .join('');
+
+  const shareholdersHtml = (report.ownership?.majorShareholders || [
+    { name: 'Public / Free Float', sharePercentage: '45.0%' }
+  ])
+    .slice(0, 3)
+    .map(
+      (sh) => `
+      <div class="list-item">
+        <div class="item-title">${sh.name}</div>
+        <span class="share-pct">${typeof sh.sharePercentage === 'number' ? `${(sh.sharePercentage * 100).toFixed(2)}%` : sh.sharePercentage}</span>
+      </div>
+    `
+    )
+    .join('');
+
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -83,7 +98,6 @@ export async function GET(req: Request) {
       margin: 0 auto;
     }
 
-    /* Top Brand & Action Bar */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -121,7 +135,6 @@ export async function GET(req: Request) {
       opacity: 0.85;
     }
 
-    /* Header Profile */
     .header-profile {
       display: flex;
       justify-content: space-between;
@@ -162,7 +175,6 @@ export async function GET(req: Request) {
       color: ${isPriceUp ? '#059669' : '#DC2626'};
     }
 
-    /* Meta Details Row */
     .meta-details {
       font-size: 12px;
       color: #4B5563;
@@ -200,7 +212,6 @@ export async function GET(req: Request) {
       font-family: 'JetBrains Mono', monospace;
     }
 
-    /* Section Typography */
     .section-divider {
       border: none;
       border-top: 1px solid #E5E7EB;
@@ -213,7 +224,6 @@ export async function GET(req: Request) {
       margin-bottom: 16px;
     }
 
-    /* Key Metrics Grid (4 columns, borderless with clean spacing) */
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -244,7 +254,6 @@ export async function GET(req: Request) {
       font-weight: 500;
     }
 
-    /* Two-Column Deep Dive */
     .two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -285,7 +294,6 @@ export async function GET(req: Request) {
       color: #111827;
     }
 
-    /* Analyst Rating Bar */
     .analyst-bar-wrapper {
       background: #F3F4F6;
       border-radius: 4px;
@@ -297,7 +305,6 @@ export async function GET(req: Request) {
     .bar-buy { background: #0050FF; height: 100%; width: ${buyPct}%; }
     .bar-hold { background: #9CA3AF; height: 100%; width: ${100 - buyPct}%; }
 
-    /* Automated Thesis Section */
     .thesis-box {
       background: #FAFAFA;
       border-left: 3px solid #111827;
@@ -316,7 +323,6 @@ export async function GET(req: Request) {
       line-height: 1.55;
     }
 
-    /* Glossary Grid */
     .glossary-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -334,7 +340,6 @@ export async function GET(req: Request) {
       line-height: 1.45;
     }
 
-    /* Footer */
     .report-footer {
       display: flex;
       justify-content: space-between;
@@ -358,7 +363,6 @@ export async function GET(req: Request) {
 </head>
 <body>
   <div class="document">
-    <!-- Top Bar -->
     <div class="top-bar">
       <div>
         <span class="brand-title">Scriffle Research Brief</span>
@@ -369,7 +373,6 @@ export async function GET(req: Request) {
       </button>
     </div>
 
-    <!-- Company Header Profile -->
     <div class="header-profile">
       <div>
         <h1 class="symbol-title">${report.symbol}</h1>
@@ -381,7 +384,6 @@ export async function GET(req: Request) {
       </div>
     </div>
 
-    <!-- Sector Taxonomy & Metadata Details -->
     <div class="meta-details">
       <span class="meta-item">Sector: <strong>${report.sector}</strong></span>
       <span class="meta-item">Sub-Sector: <strong>${report.subSector}</strong></span>
@@ -396,7 +398,6 @@ export async function GET(req: Request) {
 
     <hr class="section-divider" />
 
-    <!-- Key Valuation & Financial Metrics -->
     <div class="section-title">Key Valuation & Financial Profile</div>
     <div class="metric-grid">
       <div class="metric-item">
@@ -452,9 +453,7 @@ export async function GET(req: Request) {
 
     <hr class="section-divider" />
 
-    <!-- Two Column Breakdown -->
     <div class="two-col">
-      <!-- Analyst Consensus -->
       <div>
         <div class="panel-heading">
           <span>Analyst Consensus</span>
@@ -477,7 +476,6 @@ export async function GET(req: Request) {
         ` : ''}
       </div>
 
-      <!-- Major Shareholders & Leadership -->
       <div>
         <div class="panel-heading">
           <span>Major Shareholders</span>
@@ -496,7 +494,6 @@ export async function GET(req: Request) {
 
     <hr class="section-divider" />
 
-    <!-- Automated Thesis Summary -->
     <div class="thesis-box">
       <div class="thesis-label">Automated Trigger Thesis Summary</div>
       <div class="thesis-text">
@@ -506,7 +503,6 @@ export async function GET(req: Request) {
 
     <hr class="section-divider" />
 
-    <!-- Metric Glossary & Definitions for Non-Finance Users -->
     <div class="section-title">Metric Glossary & Quick Reference</div>
     <div class="glossary-grid">
       <div>
@@ -535,7 +531,6 @@ export async function GET(req: Request) {
       </div>
     </div>
 
-    <!-- Footer -->
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
       <div>Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} • Scriffle Studio</div>
@@ -544,12 +539,19 @@ export async function GET(req: Request) {
 </body>
 </html>`;
 
-    return new NextResponse(html, {
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-      },
-    });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
+  const fileName = `${cleanSymbol}_Fundamental_Brief.html`;
+  const filePath = path.join(reportsDir, fileName);
+
+  fs.writeFileSync(filePath, html, 'utf-8');
+
+  const stats = fs.statSync(filePath);
+  const fileSizeKb = (stats.size / 1024).toFixed(1);
+
+  return {
+    fileName,
+    filePath,
+    fileUrl: `/api/export/report?symbol=${cleanSymbol}`,
+    fileSize: `${fileSizeKb} KB`,
+    savedLocally: true,
+  };
 }

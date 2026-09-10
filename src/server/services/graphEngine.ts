@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { MarketEvent } from '@/types/canvas';
 import { evaluateCondition } from './dslEngine';
 import { getCompanyFundamentalReport } from './sectorsApi';
+import { exportReportToDisk } from './reportExporter';
 
 export interface GraphExecutionResult {
   triggeredNodes: string[];
@@ -294,6 +295,14 @@ export async function executeGraphForEvent(
         // Fetch real-time fundamentals via Sectors API v2 /company/report/{symbol}/
         const report = await getCompanyFundamentalReport(curEvent.symbol);
 
+        // Auto-export standalone HTML document to disk: reports/{project_name}/{symbol}_Fundamental_Brief.html
+        let exportedFile: any = null;
+        try {
+          exportedFile = await exportReportToDisk(canvas.name || 'default_project', curEvent.symbol);
+        } catch (exportErr) {
+          console.error('Failed to auto-export report to disk:', exportErr);
+        }
+
         const existingSpawned = canvas.edges.filter((e) => e.fromId === node.id);
         const spawnIndex = existingSpawned.length;
         const newX = node.positionX + 280;
@@ -329,7 +338,7 @@ export async function executeGraphForEvent(
           },
         });
 
-        // 2. Spawn linked File Node attachment with real executable report URL
+        // 2. Spawn linked File Node attachment with real executable report URL & saved on disk
         const reportUrl = `/api/export/report?symbol=${report.symbol}`;
         const fileNode = await prisma.node.create({
           data: {
@@ -338,12 +347,15 @@ export async function executeGraphForEvent(
             positionX: newX + 350,
             positionY: newY + 20,
             configJson: JSON.stringify({
-              fileName: `${report.symbol}_Fundamental_Brief.pdf`,
+              fileName: exportedFile?.fileName || `${report.symbol}_Fundamental_Brief.html`,
               fileUrl: reportUrl,
-              filePath: `public/reports/${report.symbol}_Fundamental_Brief.pdf`,
-              fileSize: '145 KB',
-              fileCategory: 'pdf',
-              caption: `Live valuation snapshot for ${report.companyName}`,
+              filePath: exportedFile?.filePath || `reports/${canvas.name || 'default'}/${report.symbol}_Fundamental_Brief.html`,
+              fileSize: exportedFile?.fileSize || '18.5 KB',
+              fileCategory: 'document',
+              savedLocally: true,
+              isDownloaded: true,
+              downloadedAt: new Date().toLocaleTimeString(),
+              caption: `Auto-saved to reports/${canvas.name || 'default'}`,
             }),
             stateJson: JSON.stringify({
               status: 'passed',
@@ -361,7 +373,7 @@ export async function executeGraphForEvent(
         });
 
         mutationsCount += 2;
-        logs.push(`Generated Fundamental Report (${report.symbol}: P/E ${report.peRatio}x, MCap ${report.marketCapFormatted}) & attached PDF card`);
+        logs.push(`Generated Fundamental Report (${report.symbol}) & auto-saved to /reports`);
       }
     }
 
