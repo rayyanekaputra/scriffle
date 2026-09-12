@@ -60,7 +60,12 @@
   * `Shift + Drag` marquee box selection to group-select cards and connectors.
   * **Figma-Style Selection Bounding Box (`SelectionBoundingBox`):** Automatically frames multi-selected elements with 8 tactile square corner & midpoint handles, a dashed boundary outline, and floating interactive quick `Group` / `Ungroup` action pills.
   * `Delete` / `Backspace` removes all selected elements in bulk.
-* **Keyboard Shortcuts:**
+* **Keyboard Shortcuts & Spatial Navigation:**
+  * **`Tab` / `Shift + Tab` Spatial & Graph Traversal:** Smart non-oscillating keyboard navigation that follows outgoing/incoming automation connections or hops to the closest candidate node ahead ($\Delta x > +15\text{px}$ or downwards in a subsequent row) with automatic canvas wrap-around and smooth camera pan (`setCenter`).
+  * **`Cmd+K` / `Cmd+F` (Spotlight Quick Search):** Real-time fuzzy indexer searching stock tickers (`BBCA`, `TLKM`), AI screener prompts, note texts, rules, and files with keyboard navigation (`↑`/`↓`/`↵`) and 1-click smooth camera pan.
+  * **`?` (Shortcuts Cheat Sheet):** Categorized visual reference covering Tools, Card Actions, Grouping, and Navigation.
+  * **`Shift + 1`:** Fit all nodes to screen.
+  * **`Shift + 0` / `Cmd + 0`:** Reset zoom to 100%.
   * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
   * **`Ctrl+C` / `Cmd+C`:** Copy selected card.
   * **`Ctrl+V` / `Cmd+V`:** Paste copied card at cursor position on canvas.
@@ -87,12 +92,14 @@
 * **Toast Notifications:** Located at bottom-left with reverse stacking and slide-in animations.
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`NAVIGATION_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/NAVIGATION_PLAN.md): Spotlight search (`Cmd+K`), Shortcuts guide (`?`), Viewport zoom presets (`Shift+1`/`Shift+0`), and spatial `Tab` traversal.
 * [`FREE_TEXT_EXPERIENCE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/FREE_TEXT_EXPERIENCE_PLAN.md): FigJam × Miro rich free-text whiteboard tooling, floating formatting toolbar, typography hierarchy, highlighter pens, and container styles.
 * [`GROUP_UNGROUP_IMPLEMENTATION_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/GROUP_UNGROUP_IMPLEMENTATION_PLAN.md): Group & ungroup architecture, group-aware copy/paste with internal connectors, and double-click group isolation focus.
 * [`SECTORS_API_KEY_LIVE_POLL_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SECTORS_API_KEY_LIVE_POLL_PLAN.md): Details on masked API key session management, live polling, and mode toggling.
 * [`SAVE_OPEN_SCRIFFLE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SAVE_OPEN_SCRIFFLE_PLAN.md): Details on `.scriffle` file schema, backend restore endpoint, and starter presets.
 * [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
 * [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.
+* [`TESTING_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TESTING_PLAN.md): Full 3-tier testing strategy and unit test suite documentation (105 tests).
 * [`ENDPOINTS.md`](file:///home/abzolute/Projects/hackathon/context/ENDPOINTS.md): Complete index of all 32 Indonesia v2 Sectors API endpoints.
 
 ---

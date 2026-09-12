@@ -13,7 +13,7 @@ export interface GraphExecutionResult {
 /**
  * Interpolates string templates like "${symbol} surged ${price_change}% at ${timestamp}"
  */
-function interpolateTemplate(template: string, event: MarketEvent): string {
+export function interpolateTemplate(template: string, event: MarketEvent): string {
   const formattedPrice = event.price ? `Rp ${event.price.toLocaleString('id-ID')}` : 'Rp 0';
   const formattedVolume = event.volume
     ? event.volume >= 1_000_000_000
@@ -54,7 +54,7 @@ function interpolateTemplate(template: string, event: MarketEvent): string {
   });
 }
 
-function generateDefaultNoteContent(event: MarketEvent): string {
+export function generateDefaultNoteContent(event: MarketEvent): string {
   const isGainer = (event.price_change || 0) >= 0;
   const icon = isGainer ? '🚀' : '🔻';
   const category = event.rank ? `${isGainer ? 'TOP GAINER' : 'TOP LOSER'} #${event.rank}` : `${event.symbol} MARKET TICK`;

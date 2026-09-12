@@ -30,6 +30,7 @@ import { FileNode } from './nodes/FileNode';
 import { ScreenerNode } from './nodes/ScreenerNode';
 import { ContextMenu } from './ContextMenu';
 import { SelectionBoundingBox } from './SelectionBoundingBox';
+import { findNextSpatialNode } from '@/lib/spatialNavigator';
 import { CanvasData, CanvasToolMode, NodeType } from '@/types/canvas';
 import { useTheme } from '@/context/ThemeContext';
 import { MingIcon } from '@/components/ui/MingIcon';
@@ -49,6 +50,8 @@ interface MarketCanvasProps {
   onUndo?: () => void;
   onRedo?: () => void;
   onRecordSnapshot?: (nodesOverride?: any[]) => void;
+  onOpenSearch?: () => void;
+  onOpenShortcuts?: () => void;
 }
 
 interface ClipboardPayload {
@@ -82,9 +85,11 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   onUndo,
   onRedo,
   onRecordSnapshot,
+  onOpenSearch,
+  onOpenShortcuts,
 }) => {
   const { theme } = useTheme();
-  const { screenToFlowPosition, setCenter } = useReactFlow();
+  const { screenToFlowPosition, setCenter, fitView, zoomTo } = useReactFlow();
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 500, y: 300 });
 
   // Isolation mode state for deep double-click group editing
@@ -474,6 +479,60 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           return;
         }
       }
+
+      // 10. Spotlight Search: Cmd+K / Cmd+F / Ctrl+K / Ctrl+F
+      if (isCtrlOrCmd && (e.key === 'k' || e.key === 'K' || e.key === 'f' || e.key === 'F')) {
+        e.preventDefault();
+        onOpenSearch?.();
+        return;
+      }
+
+      // 11. Keyboard Shortcuts Guide: ? or Shift+/
+      if ((e.key === '?' || (e.shiftKey && e.key === '/')) && !isCtrlOrCmd) {
+        e.preventDefault();
+        onOpenShortcuts?.();
+        return;
+      }
+
+      // 12. Fit to Screen: Shift+1
+      if (e.shiftKey && (e.key === '1' || e.key === '!')) {
+        e.preventDefault();
+        fitView({ padding: 0.2, duration: 500 });
+        return;
+      }
+
+      // 13. Zoom to 100%: Shift+0 or Cmd+0
+      if ((e.shiftKey && (e.key === '0' || e.key === ')')) || (isCtrlOrCmd && e.key === '0')) {
+        e.preventDefault();
+        zoomTo(1.0, { duration: 400 });
+        return;
+      }
+
+      // 14. Spatial & Graph Tab Navigation: Tab / Shift+Tab (Hop to nearest or connected node)
+      if (e.key === 'Tab' && !isCtrlOrCmd && !e.altKey) {
+        e.preventDefault();
+        const selectedNode = nodes.find((n) => n.selected);
+        const nextNode = findNextSpatialNode(
+          selectedNode?.id || null,
+          nodes.map((n) => ({ id: n.id, position: n.position })),
+          edges.map((ed) => ({ from: ed.source, to: ed.target })),
+          e.shiftKey ? 'backward' : 'forward'
+        );
+
+        if (nextNode) {
+          setNodes((nds) =>
+            nds.map((n) => ({
+              ...n,
+              selected: n.id === nextNode.id,
+            }))
+          );
+          setCenter(nextNode.position.x + 140, nextNode.position.y + 100, {
+            zoom: 1.15,
+            duration: 400,
+          });
+        }
+        return;
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -490,6 +549,10 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     onUndo,
     onRedo,
     onSetToolMode,
+    onOpenSearch,
+    onOpenShortcuts,
+    fitView,
+    zoomTo,
     screenToFlowPosition,
     setNodes,
     setEdges,

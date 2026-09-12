@@ -4,7 +4,29 @@
 
 ---
 
-## 1. AI Natural Language Company Screener (`/v2/companies/?q=...`)
+## 1. Navigation & Productivity Suite (Spotlight Search, Shortcuts Guide & Non-Oscillating Spatial Tab Traversal)
+
+**Feature Overview:**
+Equipped Scriffle with a Figma/FigJam-inspired spatial navigation and productivity system:
+- **Spotlight Quick Search (`SpotlightSearchModal.tsx`)**:
+  - Activated via `Cmd+K`, `Cmd+F`, `Ctrl+K`, `Ctrl+F`, or top navbar search trigger.
+  - Fuzzy multi-term search indexer ([`src/lib/searchIndexer.ts`](src/lib/searchIndexer.ts)) indexing stock tickers (`BBCA`, `TLKM`), AI screener queries, sticky note texts, condition rules, actions, and attached report files.
+  - Keyboard navigation (`↑`/`↓`/`↵`) smoothly flies the camera to the target node (`setCenter`, 400ms) and selects it.
+- **Non-Oscillating Spatial & Graph `Tab` Traversal ([`src/lib/spatialNavigator.ts`](src/lib/spatialNavigator.ts))**:
+  - **`Tab` (Forward)**: Prioritizes outgoing connected automation edges (`[Watcher] -> [Condition] -> [Note]`); when unlinked or at the end of a chain, hops strictly forward ($\Delta x > +15\text{px}$ or downwards in a subsequent row) to the nearest spatial neighbor. Wraps around smoothly to the top-left card when reaching the end of the board.
+  - **`Shift+Tab` (Backward)**: Prioritizes incoming connected edges; falls back to backward spatial candidates ($\Delta x < -15\text{px}$ or upwards in a preceding row) with start-of-canvas wrap-around.
+  - Eliminates back-and-forth ping-ponging on evenly spaced cards or grids.
+- **Keyboard Shortcuts Cheat Sheet Modal (`ShortcutsModal.tsx`)**:
+  - Activated via `?` or `Shift+/`. Clean 4-category visual cheat sheet covering Tools, Card Actions, Grouping, and Navigation.
+- **Viewport Shortcuts**:
+  - `Shift+1`: Fit all nodes to screen (`fitView`).
+  - `Shift+0` / `Cmd+0`: Reset zoom to 100% (`zoomTo(1.0)`).
+- **Unit Testing**:
+  - Added `src/__tests__/unit/searchIndexer.test.ts` (14 tests) and `src/__tests__/unit/spatialNavigator.test.ts` (8 tests). Total test count increased to **105 passing tests**.
+
+---
+
+## 2. AI Natural Language Company Screener (`/v2/companies/?q=...`)
 
 **Feature Overview:**
 Added a full-featured **AI Screener Node** (`ScreenerNode.tsx`) to the canvas allowing users to query Indonesian stocks in natural language (e.g., *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies with positive revenue growth"*).

@@ -9,6 +9,8 @@ import { ActivityFeed } from '@/components/feed/ActivityFeed';
 import { SimulationBar } from '@/components/controls/SimulationBar';
 import { EditNodeModal } from '@/components/controls/EditNodeModal';
 import { ProjectSwitcherModal } from '@/components/controls/ProjectSwitcherModal';
+import { SpotlightSearchModal } from '@/components/controls/SpotlightSearchModal';
+import { ShortcutsModal } from '@/components/controls/ShortcutsModal';
 import { ToastProvider, useToast } from '@/components/ui/ToastProvider';
 import { useCanvasSync } from '@/hooks/useCanvasSync';
 import { CanvasNodeData, CanvasToolMode, NodeType } from '@/types/canvas';
@@ -16,6 +18,8 @@ import { CanvasNodeData, CanvasToolMode, NodeType } from '@/types/canvas';
 export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   const [currentCanvasId, setCurrentCanvasId] = useState<string | undefined>(canvasId);
   const [showProjectHub, setShowProjectHub] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
 
   useEffect(() => {
     if (canvasId) setCurrentCanvasId(canvasId);
@@ -833,6 +837,8 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         canUndo={canUndo}
         canRedo={canRedo}
         onOpenProjectHub={() => setShowProjectHub(true)}
+        onOpenSearch={() => setShowSearchModal(true)}
+        onOpenShortcuts={() => setShowShortcutsModal(true)}
       />
 
       <div className="relative flex flex-1 overflow-hidden">
@@ -870,6 +876,8 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
               onUndo={handleUndo}
               onRedo={handleRedo}
               onRecordSnapshot={recordSnapshot}
+              onOpenSearch={() => setShowSearchModal(true)}
+              onOpenShortcuts={() => setShowShortcutsModal(true)}
             />
           </ReactFlowProvider>
 
@@ -913,6 +921,23 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         currentCanvasId={canvas?.id || currentCanvasId}
         onSwitchCanvas={handleSwitchCanvas}
         onExportScriffle={handleExportScriffle}
+      />
+
+      {/* Spotlight Search Modal */}
+      <SpotlightSearchModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        nodes={canvas?.nodes}
+        onSelectNode={(nodeId) => {
+          setFocusedNodeId(nodeId);
+          setTimeout(() => setFocusedNodeId(null), 1000);
+        }}
+      />
+
+      {/* Keyboard Shortcuts Guide Modal */}
+      <ShortcutsModal
+        isOpen={showShortcutsModal}
+        onClose={() => setShowShortcutsModal(false)}
       />
     </main>
   );

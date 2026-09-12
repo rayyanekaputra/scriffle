@@ -6,6 +6,11 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⭐ Navigation & Productivity Suite (Spotlight Search, Shortcuts Guide & Zoom Presets)**
+  - **Spotlight Quick Search (`SpotlightSearchModal.tsx`)**: Fuzzy indexer (`searchIndexer.ts`) across all tickers (`BBCA`, `TLKM`), AI prompts, note text, rules, and files with keyboard navigation (`↑`/`↓`/`↵`) and smooth camera pan & zoom (`setCenter`).
+  - **Keyboard Shortcuts Guide (`ShortcutsModal.tsx`)**: Categorized visual cheat sheet for Tools (`V`, `H`, `T`), Card Actions (`Cmd+C/V/D`, `Del`), Grouping (`Cmd+G/Shift+G`, Isolation), and Navigation.
+  - **Zoom Controls & Viewport Shortcuts (`ZoomControls.tsx`)**: Real-time zoom level pill, zoom in/out, preset dropdown (`50%`, `100%`, `150%`, `200%`, `Fit All`), `Shift+1` fit-to-screen, `Shift+0`/`Cmd+0` 100% reset.
+  - **Unit Testing**: 14 unit tests in `searchIndexer.test.ts` (97 passing tests overall).
 - [x] **⭐ AI Natural Language Company Screener (`/v2/companies/?q=...`)**
   - Added dedicated `ScreenerNode` (`ScreenerNode.tsx`) on the canvas supporting plain-English queries (e.g. *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies with positive revenue growth"*).
   - Integrated `fetchCompaniesScreener` into `sectorsApi.ts` supporting `q`, `include_query_values=true`, and SQL `where`/`order_by`.
@@ -89,4 +94,38 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - **API**: `GET /v2/broker-summary/{symbol}/top/`
 - **Description**: Identifies the top buyer and seller brokerages for any stock to detect retail vs institutional positioning.
 - **Canvas Integration**: Broker Radar Node that evaluates accumulation ratios and triggers warnings when smart money begins exiting.
+
+---
+
+## 🎨 Whiteboard QoL & UX Experience Improvements (FigJam × n8n × Figma × Miro)
+
+### 🌟 Top Recommendations for Immediate Hackathon Polish
+
+1. **Spotlight Search (`Cmd+K` / `Cmd+F`) & Shortcuts Cheat Sheet (`?`)** — High demo impact, instant spatial navigation across complex research boards.
+2. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
+3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+
+---
+
+### Candidate QoL Features
+
+#### 1. ⚡ Automation & Flow Building (n8n-inspired)
+- [ ] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
+- [ ] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on surge"`, `"export"`) to make automation pathways self-documenting.
+- [ ] **Live Signal Flow Pulses**: Visual pulsing packet animating along connecting edges when a watcher or condition triggers downstream nodes.
+
+#### 2. 🗂️ Spatial Board Organization (FigJam × Miro-inspired)
+- [ ] **Canvas Sections / Frames**: Visual colored boundaries with editable title headers (e.g., *"Banking Sector Watchers"*, *"AI Screener Pipeline"*) that enclose and move child nodes together.
+- [ ] **Tidy Up / Auto-Distribute**: 1-click button in the selection bounding box when 3+ nodes are selected to align and space nodes with equal horizontal/vertical offsets.
+- [ ] **Floating Color Quick-Swatches on Sticky Notes**: Floating 5-color mini palette on hover/selection of sticky notes for 1-click color swapping.
+
+#### 3. 🔍 Navigation & Productivity (Figma × FigJam-inspired)
+- [x] **Spotlight Quick Search (`Cmd+K` / `Cmd+F`)**: Modal search across stock tickers (`BBCA`, `BBRI`), note text, and node labels with 1-click camera pan & zoom.
+- [x] **Keyboard Shortcuts Cheat Sheet Modal (`?`)**: Clean visual shortcut guide overlay showing all canvas hotkeys (`V`, `H`, `T`, `Cmd+G`, `Cmd+Shift+G`, `Cmd+C/V/D`, `Cmd+Z/Y`, `Delete`, `Esc`, `Space`).
+- [x] **Zoom Percentage Badge & Fit-to-Screen (`Shift+1` / `Shift+0`)**: Clickable zoom indicator in toolbar with presets (`50%`, `100%`, `150%`, `200%`, `Fit All`).
+
+#### 4. 🎭 Presentation & Live Pitch Mode (Miro-inspired)
+- [ ] **Zen / Presenter Mode (`Cmd+.`)**: 1-click toggle to hide all UI chrome (toolbars, docks, sidebars) for distraction-free presentation to judges.
+- [ ] **Presenter Laser Pointer**: Hold modifier key or toggle a laser pointer tool that leaves a smooth fading line for explaining live graphs.
+
 

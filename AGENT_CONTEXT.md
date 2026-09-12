@@ -316,6 +316,7 @@ hackathon/
 ## 10. Open Backlog (Prioritized)
 
 ### ✅ Recently Completed (This Session)
+- **Navigation & Productivity Suite (`SpotlightSearchModal.tsx`, `ShortcutsModal.tsx`, `ZoomControls.tsx`)** — Implemented Figma/FigJam-inspired spatial navigation: Spotlight Search (`Cmd+K`/`Cmd+F`) with real-time fuzzy indexer (`searchIndexer.ts`) across all tickers, prompts, rules, notes, and files with smooth camera pan & zoom (`setCenter`); visual Keyboard Shortcuts Guide modal (`?` / `Shift+/`); and interactive bottom-left Zoom Controls with live percentage pill, preset dropdown (`50%`, `100%`, `150%`, `200%`, `Fit All`), and viewport hotkeys (`Shift+1` fit to screen, `Shift+0`/`Cmd+0` 100% reset).
 - **AI Natural Language Company Screener (`/v2/companies/?q=...`)** — Added dedicated `ScreenerNode` (`ScreenerNode.tsx`) on the canvas supporting natural language queries (e.g. *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies by revenue"*). Integrated `fetchCompaniesScreener` with dynamic `query_values` unpacking, full Sectors API field coverage, smart metric stat capsule formatting, 3 AI credits notice, and downstream automation (`[Screener] -> [Note / Action / Watcher]`).
 - **Auto-Spawned Watcher Complete Automation Pipeline (`create_watcher`)** — When an Action node triggers `create_watcher` (from Top Gainers/Losers Radar or single breakout events), it now automatically spawns a complete, connected downstream automation pipeline: `[New Watcher] -> [Condition (price_change > 0)] -> [Sticky Note]`. This ensures newly discovered breakout stocks immediately execute live tracking on subsequent polling ticks without manual wiring.
 - **Correlated Symbol Fundamental Note & Dynamic Fallback Fix** — Fixed bug where top mover fundamental reports/notes fell back to spreading `BBCA` data; added full mock datasets for all Top Gainers and Losers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`), implemented `buildDynamicCompanyReport` for arbitrary tickers, and threaded `sessionApiKey` through `executeGraphForRadarWatcher`, `executeGraphForEvent`, `exportReportToDisk`, and `/api/export/report`.
@@ -324,6 +325,7 @@ hackathon/
 - **Auto-Export Reports to Disk** — When `ActionNode` fires `fundamental_report`, the report is automatically saved to `reports/{project_name}/{symbol}_Fundamental_Brief.html` via `src/server/services/reportExporter.ts`. No manual download required.
 - **FileNode Download Status Indicator** — `FileNode.tsx` now shows a green `✓ Saved` pill when `savedLocally: true` or `isDownloaded: true` in `FileConfig`. Eliminates confusion about whether a file is on-disk or just a web link.
 - **Free-Text `Enter` to Commit** — In `TextNode.tsx`, `Enter` now commits and exits edit mode. `Shift+Enter` creates a new line (with bullet list continuation). `Escape` also commits and exits.
+- **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 83 tests across 4 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, and `generateScreenerNoteContent`. All pass in ~120ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
 ### 🟡 Medium Priority (Planned Sectors API Integrations)
 1. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
@@ -356,6 +358,9 @@ bun run prisma/seed.ts            # Reset & seed demo canvas
 bun run src/server/test-engine.ts # Smoke test the graph engine directly
 bunx prisma db push               # Push schema changes to dev.db
 bunx prisma studio                # Visual DB browser
+bun test                          # ⚠️ Run ALL unit tests — must stay green (83 tests, ~120ms)
+bun run test:watch                # Run tests in watch mode during development
+bun run test:coverage             # Run tests with coverage report
 ```
 
 ---
@@ -369,6 +374,7 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `SESSION_CHANGELOG.md` | ⭐ Most recent session changes — read this first for a quick catch-up |
 | `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
+| `TESTING_PLAN.md` | ⭐ Full 3-tier testing strategy & mandate — **read before adding any new feature** |
 | `CURRENT_ENDPOINT.md` | Active vs. planned Sectors API endpoint mapping |
 | `ENDPOINTS.md` | All 32 Sectors API v2 endpoints reference |
 | `CONTEXT.md` | Original master contracts & TypeScript interfaces |
@@ -385,4 +391,53 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `AUTO_EXPORT_AND_DOWNLOAD_STATUS_PLAN.md` | Auto-export to disk & FileNode download status indicator |
 | `TOP_MOVERS_RANKING_LEADERBOARD_PLAN.md` | Top Gainers & Losers Leaderboard display, official query params & engine fix |
 | `MULTI_SYMBOL_EXPORT_AND_PEER_WATCHER_PLAN.md` | Multi-symbol PDF report export & dynamic peer watcher automation |
+| `NAVIGATION_PLAN.md` | Spotlight Search (Cmd+K/Cmd+F), Keyboard Shortcuts Guide (?), and Zoom Presets (Shift+1) |
 
+
+---
+
+## 14. Testing Architecture (Implemented)
+
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 105 tests must stay green.
+
+### Current State
+- **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
+- **105 tests, 0 failures, ~120ms runtime**
+- **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
+
+### Test File Map
+```
+src/__tests__/
+├── fixtures/
+│   └── marketEvents.ts           ← Shared MarketEvent mocks (BBCA_SURGE, TLKM_DROP, MOCK_GAINERS, MOCK_LOSERS, etc.)
+└── unit/
+    ├── dslEngine.test.ts          ← 30 tests — all DSL operators, AND/OR compounds, camelCase aliases, edge cases
+    ├── interpolateTemplate.test.ts ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
+    ├── leaderboard.test.ts        ← 18 tests — gainers/losers formatting, rank indicators, empty input
+    ├── screenerNote.test.ts       ← 15 tests — screener output structure, company rows, fallbacks
+    ├── searchIndexer.test.ts      ← 14 tests — fuzzy node search indexing, ticker & rule matching, edge cases
+    └── spatialNavigator.test.ts   ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
+```
+
+### Exported Test-Friendly Functions in `graphEngine.ts`
+These were made `export` specifically to enable unit testing (previously private):
+- `interpolateTemplate(template, event)` — template variable substitution
+- `generateDefaultNoteContent(event)` — auto-generated note for triggered market events
+- `generateLeaderboardNoteContent(movers, mode, period)` — radar watcher leaderboard formatter
+- `generateScreenerNoteContent(query, results, queryValues)` — AI screener output formatter
+
+### ⚠️ THE TESTING MANDATE — NON-NEGOTIABLE
+
+**Adding any new feature = adding new tests covering every possible input case and node connection. No exceptions. This is written into the implementation plan.**
+
+When you add or modify anything:
+- A new DSL variable or operator → add tests to `dslEngine.test.ts`
+- A new template variable (`${foo}`) → add tests to `interpolateTemplate.test.ts`
+- A new node type with a formatter function → create `src/__tests__/unit/<nodetype>.test.ts`
+- A new action type in `graphEngine.ts` → add integration test scenarios in `src/__tests__/integration/graphEngine.test.ts`
+- A new Sectors API integration → mock it in `fixtures/marketEvents.ts` and test its output shape
+- A new watcher mode or condition variant → test every branch (pass, fail, edge case)
+
+Run `bun test` before marking **any** task done. If tests fail, fix them before proceeding.
+
+See `context/TESTING_PLAN.md` for the full 3-tier plan (Tier 2 = integration tests with isolated test.db, Tier 3 = Playwright E2E).
