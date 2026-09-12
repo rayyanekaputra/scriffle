@@ -89,7 +89,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
 
     if (prevSnap) {
       try {
-        const res = await fetch('/api/canvas/restore', {
+        const res = await fetch(`/api/canvas/restore${canvasId ? `?id=${canvasId}` : ''}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(prevSnap),
@@ -118,7 +118,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
 
     if (nextSnap) {
       try {
-        const res = await fetch('/api/canvas/restore', {
+        const res = await fetch(`/api/canvas/restore${canvasId ? `?id=${canvasId}` : ''}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(nextSnap),
@@ -440,7 +440,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
 
           recordSnapshot();
 
-          const res = await fetch('/api/canvas/restore', {
+          const res = await fetch(`/api/canvas/restore${canvasId ? `?id=${canvasId}` : ''}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: content,
@@ -748,7 +748,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     recordSnapshot();
 
     try {
-      const res = await fetch('/api/canvas/restore', {
+      const res = await fetch(`/api/canvas/restore${canvasId ? `?id=${canvasId}` : ''}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(presetData),

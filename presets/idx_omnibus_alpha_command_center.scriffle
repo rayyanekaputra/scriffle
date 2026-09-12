@@ -1,0 +1,1579 @@
+{
+  "format": "scriffle",
+  "version": "1.0.0",
+  "name": "IDX Omnibus Alpha Command Center — 6-Sector Multi-Signal War Room",
+  "createdAt": "2026-09-12T08:00:00.000Z",
+  "nodes": [
+
+    {
+      "id": "header-main",
+      "type": "text",
+      "position": { "x": 100, "y": 20 },
+      "config": {
+        "text": "⚔️ IDX OMNIBUS ALPHA COMMAND CENTER",
+        "fontSize": "title",
+        "containerStyle": "callout",
+        "align": "center",
+        "highlight": "purple",
+        "bold": true,
+        "width": 1400
+      }
+    },
+    {
+      "id": "subheader-main",
+      "type": "text",
+      "position": { "x": 100, "y": 90 },
+      "config": {
+        "text": "6-Sector Live War Room · Banking · Energy · Consumer · Tech/Telco · Mining · Industrial · AI Screeners · Multi-Channel Alerts · Auto-Report Generation",
+        "fontSize": "body",
+        "containerStyle": "plain",
+        "align": "center",
+        "highlight": "none",
+        "italic": true,
+        "width": 1400
+      }
+    },
+
+    {
+      "id": "note-master-thesis",
+      "type": "note",
+      "position": { "x": 100, "y": 150 },
+      "config": {
+        "content": "🧠 OMNIBUS MASTER THESIS\n\n• MACRO: BI Rate on hold → Liquidity moving back into equities. Watch rotation sequence: Banks → Energy → Consumer.\n• FOREIGN FLOW: Big 4 Banks (BBCA/BBRI/BMRI/BBNI) absorb 60-70% of net foreign buying. Signal amplifier for entire IDX.\n• COMMODITY PULSE: Coal benchmark (ICI) above $130 → ADRO/PTBA superdividend thesis intact.\n• CONSUMER THESIS: ICBP + MAPI benefit from lower BI Rate (cheaper credit, rising demand). Watch volume expansion.\n• TECH CATALYST: GOTO profitability target in view; TLKM data-center pivot underpriced by market.\n• MINING WILDCARD: AMMN copper + gold exposure — dual commodity tailwind. BREN nickel-to-battery EV play.",
+        "color": "yellow",
+        "width": 440,
+        "height": 310
+      }
+    },
+    {
+      "id": "note-risk-matrix",
+      "type": "note",
+      "position": { "x": 570, "y": 150 },
+      "config": {
+        "content": "🛡️ RISK & POSITION MANAGEMENT MATRIX\n\n• Max sector exposure: 25% per sector.\n• Hard stop-loss: -5% from entry (daily close).\n• Scale-in rule: Add on volume > 1.5x avg_volume confirmation.\n• Pyramid out: Trim 33% at +8%, 33% at +15%, trail remainder.\n• Correlation risk: BBCA/BBRI/BMRI high correlation — treat as one position for sizing.\n• Macro veto: If USD/IDR > 16,500, pause new long entries; monitor foreign flow reversal.",
+        "color": "pink",
+        "width": 400,
+        "height": 310
+      }
+    },
+    {
+      "id": "note-rotation-protocol",
+      "type": "note",
+      "position": { "x": 1000, "y": 150 },
+      "config": {
+        "content": "🔄 SECTOR ROTATION PROTOCOL\n\nPhase 1 — BANKS rally > 5% in 2 days:\n  → Watch ENERGY lag for entry.\nPhase 2 — ENERGY confirms breakout:\n  → Rotate 20% from BANKS to ADRO/PTBA.\nPhase 3 — CONSUMER volume expansion:\n  → ICBP/MAPI breakout signals late-cycle.\nPhase 4 — TECH breakout (GOTO/TLKM):\n  → Risk-on confirmation. Full portfolio deployed.\nPhase 5 — MINING surge (AMMN/BREN):\n  → Late-stage momentum. Tight stops. Exit plan active.",
+        "color": "blue",
+        "width": 400,
+        "height": 310
+      }
+    },
+    {
+      "id": "note-legend",
+      "type": "note",
+      "position": { "x": 1430, "y": 150 },
+      "config": {
+        "content": "📌 BOARD LEGEND\n\n🟡 Yellow Note = Thesis / Macro Context\n🩷 Pink Note = Risk / Defense Zone\n🔵 Blue Note = Protocol / Playbook\n🟢 Mint Note = Bullish Trigger / Buy Signal\n🟣 Purple Note = Live Dynamic Feed\n\n🚀 Sticker = Breakout Conviction\n⭐ Star = High-Priority Watch\n⚠️ Warning = Risk / Pullback Alert\n🎯 Target = Price Target Locked\n✅ Approved = Signal Confirmed\n🐻 Bearish = Sell / Exit Signal",
+        "color": "mint",
+        "width": 320,
+        "height": 310
+      }
+    },
+
+    {
+      "id": "sticker-star-header",
+      "type": "sticker",
+      "position": { "x": 1770, "y": 170 },
+      "config": { "stickerType": "star", "size": 56 }
+    },
+    {
+      "id": "sticker-rocket-header",
+      "type": "sticker",
+      "position": { "x": 1830, "y": 170 },
+      "config": { "stickerType": "rocket", "size": 56 }
+    },
+
+    {
+      "id": "image-idx-composite",
+      "type": "image",
+      "position": { "x": 1430, "y": 490 },
+      "config": {
+        "url": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&auto=format&fit=crop&q=80",
+        "caption": "IDX Composite — Live Sector Relative Strength Heatmap",
+        "width": 380,
+        "height": 220,
+        "isTransparent": false
+      }
+    },
+    {
+      "id": "image-coal-price",
+      "type": "image",
+      "position": { "x": 1430, "y": 730 },
+      "config": {
+        "url": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&auto=format&fit=crop&q=80",
+        "caption": "Newcastle Coal Benchmark (ICI) — Commodity Price Reference Chart",
+        "width": 380,
+        "height": 200,
+        "isTransparent": false
+      }
+    },
+
+    {
+      "id": "section-header-radar",
+      "type": "text",
+      "position": { "x": 100, "y": 500 },
+      "config": {
+        "text": "🔭 SECTION 0 — MARKET RADAR & AI SCREENERS (Market-Wide Pulse)",
+        "fontSize": "header",
+        "containerStyle": "callout",
+        "align": "left",
+        "highlight": "purple",
+        "bold": true,
+        "width": 1300
+      }
+    },
+
+    {
+      "id": "watcher-radar-gainers",
+      "type": "watcher",
+      "position": { "x": 100, "y": 560 },
+      "config": {
+        "metric": "rank",
+        "interval": 60,
+        "mode": "top_gainers",
+        "limit": 10,
+        "period": "1d",
+        "minMcapBillion": 5000
+      }
+    },
+    {
+      "id": "watcher-radar-losers",
+      "type": "watcher",
+      "position": { "x": 100, "y": 800 },
+      "config": {
+        "metric": "rank",
+        "interval": 60,
+        "mode": "top_losers",
+        "limit": 10,
+        "period": "1d",
+        "minMcapBillion": 5000
+      }
+    },
+
+    {
+      "id": "screener-high-momentum",
+      "type": "screener",
+      "position": { "x": 100, "y": 1040 },
+      "config": {
+        "query": "large-cap IDX stocks with price change > 4% today and volume above 2x 20-day average",
+        "limit": 8,
+        "interval": 120
+      }
+    },
+    {
+      "id": "screener-value-dividend",
+      "type": "screener",
+      "position": { "x": 100, "y": 1280 },
+      "config": {
+        "query": "IDX blue-chip companies with PE ratio below 12, dividend yield above 5%, and positive revenue growth in last 2 quarters",
+        "limit": 6,
+        "interval": 600
+      }
+    },
+    {
+      "id": "screener-recovery-plays",
+      "type": "screener",
+      "position": { "x": 100, "y": 1520 },
+      "config": {
+        "query": "IDX mid-cap turnaround stories with improving gross margin, falling debt-to-equity, and positive FCF in last quarter",
+        "limit": 5,
+        "interval": 900
+      }
+    },
+
+    {
+      "id": "cond-radar-extreme-gainer",
+      "type": "condition",
+      "position": { "x": 480, "y": 560 },
+      "config": {
+        "rule": "price_change >= 6.0 AND volume > avg_volume * 2.0"
+      }
+    },
+    {
+      "id": "cond-radar-loser-capitulation",
+      "type": "condition",
+      "position": { "x": 480, "y": 800 },
+      "config": {
+        "rule": "price_change <= -5.5 AND volume > avg_volume * 3.0"
+      }
+    },
+
+    {
+      "id": "alert-extreme-gainer",
+      "type": "alert",
+      "position": { "x": 840, "y": 540 },
+      "config": {
+        "channel": "ui",
+        "messageTemplate": "🚀 EXTREME MOMENTUM ALERT: ${symbol} surged +${price_change}% with ${volume} volume — ${price_change}x avg! Auto-research triggered."
+      }
+    },
+    {
+      "id": "action-extreme-gainer-watcher",
+      "type": "action",
+      "position": { "x": 840, "y": 660 },
+      "config": {
+        "action": "create_watcher",
+        "params": {}
+      }
+    },
+    {
+      "id": "alert-capitulation",
+      "type": "alert",
+      "position": { "x": 840, "y": 800 },
+      "config": {
+        "channel": "ui",
+        "messageTemplate": "⚠️ CAPITULATION SIGNAL: ${symbol} crashed ${price_change}% on ${volume} shares — panic selling detected. Contrarian watch activated."
+      }
+    },
+    {
+      "id": "note-radar-momentum-feed",
+      "type": "note",
+      "position": { "x": 840, "y": 920 },
+      "config": {
+        "content": "📡 RADAR LIVE FEED\n${symbol} | ${price_change}% | Vol: ${volume}\nTimestamp: ${timestamp}",
+        "template": "📡 RADAR LIVE FEED\n${symbol} | ${price_change}% | Vol: ${volume}\nTimestamp: ${timestamp}",
+        "color": "purple",
+        "width": 300,
+        "height": 160
+      }
+    },
+    {
+      "id": "action-screener-momentum-report",
+      "type": "action",
+      "position": { "x": 840, "y": 1100 },
+      "config": {
+        "action": "fundamental_report",
+        "params": { "autoDownload": true }
+      }
+    },
+    {
+      "id": "note-screener-value-feed",
+      "type": "note",
+      "position": { "x": 840, "y": 1280 },
+      "config": {
+        "content": "💎 VALUE SCREENER OUTPUT\nTop dividend + value pick: ${symbol}\nPrice: IDR ${price} | Change: ${price_change}%\nUpdated: ${timestamp}",
+        "template": "💎 VALUE SCREENER OUTPUT\nTop dividend + value pick: ${symbol}\nPrice: IDR ${price} | Change: ${price_change}%\nUpdated: ${timestamp}",
+        "color": "mint",
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "note-screener-recovery-feed",
+      "type": "note",
+      "position": { "x": 840, "y": 1520 },
+      "config": {
+        "content": "♻️ RECOVERY SCREENER OUTPUT\nTurnaround candidate: ${symbol}\nPrice: IDR ${price} | Change: ${price_change}%\nUpdated: ${timestamp}",
+        "template": "♻️ RECOVERY SCREENER OUTPUT\nTurnaround candidate: ${symbol}\nPrice: IDR ${price} | Change: ${price_change}%\nUpdated: ${timestamp}",
+        "color": "yellow",
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "file-screener-export",
+      "type": "file",
+      "position": { "x": 1200, "y": 1040 },
+      "config": {
+        "fileName": "IDX_Momentum_Screener_Results.pdf",
+        "fileUrl": "/api/export/screener?query=momentum",
+        "fileCategory": "pdf",
+        "fileSize": "128 KB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+    {
+      "id": "sticker-radar-target",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 800 },
+      "config": { "stickerType": "target", "size": 48 }
+    },
+
+    {
+      "id": "section-header-banking",
+      "type": "text",
+      "position": { "x": 100, "y": 1740 },
+      "config": {
+        "text": "🏦 SECTION 1 — BANKING HEGEMONY (BBCA · BBRI · BMRI · BBNI)",
+        "fontSize": "header",
+        "containerStyle": "callout",
+        "align": "left",
+        "highlight": "mint",
+        "bold": true,
+        "width": 1300
+      }
+    },
+
+    {
+      "id": "watcher-bbca",
+      "type": "watcher",
+      "position": { "x": 100, "y": 1800 },
+      "config": {
+        "symbol": "BBCA",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 2.5
+      }
+    },
+    {
+      "id": "watcher-bbri",
+      "type": "watcher",
+      "position": { "x": 100, "y": 2060 },
+      "config": {
+        "symbol": "BBRI",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 3.0
+      }
+    },
+    {
+      "id": "watcher-bmri",
+      "type": "watcher",
+      "position": { "x": 100, "y": 2320 },
+      "config": {
+        "symbol": "BMRI",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 2.0
+      }
+    },
+    {
+      "id": "watcher-bbni",
+      "type": "watcher",
+      "position": { "x": 100, "y": 2580 },
+      "config": {
+        "symbol": "BBNI",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 2.5
+      }
+    },
+
+    {
+      "id": "cond-bbca-breakout",
+      "type": "condition",
+      "position": { "x": 480, "y": 1770 },
+      "config": {
+        "rule": "price_change >= 3.5 AND volume > avg_volume * 1.8"
+      }
+    },
+    {
+      "id": "cond-bbca-dip",
+      "type": "condition",
+      "position": { "x": 480, "y": 1890 },
+      "config": {
+        "rule": "price_change <= -2.0 AND volume > avg_volume"
+      }
+    },
+    {
+      "id": "cond-bbri-surge",
+      "type": "condition",
+      "position": { "x": 480, "y": 2030 },
+      "config": {
+        "rule": "price_change >= 4.0 AND volume > avg_volume * 2.0"
+      }
+    },
+    {
+      "id": "cond-bbri-weak",
+      "type": "condition",
+      "position": { "x": 480, "y": 2150 },
+      "config": {
+        "rule": "price_change <= -1.5"
+      }
+    },
+    {
+      "id": "cond-bmri-momentum",
+      "type": "condition",
+      "position": { "x": 480, "y": 2290 },
+      "config": {
+        "rule": "price_change >= 2.5 AND volume > avg_volume * 1.5"
+      }
+    },
+    {
+      "id": "cond-bmri-reversal",
+      "type": "condition",
+      "position": { "x": 480, "y": 2410 },
+      "config": {
+        "rule": "price_change <= -3.0"
+      }
+    },
+    {
+      "id": "cond-bbni-breakout",
+      "type": "condition",
+      "position": { "x": 480, "y": 2550 },
+      "config": {
+        "rule": "price_change >= 3.0 AND volume > avg_volume * 1.6"
+      }
+    },
+
+    {
+      "id": "note-bbca-live",
+      "type": "note",
+      "position": { "x": 840, "y": 1770 },
+      "config": {
+        "content": "🏦 BBCA LIVE BREAKOUT\n${symbol} +${price_change}% at IDR ${price}\nVol: ${volume} | Time: ${timestamp}",
+        "template": "🏦 BBCA LIVE BREAKOUT\n${symbol} +${price_change}% at IDR ${price}\nVol: ${volume} | Time: ${timestamp}",
+        "color": "mint",
+        "width": 300,
+        "height": 160
+      }
+    },
+    {
+      "id": "alert-bbca-breakout",
+      "type": "alert",
+      "position": { "x": 840, "y": 1950 },
+      "config": {
+        "channel": "telegram",
+        "messageTemplate": "🏦 BBCA BREAKOUT ✅\n+${price_change}% at IDR ${price} | Vol: ${volume}\nInstitutional accumulation confirmed — consider entry."
+      }
+    },
+    {
+      "id": "note-bbca-dip-defense",
+      "type": "note",
+      "position": { "x": 840, "y": 1880 },
+      "config": {
+        "content": "⚠️ BBCA DIP DEFENSE\nPrice: IDR ${price} (${price_change}%)\nCheck 10,000 support. Is it retail or foreign selling?\nDon't panic — watch foreign broker tape.",
+        "template": "⚠️ BBCA DIP DEFENSE\nPrice: IDR ${price} (${price_change}%)\nCheck 10,000 support. Is it retail or foreign selling?\nDon't panic — watch foreign broker tape.",
+        "color": "pink",
+        "width": 300,
+        "height": 180
+      }
+    },
+    {
+      "id": "action-bbca-report",
+      "type": "action",
+      "position": { "x": 840, "y": 2070 },
+      "config": {
+        "action": "fundamental_report",
+        "params": { "autoDownload": true }
+      }
+    },
+    {
+      "id": "alert-bbri-surge",
+      "type": "alert",
+      "position": { "x": 840, "y": 2150 },
+      "config": {
+        "channel": "ui",
+        "messageTemplate": "🚀 BBRI MASSIVE SURGE: +${price_change}% — State bank leads the charge! Vol: ${volume}"
+      }
+    },
+    {
+      "id": "note-bbri-weak",
+      "type": "note",
+      "position": { "x": 840, "y": 2240 },
+      "config": {
+        "content": "🐻 BBRI Weakness Detected\nPrice slipped ${price_change}%\nMonitor NPL data & BI rate sensitivity.\nPotential rotation into BBCA.",
+        "template": "🐻 BBRI Weakness Detected\nPrice slipped ${price_change}%\nMonitor NPL data & BI rate sensitivity.\nPotential rotation into BBCA.",
+        "color": "pink",
+        "width": 300,
+        "height": 160
+      }
+    },
+    {
+      "id": "note-bmri-momentum",
+      "type": "note",
+      "position": { "x": 840, "y": 2320 },
+      "config": {
+        "content": "⚡ BMRI MOMENTUM\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume} | ${timestamp}",
+        "template": "⚡ BMRI MOMENTUM\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume} | ${timestamp}",
+        "color": "mint",
+        "width": 300,
+        "height": 150
+      }
+    },
+    {
+      "id": "alert-bmri-reversal",
+      "type": "alert",
+      "position": { "x": 840, "y": 2480 },
+      "config": {
+        "channel": "webhook",
+        "messageTemplate": "🔻 BMRI SHARP REVERSAL: ${price_change}% — Trend break! Risk management protocol activated."
+      }
+    },
+    {
+      "id": "alert-bbni-breakout",
+      "type": "alert",
+      "position": { "x": 840, "y": 2560 },
+      "config": {
+        "channel": "ui",
+        "messageTemplate": "📈 BBNI BREAKOUT: +${price_change}% at IDR ${price}. State bank #4 joins the rally!"
+      }
+    },
+    {
+      "id": "action-bbni-report",
+      "type": "action",
+      "position": { "x": 840, "y": 2660 },
+      "config": {
+        "action": "fundamental_report",
+        "params": { "autoDownload": false }
+      }
+    },
+
+    {
+      "id": "file-bbca-report",
+      "type": "file",
+      "position": { "x": 1200, "y": 1800 },
+      "config": {
+        "fileName": "BBCA_Fundamental_Report_Q3_2026.pdf",
+        "fileUrl": "/api/export/report?symbol=BBCA",
+        "fileCategory": "pdf",
+        "fileSize": "418 KB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+    {
+      "id": "file-bbri-report",
+      "type": "file",
+      "position": { "x": 1200, "y": 2060 },
+      "config": {
+        "fileName": "BBRI_Fundamental_Report_Q3_2026.pdf",
+        "fileUrl": "/api/export/report?symbol=BBRI",
+        "fileCategory": "pdf",
+        "fileSize": "382 KB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+    {
+      "id": "sticker-banking-approved",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 2320 },
+      "config": { "stickerType": "approved", "size": 52 }
+    },
+    {
+      "id": "sticker-bbni-bullish",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 2580 },
+      "config": { "stickerType": "bullish", "size": 52 }
+    },
+
+    {
+      "id": "section-header-energy",
+      "type": "text",
+      "position": { "x": 100, "y": 2860 },
+      "config": {
+        "text": "⚡ SECTION 2 — ENERGY & COMMODITY SUPERCYCLE (ADRO · PTBA · PGAS · MEDC)",
+        "fontSize": "header",
+        "containerStyle": "callout",
+        "align": "left",
+        "highlight": "yellow",
+        "bold": true,
+        "width": 1300
+      }
+    },
+
+    {
+      "id": "watcher-adro",
+      "type": "watcher",
+      "position": { "x": 100, "y": 2920 },
+      "config": {
+        "symbol": "ADRO",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 3.5
+      }
+    },
+    {
+      "id": "watcher-ptba",
+      "type": "watcher",
+      "position": { "x": 100, "y": 3180 },
+      "config": {
+        "symbol": "PTBA",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 3.0
+      }
+    },
+    {
+      "id": "watcher-pgas",
+      "type": "watcher",
+      "position": { "x": 100, "y": 3440 },
+      "config": {
+        "symbol": "PGAS",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 2.5
+      }
+    },
+    {
+      "id": "watcher-medc",
+      "type": "watcher",
+      "position": { "x": 100, "y": 3700 },
+      "config": {
+        "symbol": "MEDC",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 4.0
+      }
+    },
+
+    {
+      "id": "cond-adro-superdividend",
+      "type": "condition",
+      "position": { "x": 480, "y": 2890 },
+      "config": {
+        "rule": "price_change >= 4.0 AND volume > avg_volume * 1.5"
+      }
+    },
+    {
+      "id": "cond-adro-volume-surge",
+      "type": "condition",
+      "position": { "x": 480, "y": 3010 },
+      "config": {
+        "rule": "volume > avg_volume * 3.0"
+      }
+    },
+    {
+      "id": "cond-ptba-breakout",
+      "type": "condition",
+      "position": { "x": 480, "y": 3150 },
+      "config": {
+        "rule": "price_change >= 5.0 AND volume > avg_volume * 2.0"
+      }
+    },
+    {
+      "id": "cond-ptba-pullback",
+      "type": "condition",
+      "position": { "x": 480, "y": 3270 },
+      "config": {
+        "rule": "price_change <= -3.5"
+      }
+    },
+    {
+      "id": "cond-pgas-rebound",
+      "type": "condition",
+      "position": { "x": 480, "y": 3410 },
+      "config": {
+        "rule": "price_change >= 3.0"
+      }
+    },
+    {
+      "id": "cond-medc-breakout",
+      "type": "condition",
+      "position": { "x": 480, "y": 3670 },
+      "config": {
+        "rule": "price_change >= 5.0 AND volume > avg_volume * 2.5"
+      }
+    },
+
+    {
+      "id": "note-adro-live",
+      "type": "note",
+      "position": { "x": 840, "y": 2890 },
+      "config": {
+        "content": "⚡ ADRO COAL SUPERCYCLE\n${symbol} +${price_change}% at IDR ${price}\nVol: ${volume} | ${timestamp}\nDividend catalyst: ICI benchmark watch.",
+        "template": "⚡ ADRO COAL SUPERCYCLE\n${symbol} +${price_change}% at IDR ${price}\nVol: ${volume} | ${timestamp}\nDividend catalyst: ICI benchmark watch.",
+        "color": "yellow",
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "alert-adro-breakout",
+      "type": "alert",
+      "position": { "x": 840, "y": 3080 },
+      "config": {
+        "channel": "telegram",
+        "messageTemplate": "⚡ ADRO COAL SURGE: +${price_change}% at IDR ${price}! Coal benchmark > $130. Superdividend thesis confirmed. Vol: ${volume}"
+      }
+    },
+    {
+      "id": "action-adro-volume-note",
+      "type": "action",
+      "position": { "x": 840, "y": 3170 },
+      "config": {
+        "action": "create_note",
+        "params": {}
+      }
+    },
+    {
+      "id": "alert-ptba-breakout",
+      "type": "alert",
+      "position": { "x": 840, "y": 3280 },
+      "config": {
+        "channel": "ui",
+        "messageTemplate": "🔥 PTBA STATE COAL SURGE: +${price_change}%! PTBA outperforming ADRO — rotation signal within coal sector."
+      }
+    },
+    {
+      "id": "note-ptba-dip",
+      "type": "note",
+      "position": { "x": 840, "y": 3370 },
+      "config": {
+        "content": "📉 PTBA Pullback Zone\n${price_change}% dip detected.\nCheck coal forward pricing.\nEvaluate if dividend yield still intact at current price.",
+        "template": "📉 PTBA Pullback Zone\n${price_change}% dip detected.\nCheck coal forward pricing.\nEvaluate if dividend yield still intact at current price.",
+        "color": "pink",
+        "width": 300,
+        "height": 160
+      }
+    },
+    {
+      "id": "note-pgas-live",
+      "type": "note",
+      "position": { "x": 840, "y": 3480 },
+      "config": {
+        "content": "🔵 PGAS GAS REBOUND\n${symbol} +${price_change}% | IDR ${price}\nNatural gas price recovery + Pertamina distribution expansion.",
+        "template": "🔵 PGAS GAS REBOUND\n${symbol} +${price_change}% | IDR ${price}\nNatural gas price recovery + Pertamina distribution expansion.",
+        "color": "blue",
+        "width": 300,
+        "height": 160
+      }
+    },
+    {
+      "id": "note-medc-breakout",
+      "type": "note",
+      "position": { "x": 840, "y": 3700 },
+      "config": {
+        "content": "🛢️ MEDC OIL BREAKOUT\n${symbol} +${price_change}% | Vol: ${volume}\nMedco E&P — Brent oil correlation play.\nTimestamp: ${timestamp}",
+        "template": "🛢️ MEDC OIL BREAKOUT\n${symbol} +${price_change}% | Vol: ${volume}\nMedco E&P — Brent oil correlation play.\nTimestamp: ${timestamp}",
+        "color": "yellow",
+        "width": 300,
+        "height": 160
+      }
+    },
+    {
+      "id": "action-energy-sector-report",
+      "type": "action",
+      "position": { "x": 840, "y": 3870 },
+      "config": {
+        "action": "fundamental_report",
+        "params": { "autoDownload": true }
+      }
+    },
+
+    {
+      "id": "file-energy-report",
+      "type": "file",
+      "position": { "x": 1200, "y": 2920 },
+      "config": {
+        "fileName": "ADRO_PTBA_Energy_Sector_Report.pdf",
+        "fileUrl": "/api/export/report?symbol=ADRO",
+        "fileCategory": "pdf",
+        "fileSize": "512 KB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+    {
+      "id": "sticker-energy-rocket",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 3180 },
+      "config": { "stickerType": "rocket", "size": 52 }
+    },
+    {
+      "id": "sticker-energy-warning",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 3440 },
+      "config": { "stickerType": "warning", "size": 48 }
+    },
+
+    {
+      "id": "section-header-consumer",
+      "type": "text",
+      "position": { "x": 100, "y": 4040 },
+      "config": {
+        "text": "🛍️ SECTION 3 — CONSUMER & RETAIL BELLWETHERS (ICBP · MAPI · UNVR · SIDO)",
+        "fontSize": "header",
+        "containerStyle": "callout",
+        "align": "left",
+        "highlight": "coral",
+        "bold": true,
+        "width": 1300
+      }
+    },
+
+    {
+      "id": "watcher-icbp",
+      "type": "watcher",
+      "position": { "x": 100, "y": 4100 },
+      "config": {
+        "symbol": "ICBP",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 2.0
+      }
+    },
+    {
+      "id": "watcher-mapi",
+      "type": "watcher",
+      "position": { "x": 100, "y": 4360 },
+      "config": {
+        "symbol": "MAPI",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 3.0
+      }
+    },
+    {
+      "id": "watcher-unvr",
+      "type": "watcher",
+      "position": { "x": 100, "y": 4620 },
+      "config": {
+        "symbol": "UNVR",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 2.0
+      }
+    },
+
+    {
+      "id": "cond-icbp-breakout",
+      "type": "condition",
+      "position": { "x": 480, "y": 4070 },
+      "config": {
+        "rule": "price_change >= 3.0 AND volume > avg_volume * 1.4"
+      }
+    },
+    {
+      "id": "cond-mapi-surge",
+      "type": "condition",
+      "position": { "x": 480, "y": 4330 },
+      "config": {
+        "rule": "price_change >= 4.0 AND volume > avg_volume * 2.0"
+      }
+    },
+    {
+      "id": "cond-unvr-reversal",
+      "type": "condition",
+      "position": { "x": 480, "y": 4590 },
+      "config": {
+        "rule": "price_change >= 2.5"
+      }
+    },
+
+    {
+      "id": "note-icbp-live",
+      "type": "note",
+      "position": { "x": 840, "y": 4100 },
+      "config": {
+        "content": "🍜 ICBP CONSUMER BREAKOUT\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume} | ${timestamp}\nIndomie effect — consumer spending recovering.",
+        "template": "🍜 ICBP CONSUMER BREAKOUT\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume} | ${timestamp}\nIndomie effect — consumer spending recovering.",
+        "color": "mint",
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "alert-icbp-breakout",
+      "type": "alert",
+      "position": { "x": 840, "y": 4290 },
+      "config": {
+        "channel": "ui",
+        "messageTemplate": "🍜 ICBP BREAKOUT: +${price_change}% — Consumer staples leading! BI Rate cut beneficiary confirmed."
+      }
+    },
+    {
+      "id": "note-mapi-surge",
+      "type": "note",
+      "position": { "x": 840, "y": 4360 },
+      "config": {
+        "content": "🛍️ MAPI RETAIL SURGE\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume}\nLuxury retail recovery: Nike, Zara, Swatch sales uptick.",
+        "template": "🛍️ MAPI RETAIL SURGE\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume}\nLuxury retail recovery: Nike, Zara, Swatch sales uptick.",
+        "color": "mint",
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "action-mapi-report",
+      "type": "action",
+      "position": { "x": 840, "y": 4550 },
+      "config": {
+        "action": "fundamental_report",
+        "params": { "autoDownload": true }
+      }
+    },
+    {
+      "id": "note-unvr-turnaround",
+      "type": "note",
+      "position": { "x": 840, "y": 4640 },
+      "config": {
+        "content": "🔄 UNVR TURNAROUND SIGNAL\n${symbol} +${price_change}% at IDR ${price}\nUnilever restructuring catalyst.\nWatch for sustained volume above avg.",
+        "template": "🔄 UNVR TURNAROUND SIGNAL\n${symbol} +${price_change}% at IDR ${price}\nUnilever restructuring catalyst.\nWatch for sustained volume above avg.",
+        "color": "blue",
+        "width": 300,
+        "height": 170
+      }
+    },
+
+    {
+      "id": "sticker-consumer-bullish",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 4100 },
+      "config": { "stickerType": "bullish", "size": 52 }
+    },
+    {
+      "id": "sticker-mapi-target",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 4360 },
+      "config": { "stickerType": "target", "size": 52 }
+    },
+
+    {
+      "id": "section-header-tech",
+      "type": "text",
+      "position": { "x": 100, "y": 4880 },
+      "config": {
+        "text": "📡 SECTION 4 — TECH & TELCO PIVOT (GOTO · TLKM · EMTK · BUKA)",
+        "fontSize": "header",
+        "containerStyle": "callout",
+        "align": "left",
+        "highlight": "mint",
+        "bold": true,
+        "width": 1300
+      }
+    },
+
+    {
+      "id": "watcher-goto",
+      "type": "watcher",
+      "position": { "x": 100, "y": 4940 },
+      "config": {
+        "symbol": "GOTO",
+        "metric": "price_change",
+        "interval": 180,
+        "mode": "single",
+        "threshold": 5.0
+      }
+    },
+    {
+      "id": "watcher-tlkm",
+      "type": "watcher",
+      "position": { "x": 100, "y": 5200 },
+      "config": {
+        "symbol": "TLKM",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 2.5
+      }
+    },
+    {
+      "id": "watcher-emtk",
+      "type": "watcher",
+      "position": { "x": 100, "y": 5460 },
+      "config": {
+        "symbol": "EMTK",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 4.0
+      }
+    },
+
+    {
+      "id": "cond-goto-profitability",
+      "type": "condition",
+      "position": { "x": 480, "y": 4910 },
+      "config": {
+        "rule": "price_change >= 6.0 AND volume > avg_volume * 3.0"
+      }
+    },
+    {
+      "id": "cond-goto-warning",
+      "type": "condition",
+      "position": { "x": 480, "y": 5030 },
+      "config": {
+        "rule": "price_change <= -5.0 AND volume > avg_volume * 2.0"
+      }
+    },
+    {
+      "id": "cond-tlkm-datacenter",
+      "type": "condition",
+      "position": { "x": 480, "y": 5170 },
+      "config": {
+        "rule": "price_change >= 3.0 AND volume > avg_volume * 1.5"
+      }
+    },
+    {
+      "id": "cond-emtk-breakout",
+      "type": "condition",
+      "position": { "x": 480, "y": 5430 },
+      "config": {
+        "rule": "price_change >= 5.0 AND volume > avg_volume * 2.5"
+      }
+    },
+
+    {
+      "id": "note-goto-live",
+      "type": "note",
+      "position": { "x": 840, "y": 4940 },
+      "config": {
+        "content": "🤖 GOTO PROFITABILITY BREAKOUT\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume} | ${timestamp}\nFirst profitable quarter — re-rating catalyst!",
+        "template": "🤖 GOTO PROFITABILITY BREAKOUT\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume} | ${timestamp}\nFirst profitable quarter — re-rating catalyst!",
+        "color": "mint",
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "alert-goto-breakout",
+      "type": "alert",
+      "position": { "x": 840, "y": 5130 },
+      "config": {
+        "channel": "telegram",
+        "messageTemplate": "🤖 GOTO MASSIVE MOVE: +${price_change}%! Profitability narrative confirmed by market. Vol: ${volume}. Consider entry."
+      }
+    },
+    {
+      "id": "alert-goto-dump",
+      "type": "alert",
+      "position": { "x": 840, "y": 5220 },
+      "config": {
+        "channel": "webhook",
+        "messageTemplate": "🚨 GOTO DUMP ALERT: ${price_change}% crash! Insider selling or negative news? Exit/risk management NOW."
+      }
+    },
+    {
+      "id": "note-tlkm-datacenter",
+      "type": "note",
+      "position": { "x": 840, "y": 5300 },
+      "config": {
+        "content": "🏗️ TLKM DATA CENTER PIVOT\n${symbol} +${price_change}% | IDR ${price}\nTelkom cloud + data center monetization.\nUndervalued at PBV < 2.5x vs regional peers.",
+        "template": "🏗️ TLKM DATA CENTER PIVOT\n${symbol} +${price_change}% | IDR ${price}\nTelkom cloud + data center monetization.\nUndervalued at PBV < 2.5x vs regional peers.",
+        "color": "blue",
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "action-tlkm-report",
+      "type": "action",
+      "position": { "x": 840, "y": 5490 },
+      "config": {
+        "action": "fundamental_report",
+        "params": { "autoDownload": true }
+      }
+    },
+    {
+      "id": "note-emtk-breakout",
+      "type": "note",
+      "position": { "x": 840, "y": 5580 },
+      "config": {
+        "content": "📺 EMTK MEDIA BREAKOUT\n${symbol} +${price_change}% | ${volume} shares\nElang Mahkota — streaming + digital media pivot.\nTimestamp: ${timestamp}",
+        "template": "📺 EMTK MEDIA BREAKOUT\n${symbol} +${price_change}% | ${volume} shares\nElang Mahkota — streaming + digital media pivot.\nTimestamp: ${timestamp}",
+        "color": "purple",
+        "width": 300,
+        "height": 170
+      }
+    },
+
+    {
+      "id": "sticker-goto-star",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 4940 },
+      "config": { "stickerType": "star", "size": 56 }
+    },
+    {
+      "id": "sticker-tlkm-approved",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 5200 },
+      "config": { "stickerType": "approved", "size": 52 }
+    },
+    {
+      "id": "file-tech-report",
+      "type": "file",
+      "position": { "x": 1200, "y": 5460 },
+      "config": {
+        "fileName": "GOTO_TLKM_TechPivot_Report_2026.pdf",
+        "fileUrl": "/api/export/report?symbol=GOTO",
+        "fileCategory": "pdf",
+        "fileSize": "624 KB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+
+    {
+      "id": "section-header-mining",
+      "type": "text",
+      "position": { "x": 100, "y": 5840 },
+      "config": {
+        "text": "⛏️ SECTION 5 — MINING & NEW ECONOMY METALS (AMMN · BREN · MDKA · UNTR)",
+        "fontSize": "header",
+        "containerStyle": "callout",
+        "align": "left",
+        "highlight": "yellow",
+        "bold": true,
+        "width": 1300
+      }
+    },
+
+    {
+      "id": "watcher-ammn",
+      "type": "watcher",
+      "position": { "x": 100, "y": 5900 },
+      "config": {
+        "symbol": "AMMN",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 4.0
+      }
+    },
+    {
+      "id": "watcher-bren",
+      "type": "watcher",
+      "position": { "x": 100, "y": 6160 },
+      "config": {
+        "symbol": "BREN",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 5.0
+      }
+    },
+    {
+      "id": "watcher-mdka",
+      "type": "watcher",
+      "position": { "x": 100, "y": 6420 },
+      "config": {
+        "symbol": "MDKA",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 4.5
+      }
+    },
+    {
+      "id": "watcher-untr",
+      "type": "watcher",
+      "position": { "x": 100, "y": 6680 },
+      "config": {
+        "symbol": "UNTR",
+        "metric": "price_change",
+        "interval": 300,
+        "mode": "single",
+        "threshold": 2.5
+      }
+    },
+
+    {
+      "id": "cond-ammn-copper-surge",
+      "type": "condition",
+      "position": { "x": 480, "y": 5870 },
+      "config": {
+        "rule": "price_change >= 5.0 AND volume > avg_volume * 2.0"
+      }
+    },
+    {
+      "id": "cond-bren-nickel-ev",
+      "type": "condition",
+      "position": { "x": 480, "y": 6130 },
+      "config": {
+        "rule": "price_change >= 6.0 AND volume > avg_volume * 2.5"
+      }
+    },
+    {
+      "id": "cond-mdka-gold-rally",
+      "type": "condition",
+      "position": { "x": 480, "y": 6390 },
+      "config": {
+        "rule": "price_change >= 5.0 AND volume > avg_volume * 1.8"
+      }
+    },
+    {
+      "id": "cond-untr-infrastructure",
+      "type": "condition",
+      "position": { "x": 480, "y": 6650 },
+      "config": {
+        "rule": "price_change >= 3.0 AND volume > avg_volume * 1.3"
+      }
+    },
+
+    {
+      "id": "note-ammn-live",
+      "type": "note",
+      "position": { "x": 840, "y": 5900 },
+      "config": {
+        "content": "🥇 AMMN COPPER+GOLD SURGE\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume} | ${timestamp}\nAMAN Mineral: dual commodity tailwind.\nCopper > $9,000/t + Gold > $2,400/oz catalyst.",
+        "template": "🥇 AMMN COPPER+GOLD SURGE\n${symbol} +${price_change}% | IDR ${price}\nVol: ${volume} | ${timestamp}\nAMAN Mineral: dual commodity tailwind.\nCopper > $9,000/t + Gold > $2,400/oz catalyst.",
+        "color": "yellow",
+        "width": 340,
+        "height": 200
+      }
+    },
+    {
+      "id": "alert-ammn-breakout",
+      "type": "alert",
+      "position": { "x": 840, "y": 6110 },
+      "config": {
+        "channel": "telegram",
+        "messageTemplate": "⛏️ AMMN MINING SURGE: +${price_change}%! Copper + Gold dual rally. Vol: ${volume}. Tight stop at -4%."
+      }
+    },
+    {
+      "id": "action-ammn-report",
+      "type": "action",
+      "position": { "x": 840, "y": 6200 },
+      "config": {
+        "action": "fundamental_report",
+        "params": { "autoDownload": true }
+      }
+    },
+    {
+      "id": "note-bren-ev",
+      "type": "note",
+      "position": { "x": 840, "y": 6290 },
+      "config": {
+        "content": "⚡ BREN NICKEL-EV BREAKOUT\n${symbol} +${price_change}% | Vol: ${volume}\nBahodopi nickel smelter + EV battery supply chain.\nTimestamp: ${timestamp}",
+        "template": "⚡ BREN NICKEL-EV BREAKOUT\n${symbol} +${price_change}% | Vol: ${volume}\nBahodopi nickel smelter + EV battery supply chain.\nTimestamp: ${timestamp}",
+        "color": "mint",
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "alert-bren-surge",
+      "type": "alert",
+      "position": { "x": 840, "y": 6480 },
+      "config": {
+        "channel": "ui",
+        "messageTemplate": "⚡ BREN NICKEL EV RALLY: +${price_change}%! EV battery demand surge. Enter with tight risk management."
+      }
+    },
+    {
+      "id": "note-mdka-gold",
+      "type": "note",
+      "position": { "x": 840, "y": 6560 },
+      "config": {
+        "content": "🥇 MDKA GOLD RALLY\n${symbol} +${price_change}% | IDR ${price}\nMedco gold/nickel mine — gold > $2,400 tailwind.\nVol: ${volume} | ${timestamp}",
+        "template": "🥇 MDKA GOLD RALLY\n${symbol} +${price_change}% | IDR ${price}\nMedco gold/nickel mine — gold > $2,400 tailwind.\nVol: ${volume} | ${timestamp}",
+        "color": "yellow",
+        "width": 300,
+        "height": 170
+      }
+    },
+    {
+      "id": "note-untr-infrastructure",
+      "type": "note",
+      "position": { "x": 840, "y": 6740 },
+      "config": {
+        "content": "🏗️ UNTR INFRASTRUCTURE RALLY\n${symbol} +${price_change}% | IDR ${price}\nUnited Tractors: Komatsu heavy equipment + mining.\nGovernment infra spending = order book boom.",
+        "template": "🏗️ UNTR INFRASTRUCTURE RALLY\n${symbol} +${price_change}% | IDR ${price}\nUnited Tractors: Komatsu heavy equipment + mining.\nGovernment infra spending = order book boom.",
+        "color": "blue",
+        "width": 300,
+        "height": 170
+      }
+    },
+
+    {
+      "id": "file-ammn-report",
+      "type": "file",
+      "position": { "x": 1200, "y": 5900 },
+      "config": {
+        "fileName": "AMMN_Copper_Gold_Mining_Report_2026.pdf",
+        "fileUrl": "/api/export/report?symbol=AMMN",
+        "fileCategory": "pdf",
+        "fileSize": "490 KB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+    {
+      "id": "file-bren-report",
+      "type": "file",
+      "position": { "x": 1200, "y": 6160 },
+      "config": {
+        "fileName": "BREN_Nickel_EV_Battery_Report_2026.pdf",
+        "fileUrl": "/api/export/report?symbol=BREN",
+        "fileCategory": "pdf",
+        "fileSize": "376 KB",
+        "isDownloaded": false,
+        "savedLocally": false
+      }
+    },
+    {
+      "id": "sticker-ammn-star",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 6420 },
+      "config": { "stickerType": "star", "size": 56 }
+    },
+    {
+      "id": "sticker-bren-rocket",
+      "type": "sticker",
+      "position": { "x": 1270, "y": 6420 },
+      "config": { "stickerType": "rocket", "size": 56 }
+    },
+
+    {
+      "id": "section-header-control",
+      "type": "text",
+      "position": { "x": 100, "y": 6980 },
+      "config": {
+        "text": "🧮 SECTION 6 — OMNIBUS CONTROL PANEL & PORTFOLIO EXPORTS",
+        "fontSize": "header",
+        "containerStyle": "callout",
+        "align": "left",
+        "highlight": "mint",
+        "bold": true,
+        "width": 1300
+      }
+    },
+
+    {
+      "id": "screener-sector-leaders",
+      "type": "screener",
+      "position": { "x": 100, "y": 7040 },
+      "config": {
+        "query": "top performing IDX sector leaders today with price change > 3% and market cap above 50 trillion IDR",
+        "limit": 10,
+        "interval": 180
+      }
+    },
+    {
+      "id": "screener-foreign-flow",
+      "type": "screener",
+      "position": { "x": 100, "y": 7280 },
+      "config": {
+        "query": "IDX stocks with highest net foreign buying today and positive price momentum above 2%",
+        "limit": 8,
+        "interval": 120
+      }
+    },
+    {
+      "id": "screener-ipo-recent",
+      "type": "screener",
+      "position": { "x": 100, "y": 7520 },
+      "config": {
+        "query": "IDX IPO stocks listed in last 12 months with positive revenue growth and volume expansion",
+        "limit": 5,
+        "interval": 600
+      }
+    },
+
+    {
+      "id": "note-sector-leaders-feed",
+      "type": "note",
+      "position": { "x": 480, "y": 7040 },
+      "config": {
+        "content": "🏆 SECTOR LEADERS LIVE FEED\nTop: ${symbol} | ${price_change}% | IDR ${price}\nVol: ${volume} | Updated: ${timestamp}",
+        "template": "🏆 SECTOR LEADERS LIVE FEED\nTop: ${symbol} | ${price_change}% | IDR ${price}\nVol: ${volume} | Updated: ${timestamp}",
+        "color": "mint",
+        "width": 340,
+        "height": 170
+      }
+    },
+    {
+      "id": "note-foreign-flow-feed",
+      "type": "note",
+      "position": { "x": 480, "y": 7280 },
+      "config": {
+        "content": "💵 FOREIGN FLOW LIVE FEED\nForeign buy: ${symbol} | ${price_change}% | IDR ${price}\nVol: ${volume} | Updated: ${timestamp}",
+        "template": "💵 FOREIGN FLOW LIVE FEED\nForeign buy: ${symbol} | ${price_change}% | IDR ${price}\nVol: ${volume} | Updated: ${timestamp}",
+        "color": "blue",
+        "width": 340,
+        "height": 170
+      }
+    },
+    {
+      "id": "action-daily-snapshot",
+      "type": "action",
+      "position": { "x": 480, "y": 7520 },
+      "config": {
+        "action": "export_canvas",
+        "params": { "autoDownload": true }
+      }
+    },
+    {
+      "id": "action-portfolio-report",
+      "type": "action",
+      "position": { "x": 480, "y": 7650 },
+      "config": {
+        "action": "fundamental_report",
+        "params": { "autoDownload": true }
+      }
+    },
+
+    {
+      "id": "file-portfolio-snapshot",
+      "type": "file",
+      "position": { "x": 840, "y": 7040 },
+      "config": {
+        "fileName": "IDX_Omnibus_Portfolio_Snapshot_2026-09-12.pdf",
+        "fileUrl": "/api/export/canvas?format=pdf",
+        "fileCategory": "pdf",
+        "fileSize": "1.2 MB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+    {
+      "id": "file-watchlist-csv",
+      "type": "file",
+      "position": { "x": 840, "y": 7280 },
+      "config": {
+        "fileName": "IDX_Omnibus_Watchlist_All_Sectors.csv",
+        "fileUrl": "/api/export/watchlist?format=csv",
+        "fileCategory": "spreadsheet",
+        "fileSize": "48 KB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+    {
+      "id": "file-thesis-doc",
+      "type": "file",
+      "position": { "x": 840, "y": 7480 },
+      "config": {
+        "fileName": "Omnibus_6Sector_Investment_Thesis_2026.docx",
+        "fileUrl": "/api/export/thesis?format=docx",
+        "fileCategory": "document",
+        "fileSize": "210 KB",
+        "isDownloaded": false,
+        "savedLocally": false
+      }
+    },
+    {
+      "id": "file-slide-deck",
+      "type": "file",
+      "position": { "x": 840, "y": 7680 },
+      "config": {
+        "fileName": "IDX_Omnibus_War_Room_Deck_Sep2026.pptx",
+        "fileUrl": "/api/export/deck?format=pptx",
+        "fileCategory": "presentation",
+        "fileSize": "8.4 MB",
+        "isDownloaded": true,
+        "savedLocally": true
+      }
+    },
+
+    {
+      "id": "note-control-panel",
+      "type": "note",
+      "position": { "x": 1200, "y": 7040 },
+      "config": {
+        "content": "🧮 OMNIBUS STATUS PANEL\n\n✅ Banking Sector: 4 watchers ACTIVE\n✅ Energy Sector: 4 watchers ACTIVE\n✅ Consumer Sector: 3 watchers ACTIVE\n✅ Tech/Telco Sector: 3 watchers ACTIVE\n✅ Mining Sector: 4 watchers ACTIVE\n✅ Market Radar: Gainers + Losers ACTIVE\n✅ AI Screeners: 6 screeners ACTIVE\n\n📊 Total Nodes: 120+ | Edges: 60+\n🔔 Alert Channels: UI + Telegram + Webhook",
+        "color": "mint",
+        "width": 360,
+        "height": 300
+      }
+    },
+    {
+      "id": "sticker-final-approved",
+      "type": "sticker",
+      "position": { "x": 1200, "y": 7380 },
+      "config": { "stickerType": "approved", "size": 64 }
+    },
+    {
+      "id": "sticker-final-rocket",
+      "type": "sticker",
+      "position": { "x": 1270, "y": 7380 },
+      "config": { "stickerType": "rocket", "size": 64 }
+    },
+    {
+      "id": "sticker-final-star",
+      "type": "sticker",
+      "position": { "x": 1340, "y": 7380 },
+      "config": { "stickerType": "star", "size": 64 }
+    }
+
+  ],
+  "edges": [
+
+    { "id": "e-radar-g-1", "from": "watcher-radar-gainers", "to": "cond-radar-extreme-gainer" },
+    { "id": "e-radar-g-2", "from": "cond-radar-extreme-gainer", "to": "alert-extreme-gainer" },
+    { "id": "e-radar-g-3", "from": "cond-radar-extreme-gainer", "to": "action-extreme-gainer-watcher" },
+    { "id": "e-radar-g-4", "from": "cond-radar-extreme-gainer", "to": "note-radar-momentum-feed" },
+    { "id": "e-radar-l-1", "from": "watcher-radar-losers", "to": "cond-radar-loser-capitulation" },
+    { "id": "e-radar-l-2", "from": "cond-radar-loser-capitulation", "to": "alert-capitulation" },
+    { "id": "e-radar-l-3", "from": "cond-radar-loser-capitulation", "to": "note-radar-momentum-feed" },
+    { "id": "e-screener-momentum-1", "from": "screener-high-momentum", "to": "action-screener-momentum-report" },
+    { "id": "e-screener-momentum-2", "from": "screener-high-momentum", "to": "note-radar-momentum-feed" },
+    { "id": "e-screener-value-1", "from": "screener-value-dividend", "to": "note-screener-value-feed" },
+    { "id": "e-screener-recovery-1", "from": "screener-recovery-plays", "to": "note-screener-recovery-feed" },
+
+    { "id": "e-bbca-1", "from": "watcher-bbca", "to": "cond-bbca-breakout" },
+    { "id": "e-bbca-2", "from": "watcher-bbca", "to": "cond-bbca-dip" },
+    { "id": "e-bbca-3", "from": "cond-bbca-breakout", "to": "note-bbca-live" },
+    { "id": "e-bbca-4", "from": "cond-bbca-breakout", "to": "alert-bbca-breakout" },
+    { "id": "e-bbca-5", "from": "cond-bbca-breakout", "to": "action-bbca-report" },
+    { "id": "e-bbca-6", "from": "cond-bbca-dip", "to": "note-bbca-dip-defense" },
+    { "id": "e-bbri-1", "from": "watcher-bbri", "to": "cond-bbri-surge" },
+    { "id": "e-bbri-2", "from": "watcher-bbri", "to": "cond-bbri-weak" },
+    { "id": "e-bbri-3", "from": "cond-bbri-surge", "to": "alert-bbri-surge" },
+    { "id": "e-bbri-4", "from": "cond-bbri-weak", "to": "note-bbri-weak" },
+    { "id": "e-bmri-1", "from": "watcher-bmri", "to": "cond-bmri-momentum" },
+    { "id": "e-bmri-2", "from": "watcher-bmri", "to": "cond-bmri-reversal" },
+    { "id": "e-bmri-3", "from": "cond-bmri-momentum", "to": "note-bmri-momentum" },
+    { "id": "e-bmri-4", "from": "cond-bmri-reversal", "to": "alert-bmri-reversal" },
+    { "id": "e-bbni-1", "from": "watcher-bbni", "to": "cond-bbni-breakout" },
+    { "id": "e-bbni-2", "from": "cond-bbni-breakout", "to": "alert-bbni-breakout" },
+    { "id": "e-bbni-3", "from": "cond-bbni-breakout", "to": "action-bbni-report" },
+
+    { "id": "e-adro-1", "from": "watcher-adro", "to": "cond-adro-superdividend" },
+    { "id": "e-adro-2", "from": "watcher-adro", "to": "cond-adro-volume-surge" },
+    { "id": "e-adro-3", "from": "cond-adro-superdividend", "to": "note-adro-live" },
+    { "id": "e-adro-4", "from": "cond-adro-superdividend", "to": "alert-adro-breakout" },
+    { "id": "e-adro-5", "from": "cond-adro-volume-surge", "to": "action-adro-volume-note" },
+    { "id": "e-ptba-1", "from": "watcher-ptba", "to": "cond-ptba-breakout" },
+    { "id": "e-ptba-2", "from": "watcher-ptba", "to": "cond-ptba-pullback" },
+    { "id": "e-ptba-3", "from": "cond-ptba-breakout", "to": "alert-ptba-breakout" },
+    { "id": "e-ptba-4", "from": "cond-ptba-pullback", "to": "note-ptba-dip" },
+    { "id": "e-pgas-1", "from": "watcher-pgas", "to": "cond-pgas-rebound" },
+    { "id": "e-pgas-2", "from": "cond-pgas-rebound", "to": "note-pgas-live" },
+    { "id": "e-medc-1", "from": "watcher-medc", "to": "cond-medc-breakout" },
+    { "id": "e-medc-2", "from": "cond-medc-breakout", "to": "note-medc-breakout" },
+    { "id": "e-medc-3", "from": "cond-medc-breakout", "to": "action-energy-sector-report" },
+
+    { "id": "e-icbp-1", "from": "watcher-icbp", "to": "cond-icbp-breakout" },
+    { "id": "e-icbp-2", "from": "cond-icbp-breakout", "to": "note-icbp-live" },
+    { "id": "e-icbp-3", "from": "cond-icbp-breakout", "to": "alert-icbp-breakout" },
+    { "id": "e-mapi-1", "from": "watcher-mapi", "to": "cond-mapi-surge" },
+    { "id": "e-mapi-2", "from": "cond-mapi-surge", "to": "note-mapi-surge" },
+    { "id": "e-mapi-3", "from": "cond-mapi-surge", "to": "action-mapi-report" },
+    { "id": "e-unvr-1", "from": "watcher-unvr", "to": "cond-unvr-reversal" },
+    { "id": "e-unvr-2", "from": "cond-unvr-reversal", "to": "note-unvr-turnaround" },
+
+    { "id": "e-goto-1", "from": "watcher-goto", "to": "cond-goto-profitability" },
+    { "id": "e-goto-2", "from": "watcher-goto", "to": "cond-goto-warning" },
+    { "id": "e-goto-3", "from": "cond-goto-profitability", "to": "note-goto-live" },
+    { "id": "e-goto-4", "from": "cond-goto-profitability", "to": "alert-goto-breakout" },
+    { "id": "e-goto-5", "from": "cond-goto-warning", "to": "alert-goto-dump" },
+    { "id": "e-tlkm-1", "from": "watcher-tlkm", "to": "cond-tlkm-datacenter" },
+    { "id": "e-tlkm-2", "from": "cond-tlkm-datacenter", "to": "note-tlkm-datacenter" },
+    { "id": "e-tlkm-3", "from": "cond-tlkm-datacenter", "to": "action-tlkm-report" },
+    { "id": "e-emtk-1", "from": "watcher-emtk", "to": "cond-emtk-breakout" },
+    { "id": "e-emtk-2", "from": "cond-emtk-breakout", "to": "note-emtk-breakout" },
+
+    { "id": "e-ammn-1", "from": "watcher-ammn", "to": "cond-ammn-copper-surge" },
+    { "id": "e-ammn-2", "from": "cond-ammn-copper-surge", "to": "note-ammn-live" },
+    { "id": "e-ammn-3", "from": "cond-ammn-copper-surge", "to": "alert-ammn-breakout" },
+    { "id": "e-ammn-4", "from": "cond-ammn-copper-surge", "to": "action-ammn-report" },
+    { "id": "e-bren-1", "from": "watcher-bren", "to": "cond-bren-nickel-ev" },
+    { "id": "e-bren-2", "from": "cond-bren-nickel-ev", "to": "note-bren-ev" },
+    { "id": "e-bren-3", "from": "cond-bren-nickel-ev", "to": "alert-bren-surge" },
+    { "id": "e-mdka-1", "from": "watcher-mdka", "to": "cond-mdka-gold-rally" },
+    { "id": "e-mdka-2", "from": "cond-mdka-gold-rally", "to": "note-mdka-gold" },
+    { "id": "e-untr-1", "from": "watcher-untr", "to": "cond-untr-infrastructure" },
+    { "id": "e-untr-2", "from": "cond-untr-infrastructure", "to": "note-untr-infrastructure" },
+
+    { "id": "e-ctrl-1", "from": "screener-sector-leaders", "to": "note-sector-leaders-feed" },
+    { "id": "e-ctrl-2", "from": "screener-foreign-flow", "to": "note-foreign-flow-feed" },
+    { "id": "e-ctrl-3", "from": "screener-ipo-recent", "to": "action-daily-snapshot" },
+    { "id": "e-ctrl-4", "from": "screener-sector-leaders", "to": "action-portfolio-report" }
+
+  ]
+}

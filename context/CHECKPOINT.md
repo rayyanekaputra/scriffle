@@ -49,7 +49,7 @@
   * **Save / Export:** 1-click **Save** button in top navbar creates and downloads `<canvas_name>.scriffle` (UTF-8 JSON formatted).
   * **Open / Import:** **Open** button with native file picker (`.scriffle`, `.json`) + Drag & Drop `.scriffle` file directly onto the canvas to restore full graph.
   * **Starter Presets:** Quick template dropdown in Demo Controls to load `"Rotation Engine"` (complex multi-branching pipeline), `"Momentum Breakout Loop"`, or `"Banking Sector Trio"`.
-  * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0.
+  * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0; equipped with automatic `idMap` allocation preventing cross-tab `UNIQUE constraint` collisions and preserving 100% of graph edge connections.
 * **Group & Ungroup System (`Cmd+G` / `Cmd+Shift+G`):**
   * **Cohesive Selection & Dragging:** Multi-select nodes and press `Cmd+G` to group them into a single cohesive unit. Clicking any member node selects and drags the whole group synchronously.
   * **Group-Aware Copy & Paste (`Cmd+C` / `Cmd+V` / `Cmd+D`):** Copies group members, their relative spatial offsets, and internal connecting edges. Pasting assigns a fresh `groupId` and recreates the internal connections at the cursor position.

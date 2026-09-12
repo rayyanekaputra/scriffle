@@ -325,9 +325,13 @@ hackathon/
 - **Auto-Export Reports to Disk** — When `ActionNode` fires `fundamental_report`, the report is automatically saved to `reports/{project_name}/{symbol}_Fundamental_Brief.html` via `src/server/services/reportExporter.ts`. No manual download required.
 - **FileNode Download Status Indicator** — `FileNode.tsx` now shows a green `✓ Saved` pill when `savedLocally: true` or `isDownloaded: true` in `FileConfig`. Eliminates confusion about whether a file is on-disk or just a web link.
 - **Free-Text `Enter` to Commit** — In `TextNode.tsx`, `Enter` now commits and exits edit mode. `Shift+Enter` creates a new line (with bullet list continuation). `Escape` also commits and exits.
-- **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 83 tests across 4 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, and `generateScreenerNoteContent`. All pass in ~120ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
+- **Collision-Free Canvas Restore & Multi-Tab Isolation (`/api/canvas/restore`)** — Solved database `UNIQUE constraint failed on Node.id / Edge.id` when importing `.scriffle` files across multiple project tabs. Introduced an atomic `idMap` allocation engine in `src/app/api/canvas/restore/route.ts` that safely detects cross-canvas ID collisions in SQLite and allocates clean UUIDs while dynamically preserving all graph edge wirings (`fromId` -> `toId`) and deduplicating parallel edge constraints (`@@unique([fromId, toId])`). Scoped all frontend restore requests (`onDrop`, `handleUndo`, `handleRedo`, starter templates) to pass active `?id=${canvasId}`.
+- **Free-Form Text Node Edit-Mode Race Fix (`TextNode.tsx`)** — Fixed bug where clicking a Text card caused edit mode to immediately close itself. Root cause: `useEffect` watching React Flow's `selected` prop fired `setIsEditing(false)` during the brief pointer-down de-select. Fix: replaced with a **200ms debounced timer** (`deselectedTimerRef`) that cancels on re-select; added **single-click-to-edit** when node was already selected (`wasSelectedRef`) matching FigJam/Notion UX; double-click always enters edit mode unconditionally.
+- **In-Place Customizable Emoji Stickers (`StickerNode.tsx`)** — Replaced the rigid 7-preset `stickerType` enum with a free-form `{ emoji, label, color }` schema. `StickerNode` fully rewritten: double-click emoji to change it (inline input), double-click label to rename it, color palette (7 colors) appears on hover/select. Fully backward-compatible with old `.scriffle` files via a `LEGACY_MAP`. NavToolbar and ContextMenu updated to seed stickers with new format; bullish/bearish presets replaced with 📈/📉 emoji stickers.
 
-### 🟡 Medium Priority (Planned Sectors API Integrations)
+- **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 106 tests across 6 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, and `spatialNavigator`. All pass in ~115ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
+
+### 🟡 Open Candidate Integrations (Planned Sectors API)
 1. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
 2. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
 3. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
@@ -392,17 +396,18 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `TOP_MOVERS_RANKING_LEADERBOARD_PLAN.md` | Top Gainers & Losers Leaderboard display, official query params & engine fix |
 | `MULTI_SYMBOL_EXPORT_AND_PEER_WATCHER_PLAN.md` | Multi-symbol PDF report export & dynamic peer watcher automation |
 | `NAVIGATION_PLAN.md` | Spotlight Search (Cmd+K/Cmd+F), Keyboard Shortcuts Guide (?), and Zoom Presets (Shift+1) |
+| `SCRIFFLE_AI_SPEC.md` | ⭐ Standalone AI prompt & .scriffle format specification manual for LLMs (ChatGPT, Claude, Gemini, Cursor) |
 
 
 ---
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 105 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 106 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **105 tests, 0 failures, ~120ms runtime**
+- **106 tests, 0 failures, ~115ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -437,6 +442,7 @@ When you add or modify anything:
 - A new action type in `graphEngine.ts` → add integration test scenarios in `src/__tests__/integration/graphEngine.test.ts`
 - A new Sectors API integration → mock it in `fixtures/marketEvents.ts` and test its output shape
 - A new watcher mode or condition variant → test every branch (pass, fail, edge case)
+- A new node type, action, config parameter, or DSL variable → **must update `SCRIFFLE_AI_SPEC.md`** so the universal AI prompt stays 100% in sync with the codebase.
 
 Run `bun test` before marking **any** task done. If tests fail, fix them before proceeding.
 

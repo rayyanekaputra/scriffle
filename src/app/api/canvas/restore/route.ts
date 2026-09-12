@@ -65,15 +65,32 @@ export async function POST(req: Request) {
       await tx.node.deleteMany({ where: { canvasId } });
       await tx.log.deleteMany({ where: { canvasId } });
 
-      // 2. Map of oldId -> newId (or keep oldId if valid UUID)
-      const validNodeIds = new Set<string>();
+      // 2. Fetch all existing node and edge IDs across other canvases in DB to prevent unique constraint collisions
+      const existingNodeIdsInDb = new Set(
+        (await tx.node.findMany({ select: { id: true } })).map((n) => n.id)
+      );
+      const existingEdgeIdsInDb = new Set(
+        (await tx.edge.findMany({ select: { id: true } })).map((e) => e.id)
+      );
+
+      // Map of originalNodeId -> assignedNodeId
+      const idMap = new Map<string, string>();
+      const usedAssignedNodeIds = new Set<string>();
 
       // 3. Insert imported nodes
       for (const node of nodes) {
         if (!node || typeof node !== 'object') continue;
 
-        const nodeId = node.id || crypto.randomUUID();
-        validNodeIds.add(nodeId);
+        const originalId = String(node.id || crypto.randomUUID());
+        let assignedId = originalId;
+
+        // If ID is already taken by another canvas in the DB or duplicate in this batch, allocate a new UUID
+        if (existingNodeIdsInDb.has(assignedId) || usedAssignedNodeIds.has(assignedId)) {
+          assignedId = crypto.randomUUID();
+        }
+
+        idMap.set(originalId, assignedId);
+        usedAssignedNodeIds.add(assignedId);
 
         const positionX = node.position?.x ?? node.positionX ?? 100;
         const positionY = node.position?.y ?? node.positionY ?? 100;
@@ -86,7 +103,7 @@ export async function POST(req: Request) {
 
         await tx.node.create({
           data: {
-            id: nodeId,
+            id: assignedId,
             canvasId,
             type: node.type || 'note',
             positionX: Number(positionX) || 0,
@@ -95,17 +112,30 @@ export async function POST(req: Request) {
             stateJson,
           },
         });
+        existingNodeIdsInDb.add(assignedId);
       }
 
       // 4. Insert imported edges (only if both from and to nodes exist)
+      const seenEdgePairs = new Set<string>();
       for (const edge of edges) {
         if (!edge || typeof edge !== 'object') continue;
 
-        const fromId = edge.from || edge.fromId;
-        const toId = edge.to || edge.toId;
+        const rawFromId = edge.from || edge.fromId;
+        const rawToId = edge.to || edge.toId;
 
-        if (fromId && toId && validNodeIds.has(fromId) && validNodeIds.has(toId)) {
-          const edgeId = edge.id || crypto.randomUUID();
+        const fromId = rawFromId ? (idMap.get(String(rawFromId)) || String(rawFromId)) : undefined;
+        const toId = rawToId ? (idMap.get(String(rawToId)) || String(rawToId)) : undefined;
+
+        if (fromId && toId && usedAssignedNodeIds.has(fromId) && usedAssignedNodeIds.has(toId)) {
+          const pairKey = `${fromId}->${toId}`;
+          if (seenEdgePairs.has(pairKey)) continue;
+          seenEdgePairs.add(pairKey);
+
+          let edgeId = edge.id ? String(edge.id) : crypto.randomUUID();
+          if (existingEdgeIdsInDb.has(edgeId)) {
+            edgeId = crypto.randomUUID();
+          }
+
           await tx.edge.create({
             data: {
               id: edgeId,
@@ -114,6 +144,7 @@ export async function POST(req: Request) {
               toId,
             },
           });
+          existingEdgeIdsInDb.add(edgeId);
         }
       }
     });
