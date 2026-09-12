@@ -51,17 +51,23 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: true, count: 0 });
     }
 
-    const updates = nodes.map((n: { id: string; position: { x: number; y: number } }) =>
-      prisma.node.update({
-        where: { id: n.id },
-        data: {
-          positionX: n.position.x,
-          positionY: n.position.y,
-        },
+    const updates = await Promise.all(
+      nodes.map(async (n: { id: string; position?: { x: number; y: number }; config?: any }) => {
+        const dataToUpdate: any = {};
+        if (n.position) {
+          if (typeof n.position.x === 'number') dataToUpdate.positionX = n.position.x;
+          if (typeof n.position.y === 'number') dataToUpdate.positionY = n.position.y;
+        }
+        if (n.config) {
+          // If updating config directly
+          dataToUpdate.configJson = JSON.stringify(n.config);
+        }
+        return prisma.node.update({
+          where: { id: n.id },
+          data: dataToUpdate,
+        });
       })
     );
-
-    await prisma.$transaction(updates);
 
     return NextResponse.json({ success: true, count: nodes.length });
   } catch (error: any) {

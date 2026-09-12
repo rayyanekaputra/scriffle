@@ -17,12 +17,26 @@
 ## 🧩 2. Core Concepts & Features Implemented
 
 ### 2.1 The Node System
-* **`watcher` (Radar sticker):** Monitors Indonesian stock tickers (`BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`). Displays current price, price change, polling interval, and a **cycle counter** (`⚡ 12 runs`) that increments on each run.
+* **`watcher` (Radar sticker & Leaderboard):**
+  * **Single Stock Mode:** Monitors individual Indonesian stock tickers (`BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`) with current price, % move, and cycle counter (`⚡ 12 runs`).
+  * **Top Gainers / Losers Leaderboard Mode:** Full multi-mover ranking table (`#1`, `#2`, `#3`... with ticker, company name, last close price, and Mint/Coral % badges) querying `GET /v2/companies/top-changes/` with `n_stock`, `periods`, `classifications`, and `min_mcap_billion` parameters.
+  * **Dual Downstream Workflows:** Direct connected sticky notes (`NoteNode`) auto-format the full ranked summary table; connected action nodes (`create_note`) spawn separate individual sticky notes for each ranked mover with non-overlapping spatial offsets.
+* **`screener` (AI Natural Language Company Screener):**
+  * **Natural Language Queries:** Users query Indonesian stocks in plain English (e.g., *"top 5 banks by market cap"*, *"mining companies with high dividend"*, *"tech companies by revenue"*).
+  * **Sectors API Integration:** Calls `GET /v2/companies/?q={query}&include_query_values=true` or structured SQL (`where`, `order_by`). Unpacks nested `query_values` into direct company properties.
+  * **Smart Stat Capsule (`formatStatCapsule`):** Dynamically prioritizes and renders the exact requested metric (e.g. `Rev'23 Rp 149.2 T`, `P/E 18.2x`, `Div 6.1%`, `Rp 1.28 Q`).
+  * **Token Credit Cost:** Clearly displays `🪙 3 AI credits / query` notice.
+  * **Downstream Automations:** Connected sticky notes format ranked tables; connected action nodes auto-spawn complete watcher pipelines (`[Watcher] -> [Condition] -> [Note]`) or generate institutional fundamental reports with disk auto-export.
 * **`condition` (Rule capsule):** Evaluates boolean rules safely using `expr-eval` (e.g. `price_change > 5 AND volume > 1000000`). Zero insecure `eval()`.
 * **`note` (FigJam Sticky Note):** **Direct inline editable on canvas** without popups. Supports pastel color themes (`yellow`, `mint`, `pink`, `blue`, `purple`) and template interpolation (e.g. `${symbol} surged ${price_change}%`).
 * **`alert` (Notification sticker):** Emits UI notifications and logs them to the activity feed.
-* **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes or watchers when upstream conditions pass.
-* **`text` (Freeform Text):** **Direct inline editable on canvas** floating text blocks.
+* **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes, watchers, or generating institutional Fundamental Briefs (`fundamental_report` action auto-saved to disk + linked `FileNode` + research `NoteNode` populated with accurate ticker-specific metrics).
+* **`text` (FigJam × Miro Rich Freeform Text):**
+  * **Direct inline editable on canvas** with auto-growing textarea and zero awkward scrollbars.
+  * **Floating Contextual Formatting Toolbar (`TextFormatToolbar`):** Docks above active card with 4-level typography scale (`H1 Title`, `H2 Header`, `Body`, `Note/Caption`), styling toggles (`Bold`, `Italic`, `Underline`, `Strikethrough`), text alignment (`Left`, `Center`, `Right`), pastel highlighter markers (`Yellow`, `Mint`, `Coral`, `Purple`), and container styles (`Plain`, `Callout Banner`, `Card Box`).
+  * **Interactive Width Resizing:** Corner `<NodeResizer />` drag handles to set custom wrapping boundaries persisted to SQLite.
+  * **Markdown Prefix Triggers:** `# ` auto-converts to H1 Title, `## ` auto-converts to H2 Header, `- ` / `* ` starts bulleted lists with `Enter` continuation.
+  * **`T` Hotkey Placement:** Press `T` anywhere on canvas to immediately drop free-text at mouse cursor with auto-focus.
 * **`sticker` (Market Stickers):** Flat badge stickers with MingCute icons (`Bullish`, `Bearish`, `Breakout Ready`, `Target Hit`, `Top Pick`, `High Volatility`, `Thesis Approved`).
 * **`image` (Image Studio Node):**
   * **Upload:** Via top toolbar button, right-click context menu, or file drop.
@@ -36,11 +50,22 @@
   * **Open / Import:** **Open** button with native file picker (`.scriffle`, `.json`) + Drag & Drop `.scriffle` file directly onto the canvas to restore full graph.
   * **Starter Presets:** Quick template dropdown in Demo Controls to load `"Rotation Engine"` (complex multi-branching pipeline), `"Momentum Breakout Loop"`, or `"Banking Sector Trio"`.
   * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0.
-* **Multi-Selection & Box Select:**
+* **Group & Ungroup System (`Cmd+G` / `Cmd+Shift+G`):**
+  * **Cohesive Selection & Dragging:** Multi-select nodes and press `Cmd+G` to group them into a single cohesive unit. Clicking any member node selects and drags the whole group synchronously.
+  * **Group-Aware Copy & Paste (`Cmd+C` / `Cmd+V` / `Cmd+D`):** Copies group members, their relative spatial offsets, and internal connecting edges. Pasting assigns a fresh `groupId` and recreates the internal connections at the cursor position.
+  * **Double-Click Isolation Focus Mode:** Double-clicking an element in a group isolates the canvas into that group with a top status banner, allowing individual element editing and `Shift+Click` sub-selections. Press `Escape` or click the empty canvas to exit.
+  * **Ungroup (`Cmd+Shift+G`):** Dissolves groups back into standalone elements.
+* **Multi-Selection, Box Select & Figma Bounding Box Handles:**
   * `Shift + Click` or `Ctrl/Cmd + Click` to toggle select multiple elements concurrently.
   * `Shift + Drag` marquee box selection to group-select cards and connectors.
+  * **Figma-Style Selection Bounding Box (`SelectionBoundingBox`):** Automatically frames multi-selected elements with 8 tactile square corner & midpoint handles, a dashed boundary outline, and floating interactive quick `Group` / `Ungroup` action pills.
   * `Delete` / `Backspace` removes all selected elements in bulk.
-* **Keyboard Shortcuts:**
+* **Keyboard Shortcuts & Spatial Navigation:**
+  * **`Tab` / `Shift + Tab` Spatial & Graph Traversal:** Smart non-oscillating keyboard navigation that follows outgoing/incoming automation connections or hops to the closest candidate node ahead ($\Delta x > +15\text{px}$ or downwards in a subsequent row) with automatic canvas wrap-around and smooth camera pan (`setCenter`).
+  * **`Cmd+K` / `Cmd+F` (Spotlight Quick Search):** Real-time fuzzy indexer searching stock tickers (`BBCA`, `TLKM`), AI screener prompts, note texts, rules, and files with keyboard navigation (`↑`/`↓`/`↵`) and 1-click smooth camera pan.
+  * **`?` (Shortcuts Cheat Sheet):** Categorized visual reference covering Tools, Card Actions, Grouping, and Navigation.
+  * **`Shift + 1`:** Fit all nodes to screen.
+  * **`Shift + 0` / `Cmd + 0`:** Reset zoom to 100%.
   * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
   * **`Ctrl+C` / `Cmd+C`:** Copy selected card.
   * **`Ctrl+V` / `Cmd+V`:** Paste copied card at cursor position on canvas.
@@ -66,12 +91,16 @@
   * **1-Click Live Poll Button:** Clicking **"Poll Live Sectors API"** sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV from `https://api.sectors.app/v2/daily/{symbol}/` for all active canvas Watchers (`BBCA`, `BBRI`, `TLKM`, etc.) and executing downstream conditions.
 * **Toast Notifications:** Located at bottom-left with reverse stacking and slide-in animations.
 
-### 2.3 Implementation Plans Saved in Working Directory
-* [`SECTORS_API_KEY_LIVE_POLL_PLAN.md`](file:///home/abzolute/Projects/hackathon/SECTORS_API_KEY_LIVE_POLL_PLAN.md): Details on masked API key session management, live polling, and mode toggling.
-* [`SAVE_OPEN_SCRIFFLE_PLAN.md`](file:///home/abzolute/Projects/hackathon/SAVE_OPEN_SCRIFFLE_PLAN.md): Details on `.scriffle` file schema, backend restore endpoint, and starter presets.
-* [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
-* [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.
-* [`ENDPOINTS.md`](file:///home/abzolute/Projects/hackathon/ENDPOINTS.md): Complete index of all 32 Indonesia v2 Sectors API endpoints.
+### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`NAVIGATION_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/NAVIGATION_PLAN.md): Spotlight search (`Cmd+K`), Shortcuts guide (`?`), Viewport zoom presets (`Shift+1`/`Shift+0`), and spatial `Tab` traversal.
+* [`FREE_TEXT_EXPERIENCE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/FREE_TEXT_EXPERIENCE_PLAN.md): FigJam × Miro rich free-text whiteboard tooling, floating formatting toolbar, typography hierarchy, highlighter pens, and container styles.
+* [`GROUP_UNGROUP_IMPLEMENTATION_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/GROUP_UNGROUP_IMPLEMENTATION_PLAN.md): Group & ungroup architecture, group-aware copy/paste with internal connectors, and double-click group isolation focus.
+* [`SECTORS_API_KEY_LIVE_POLL_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SECTORS_API_KEY_LIVE_POLL_PLAN.md): Details on masked API key session management, live polling, and mode toggling.
+* [`SAVE_OPEN_SCRIFFLE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SAVE_OPEN_SCRIFFLE_PLAN.md): Details on `.scriffle` file schema, backend restore endpoint, and starter presets.
+* [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
+* [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.
+* [`TESTING_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TESTING_PLAN.md): Full 3-tier testing strategy and unit test suite documentation (105 tests).
+* [`ENDPOINTS.md`](file:///home/abzolute/Projects/hackathon/context/ENDPOINTS.md): Complete index of all 32 Indonesia v2 Sectors API endpoints.
 
 ---
 
@@ -117,15 +146,19 @@ hackathon/
 │   │   ├── canvas/
 │   │   │   ├── MarketCanvas.tsx       # React Flow canvas, clipboard paste, context menus & drop events
 │   │   │   ├── ContextMenu.tsx        # Right-click context menus for canvas and nodes
+│   │   │   ├── SelectionBoundingBox.tsx # Figma-style 8-point bounding box handles & group pills
 │   │   │   └── nodes/
 │   │   │       ├── WatcherNode.tsx    # Watcher sticker + cycle counter
 │   │   │       ├── ConditionNode.tsx  # Condition rule capsule
 │   │   │       ├── NoteNode.tsx       # Direct inline editable FigJam sticky note
 │   │   │       ├── AlertNode.tsx      # Alert sticker
 │   │   │       ├── ActionNode.tsx     # Mutation automation sticker
-│   │   │       ├── TextNode.tsx       # Direct inline editable free text
+│   │   │       ├── TextNode.tsx       # Direct inline editable free text with markdown triggers
 │   │   │       ├── StickerNode.tsx    # Transparent badge stickers
-│   │   │       └── ImageNode.tsx      # Resizable transparent Image node with NodeResizer
+│   │   │       ├── ImageNode.tsx      # Resizable transparent Image node with NodeResizer
+│   │   │       ├── FileNode.tsx       # Universal attached file & PDF brief preview
+│   │   │       └── text/
+│   │   │           └── TextFormatToolbar.tsx # Floating formatting toolbar (typography, highlight, container)
 │   │   ├── controls/
 │   │   │   ├── TopNav.tsx             # Floating whiteboard toolbar & sticker/image picker
 │   │   │   ├── SimulationBar.tsx      # Presenter demo dock (BBCA surge, volume spike)

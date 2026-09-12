@@ -4,6 +4,7 @@ export type NodeType =
   | 'note'
   | 'alert'
   | 'action'
+  | 'screener'
   | 'text'
   | 'image'
   | 'sticker'
@@ -11,10 +12,42 @@ export type NodeType =
 
 export type CanvasToolMode = 'select' | 'hand';
 
+export interface ScreenerCompanyResult {
+  symbol: string;
+  company_name: string;
+  sector?: string;
+  sub_sector?: string;
+  market_cap?: number;
+  price?: number;
+  pe?: number;
+  pb?: number;
+  dividend_yield?: number;
+  revenue?: number;
+  earnings?: number;
+  [key: string]: any;
+}
+
+export interface ScreenerConfig {
+  query: string;               // Natural language query, e.g. "top 5 banks by market cap"
+  mode?: 'natural' | 'structured';
+  where?: string;              // Optional SQL-like query
+  orderBy?: string;            // Optional sort field
+  desc?: boolean;
+  limit?: number;              // default 5
+  interval?: number;           // in seconds
+  cycleCount?: number;         // run counter
+}
+
 export interface WatcherConfig {
   symbol: string;         // e.g. "BBCA", "BBRI", "BMRI"
   metric: 'price' | 'price_change' | 'volume' | 'rank';
   interval: number;       // in seconds, e.g. 300
+  mode?: 'single' | 'top_gainers' | 'top_losers';
+  threshold?: number;     // e.g. 5 for 5% move
+  limit?: number;         // e.g. 3 for Top 3, 5 for Top 5, 10 for Top 10 (defaults to 5)
+  period?: '1d' | '7d' | '14d' | '30d' | '365d' | 'all'; // e.g. "1d" (defaults to "1d")
+  minMcapBillion?: number; // e.g. 5000 for 5,000 Billion IDR
+  classifications?: string; // e.g. "all"
 }
 
 export interface ConditionConfig {
@@ -39,10 +72,24 @@ export interface ActionConfig {
   params?: Record<string, any>;
 }
 
+export type TextFontSize = 'title' | 'header' | 'body' | 'caption' | 'small' | 'medium' | 'large';
+export type TextAlignment = 'left' | 'center' | 'right';
+export type TextContainerStyle = 'plain' | 'callout' | 'card';
+export type TextHighlightColor = 'none' | 'yellow' | 'mint' | 'coral' | 'purple';
+
 export interface TextConfig {
   text: string;
-  fontSize?: 'small' | 'medium' | 'large';
+  fontSize?: TextFontSize;
+  align?: TextAlignment;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strike?: boolean;
+  highlight?: TextHighlightColor;
+  containerStyle?: TextContainerStyle;
   color?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface ImageConfig {
@@ -76,23 +123,36 @@ export interface FileConfig {
   fileCategory?: FileCategory;
   extension?: string;
   caption?: string;
+  savedLocally?: boolean;
+  isDownloaded?: boolean;
+  downloadedAt?: string;
   createdAt?: string;
 }
 
-export type NodeConfig =
+export interface BaseNodeConfig {
+  _groupId?: string | null;
+  _groupName?: string | null;
+  [key: string]: any;
+}
+
+export type NodeConfig = (
   | WatcherConfig
   | ConditionConfig
   | NoteConfig
   | AlertConfig
   | ActionConfig
+  | ScreenerConfig
   | TextConfig
   | ImageConfig
   | StickerConfig
-  | FileConfig;
+  | FileConfig
+) & BaseNodeConfig;
 
 export interface CanvasNodeData {
   id: string;
   canvasId: string;
+  groupId?: string | null;
+  groupName?: string | null;
   type: NodeType;
   position: { x: number; y: number };
   config: NodeConfig;
@@ -100,6 +160,10 @@ export interface CanvasNodeData {
     cycleCount?: number;
     lastTriggeredAt?: string;
     lastValue?: any;
+    movers?: MarketEvent[];
+    screenerResults?: ScreenerCompanyResult[];
+    queryValues?: Record<string, any>;
+    screenerQuery?: string;
     status?: 'idle' | 'running' | 'passed' | 'failed' | 'error';
     error?: string;
   };
@@ -114,6 +178,7 @@ export interface CanvasEdgeData {
 
 export interface MarketEvent {
   symbol: string;
+  name?: string;
   price: number;
   prevPrice: number;
   price_change: number; // Percentage e.g. 6.2 for +6.2%
@@ -121,6 +186,7 @@ export interface MarketEvent {
   avg_volume: number;
   rank?: number;
   rank_change?: number;
+  period?: string;
   timestamp: string;
 }
 

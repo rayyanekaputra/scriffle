@@ -117,19 +117,67 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   />
                 </div>
               ) : (
-                <div>
-                  <label className={`font-bold block mb-1 ${labelColor}`}>Minimum % Move Filter</label>
-                  <input
-                    type="number"
-                    value={config.threshold || 0}
-                    onChange={(e) => setConfig({ ...config, threshold: parseFloat(e.target.value) || 0 })}
-                    placeholder="e.g. 5 for +5.0%"
-                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
-                  />
-                  <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
-                    Filter movers with at least this percentage move before triggering downstream flow.
-                  </span>
-                </div>
+                <>
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Leaderboard Size (Top N Movers)</label>
+                    <select
+                      value={config.limit || 5}
+                      onChange={(e) => setConfig({ ...config, limit: parseInt(e.target.value) || 5 })}
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    >
+                      <option value="1">Top 1 Mover</option>
+                      <option value="3">Top 3 Movers</option>
+                      <option value="5">Top 5 Movers</option>
+                      <option value="10">Top 10 Movers</option>
+                      <option value="20">Top 20 Movers</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Time Period</label>
+                    <select
+                      value={config.period || '1d'}
+                      onChange={(e) => setConfig({ ...config, period: e.target.value as any })}
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    >
+                      <option value="1d">1 Day (Daily Gainers / Losers)</option>
+                      <option value="7d">7 Days (Weekly)</option>
+                      <option value="14d">14 Days (Bi-Weekly)</option>
+                      <option value="30d">30 Days (Monthly)</option>
+                      <option value="365d">365 Days (1 Year)</option>
+                      <option value="all">All Periods Combined</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Min Market Cap Filter (Billion IDR)</label>
+                    <input
+                      type="number"
+                      value={config.minMcapBillion || ''}
+                      onChange={(e) => setConfig({ ...config, minMcapBillion: e.target.value ? parseFloat(e.target.value) : undefined })}
+                      placeholder="e.g. 5000 for IDR 5 Trillion"
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    />
+                    <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
+                      Optional: Only include companies with market cap above this threshold (in Billion IDR).
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Minimum % Move Filter</label>
+                    <input
+                      type="number"
+                      value={config.threshold || 0}
+                      onChange={(e) => setConfig({ ...config, threshold: parseFloat(e.target.value) || 0 })}
+                      placeholder="e.g. 5 for +5.0%"
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    >
+                    </input>
+                    <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
+                      Filter movers with at least this percentage move before triggering downstream flow.
+                    </span>
+                  </div>
+                </>
               )}
 
               <div>
@@ -150,6 +198,105 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                 }`}>
                   💡 <strong>Per-Node Cadence:</strong> When Auto-Polling is started, this Watcher will poll every <strong>{config.interval || 300}s</strong> independently using the live Sectors API.
                 </div>
+              </div>
+            </>
+          )}
+
+          {node.type === 'screener' && (
+            <>
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Natural Language Query Prompt</label>
+                <textarea
+                  value={config.query || ''}
+                  onChange={(e) => setConfig({ ...config, query: e.target.value })}
+                  rows={3}
+                  placeholder="e.g. top 5 banks by market cap, mining stocks with high dividend..."
+                  className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <span className={`font-bold block mb-1 text-[11px] ${secondaryColor}`}>Preset Query Prompts</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'Top 5 banks by market cap',
+                    'Top 5 tech companies by market cap',
+                    'Coal mining companies with high dividend',
+                    'Consumer goods companies with high ROE',
+                    'Undervalued stocks with PE < 10',
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setConfig({ ...config, query: preset })}
+                      className={`px-2 py-1 rounded-lg border text-[10px] font-medium transition cursor-pointer ${
+                        config.query === preset
+                          ? 'bg-[#0050FF] text-white border-[#0050FF]'
+                          : isDark
+                          ? 'bg-[#1C1E26] border-[#292B38] text-[#BAC0D0] hover:border-[#383B4A]'
+                          : isMono
+                          ? 'bg-[#F4F3EF] border-[#D8D4CA] text-[#242321] hover:border-[#B5B0A2]'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Max Results Limit</label>
+                  <select
+                    value={config.limit || 5}
+                    onChange={(e) => setConfig({ ...config, limit: parseInt(e.target.value, 10) })}
+                    className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                  >
+                    <option value={3}>Top 3</option>
+                    <option value={5}>Top 5</option>
+                    <option value={10}>Top 10</option>
+                    <option value={20}>Top 20</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Re-screen Interval</label>
+                  <select
+                    value={config.interval || 300}
+                    onChange={(e) => setConfig({ ...config, interval: parseInt(e.target.value, 10) })}
+                    className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                  >
+                    <option value={60}>Every 1 min</option>
+                    <option value={300}>Every 5 mins</option>
+                    <option value={900}>Every 15 mins</option>
+                    <option value={3600}>Every 1 hour</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={`rounded-xl p-3 border space-y-1.5 ${
+                isDark ? 'bg-[#191A22] border-[#252732]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6]' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#0050FF]">
+                    <MingIcon name="sparkles_line" size={14} />
+                    <span>Sectors API v2 /companies/</span>
+                  </div>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                    isDark
+                      ? 'bg-[#20222B] text-amber-400 border-amber-400/20'
+                      : isMono
+                      ? 'bg-[#ECE8DE] text-amber-700 border-amber-600/20'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    <MingIcon name="coin_line" size={11} />
+                    3 AI credits / query
+                  </span>
+                </div>
+                <p className={`text-[11px] leading-relaxed ${secondaryColor}`}>
+                  Uses Sectors.app AI Natural Language engine to dynamically resolve ticker filters, metric sorting, and financial ratios. Each execution consumes 3 AI token credits.
+                </p>
               </div>
             </>
           )}
@@ -262,28 +409,44 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   onChange={(e) => setConfig({ ...config, action: e.target.value })}
                   className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
                 >
-                  <option value="create_note">Auto-Spawn Research Note</option>
-                  <option value="fundamental_report">Generate Fundamental Report (Sectors API)</option>
-                  <option value="create_watcher">Auto-Spawn Peer Watcher</option>
+                  <option value="create_note">➕ Auto-Spawn New Sticky Note (Generates new card)</option>
+                  <option value="fundamental_report">📊 Generate Fundamental Report & PDF (Sectors API)</option>
+                  <option value="create_watcher">⚡ Auto-Spawn Peer Watcher</option>
                 </select>
+                <div className={`mt-2 rounded-xl p-2.5 text-[11px] leading-relaxed border ${
+                  isDark ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]' : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}>
+                  💡 <strong>Tip:</strong> If you want an <em>existing</em> sticky note to simply update in-place on every tick, connect your Watcher or Condition directly to that <strong>Sticky Note</strong> node instead of an Action node!
+                </div>
               </div>
 
               {config.action === 'create_watcher' ? (
-                <div>
-                  <label className={`font-bold block mb-1 ${labelColor}`}>Target Stock Symbol to Spawn</label>
-                  <input
-                    type="text"
-                    value={config.targetSymbol || config.params?.symbol || ''}
-                    onChange={(e) =>
-                      setConfig({
-                        ...config,
-                        targetSymbol: e.target.value.toUpperCase(),
-                        params: { ...config.params, symbol: e.target.value.toUpperCase() },
-                      })
-                    }
-                    placeholder="e.g. BBRI, BMRI, TLKM"
-                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Target Stock Symbol (Optional Override)</label>
+                    <input
+                      type="text"
+                      value={config.targetSymbol || config.params?.symbol || ''}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          targetSymbol: e.target.value.toUpperCase(),
+                          params: { ...config.params, symbol: e.target.value.toUpperCase() },
+                        })
+                      }
+                      placeholder="Leave empty to auto-track incoming tickers dynamically"
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    />
+                  </div>
+                  <div className={`rounded-xl p-3 text-xs leading-relaxed border ${
+                    isDark
+                      ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]'
+                      : isMono
+                      ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
+                      : 'bg-slate-50 border-slate-200 text-slate-600'
+                  }`}>
+                    ⚡ <strong>Dynamic Watcher Spawning:</strong> By default, this action automatically spawns dedicated Watcher cards on the canvas for each incoming top gainer/loser ticker (with 300s polling interval).
+                  </div>
                 </div>
               ) : config.action === 'fundamental_report' ? (
                 <div className={`rounded-xl p-3 text-xs leading-relaxed border ${
@@ -293,7 +456,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                     ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
                     : 'bg-blue-50 border-blue-200 text-blue-900'
                 }`}>
-                  💡 <strong>Automated Sectors API Brief:</strong> When triggered by an upstream event (e.g. +4% breakout), Scriffle queries <code>/v2/company/report/${'{symbol}'}/</code> to extract P/E, P/B, Market Cap, and Dividend Yield, then auto-spawns a formatted research sticky note and linked PDF brief.
+                  📊 <strong>Multi-Symbol Automated Sectors Brief:</strong> When triggered by Top Gainers/Losers or single breakout events, Scriffle fetches fundamentals from <code>/v2/company/report/{'${symbol}'}/</code> for <strong>each outputted ticker</strong>, generating structured research notes and auto-saved PDF briefs.
                 </div>
               ) : (
                 <div>

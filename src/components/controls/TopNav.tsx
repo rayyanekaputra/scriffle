@@ -19,6 +19,8 @@ interface TopNavProps {
   canUndo?: boolean;
   canRedo?: boolean;
   onOpenProjectHub?: () => void;
+  onOpenSearch?: () => void;
+  onOpenShortcuts?: () => void;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -34,6 +36,8 @@ export const TopNav: React.FC<TopNavProps> = ({
   canUndo = false,
   canRedo = false,
   onOpenProjectHub,
+  onOpenSearch,
+  onOpenShortcuts,
 }) => {
   const { theme, setTheme } = useTheme();
   const [isEditingName, setIsEditingName] = useState(false);
@@ -143,20 +147,54 @@ export const TopNav: React.FC<TopNavProps> = ({
         </div>
       </div>
 
-      {/* Center: Clean Status / Quick Hint badge */}
-      <div className={`hidden md:flex items-center gap-2 rounded-full px-3.5 py-1 text-xs font-semibold border ${
-        theme === 'dark'
-          ? 'bg-[#181920] border-[#282A36] text-[#8C90A0]'
-          : theme === 'mono'
-          ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#78756D]'
-          : 'bg-slate-50 border-slate-200 text-slate-500'
-      }`}>
-        <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span>Canvas Connected</span>
+      {/* Center: Spotlight Search Trigger & Quick Status */}
+      <div className="hidden md:flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold border-2 transition-all cursor-pointer ${
+            theme === 'dark'
+              ? 'bg-[#181920] border-[#282A36] text-[#8C90A0] hover:text-white hover:border-[#3E4254]'
+              : theme === 'mono'
+              ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#78756D] hover:text-[#242321] hover:border-[#A8A49A]'
+              : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
+          }`}
+          title="Spotlight Search (Cmd+K / Cmd+F)"
+        >
+          <MingIcon name="search_line" size={14} />
+          <span>Search cards...</span>
+          <kbd
+            className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${
+              theme === 'dark'
+                ? 'bg-[#22242D] border-[#2E3140] text-slate-400'
+                : theme === 'mono'
+                ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#78756D]'
+                : 'bg-white border-slate-200 text-slate-500 shadow-2xs'
+            }`}
+          >
+            ⌘K
+          </kbd>
+        </button>
       </div>
 
-      {/* Right: Theme Switcher & Panel View Toggles */}
+      {/* Right: Theme Switcher, Shortcuts, & Panel View Toggles */}
       <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+        {/* Help / Shortcuts Button */}
+        <button
+          type="button"
+          onClick={onOpenShortcuts}
+          className={`flex h-8 w-8 items-center justify-center rounded-xl border-2 transition-all cursor-pointer ${
+            theme === 'dark'
+              ? 'bg-[#181920] border-[#282A36] text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+              : theme === 'mono'
+              ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+          }`}
+          title="Keyboard Shortcuts Cheat Sheet (?)"
+        >
+          <MingIcon name="question_line" size={16} />
+        </button>
+
         {/* 3-Mode Theme Switcher */}
         <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100/80 p-0.5 shrink-0">
           <button

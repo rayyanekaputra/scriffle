@@ -5,7 +5,8 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const symbol = searchParams.get('symbol')?.toUpperCase() || 'BBCA';
-    const report = await getCompanyFundamentalReport(symbol);
+    const apiKey = req.headers.get('Authorization') || searchParams.get('apiKey') || undefined;
+    const report = await getCompanyFundamentalReport(symbol, apiKey);
 
     const price = report.lastClosePrice ? `Rp ${report.lastClosePrice.toLocaleString()}` : 'N/A';
     const priceChange = report.dailyCloseChange !== undefined
@@ -65,76 +66,60 @@ export async function GET(req: Request) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${report.symbol} - Institutional Equity Research Brief</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #F4F3EF;
-      color: #242321;
-      padding: 32px 16px;
-      line-height: 1.45;
+      background: #FFFFFF;
+      color: #111827;
+      padding: 48px 24px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .container {
-      max-width: 880px;
+    .document {
+      max-width: 820px;
       margin: 0 auto;
-      background: #FCFBF9;
-      border: 2px solid #242321;
-      border-radius: 20px;
-      padding: 36px 40px;
-      box-shadow: 4px 4px 0px #242321;
     }
 
-    /* Top Brand & Actions */
+    /* Top Brand & Action Bar */
     .top-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 20px;
-      border-bottom: 2px solid #EAE7DF;
-      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1.5px solid #111827;
+      margin-bottom: 28px;
     }
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .brand-badge {
-      background: #0050FF;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 6px;
+    .brand-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111827;
       font-family: 'JetBrains Mono', monospace;
     }
-    .brand-sub {
+    .brand-meta {
       font-size: 12px;
-      font-weight: 700;
-      color: #78756D;
+      color: #6B7280;
+      font-weight: 500;
     }
     .print-btn {
-      background: #242321;
-      color: #FCFBF9;
-      border: 2px solid #242321;
-      font-weight: 700;
+      background: #111827;
+      color: #FFFFFF;
+      border: 1px solid #111827;
+      font-weight: 600;
       font-size: 12px;
-      padding: 8px 16px;
-      border-radius: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.1s ease;
+      transition: opacity 0.15s ease;
     }
     .print-btn:hover {
-      background: #0050FF;
-      border-color: #0050FF;
-      color: #ffffff;
+      opacity: 0.85;
     }
 
     /* Header Profile */
@@ -142,148 +127,135 @@ export async function GET(req: Request) {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
     .symbol-title {
-      font-size: 34px;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-      color: #242321;
-      line-height: 1;
+      font-size: 30px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.1;
     }
     .company-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: #5A5852;
-      margin-top: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #4B5563;
+      margin-top: 4px;
     }
     .price-box {
       text-align: right;
     }
     .current-price {
-      font-size: 28px;
-      font-weight: 900;
+      font-size: 24px;
+      font-weight: 800;
       font-family: 'JetBrains Mono', monospace;
-      color: #242321;
+      color: #111827;
+      line-height: 1.1;
     }
     .price-change {
       display: inline-block;
       margin-top: 4px;
       font-size: 12px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 6px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
-      background: ${isPriceUp ? '#E6F4EA' : '#FCE8E6'};
-      color: ${isPriceUp ? '#137333' : '#C5221F'};
-      border: 1px solid ${isPriceUp ? '#CEEAD6' : '#FAD2CF'};
+      background: ${isPriceUp ? '#ECFDF5' : '#FEF2F2'};
+      color: ${isPriceUp ? '#059669' : '#DC2626'};
     }
 
-    /* Badges & Tags Row */
-    .meta-row {
+    /* Meta Details Row */
+    .meta-details {
+      font-size: 12px;
+      color: #4B5563;
+      margin-bottom: 12px;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      padding: 14px 18px;
-      background: #F4F3EF;
-      border: 1.5px solid #D8D4CA;
-      border-radius: 14px;
+      gap: 6px 16px;
+    }
+    .meta-item strong {
+      color: #111827;
+      font-weight: 600;
+    }
+    .tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
       margin-bottom: 28px;
     }
     .tag {
       font-size: 11px;
-      font-weight: 700;
-      color: #5A5852;
-      background: #EFECE4;
-      padding: 4px 10px;
-      border-radius: 8px;
-      border: 1px solid #D8D4CA;
+      font-weight: 600;
+      color: #4B5563;
+      background: #F3F4F6;
+      padding: 2px 8px;
+      border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
     }
     .index-pill {
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
       color: #0050FF;
-      background: #EBF2FF;
-      padding: 4px 10px;
-      border-radius: 8px;
-      border: 1px solid #BED8FF;
+      background: #EFF6FF;
+      padding: 2px 8px;
+      border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
     }
 
     /* Section Typography */
-    .section-heading {
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: #78756D;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .section-divider {
+      border: none;
+      border-top: 1px solid #E5E7EB;
+      margin: 28px 0 20px 0;
     }
-    .section-heading::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #EAE7DF;
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 16px;
     }
 
-    /* Key Metrics Grid (6 Primary Cards) */
+    /* Key Metrics Grid (4 columns, borderless with clean spacing) */
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 28px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px 16px;
+      margin-bottom: 8px;
     }
-    .metric-card {
-      background: #FFFFFF;
-      border: 1.5px solid #D8D4CA;
-      border-radius: 14px;
-      padding: 14px 16px;
+    .metric-item {
+      display: flex;
+      flex-direction: column;
     }
     .metric-label {
       font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #78756D;
-      letter-spacing: 0.4px;
-      margin-bottom: 6px;
+      font-weight: 600;
+      color: #6B7280;
+      margin-bottom: 4px;
     }
     .metric-val {
-      font-size: 20px;
-      font-weight: 900;
-      color: #242321;
+      font-size: 18px;
+      font-weight: 800;
+      color: #111827;
       font-family: 'JetBrains Mono', monospace;
-      line-height: 1.1;
+      line-height: 1.2;
     }
     .metric-sub {
-      font-size: 10px;
-      color: #8C8980;
-      margin-top: 4px;
-      font-weight: 600;
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-top: 2px;
+      font-weight: 500;
     }
 
     /* Two-Column Deep Dive */
     .two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 28px;
+      gap: 36px;
     }
-    .panel-box {
-      background: #FFFFFF;
-      border: 1.5px solid #D8D4CA;
-      border-radius: 16px;
-      padding: 18px 20px;
-    }
-    .panel-title {
+    .panel-heading {
       font-size: 13px;
-      font-weight: 800;
-      color: #242321;
-      margin-bottom: 14px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -293,73 +265,74 @@ export async function GET(req: Request) {
       justify-content: space-between;
       align-items: center;
       padding: 8px 0;
-      border-bottom: 1px solid #F0EEE6;
+      border-bottom: 1px solid #F3F4F6;
       font-size: 12px;
     }
     .list-item:last-child {
       border-bottom: none;
-      padding-bottom: 0;
     }
     .item-title {
-      font-weight: 700;
-      color: #242321;
+      font-weight: 600;
+      color: #1F2937;
     }
     .item-sub {
       font-size: 11px;
-      color: #78756D;
-      margin-top: 1px;
-    }
-    .status-pill {
-      font-size: 10px;
-      font-weight: 800;
-      background: #F4F3EF;
-      color: #5A5852;
-      padding: 2px 8px;
-      border-radius: 6px;
-      border: 1px solid #D8D4CA;
-      font-family: 'JetBrains Mono', monospace;
+      color: #6B7280;
     }
     .share-pct {
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
-      color: #0050FF;
+      color: #111827;
     }
 
     /* Analyst Rating Bar */
     .analyst-bar-wrapper {
-      background: #F4F3EF;
-      border: 1px solid #D8D4CA;
-      border-radius: 8px;
-      height: 12px;
+      background: #F3F4F6;
+      border-radius: 4px;
+      height: 8px;
       overflow: hidden;
       display: flex;
-      margin: 10px 0;
+      margin: 10px 0 8px 0;
     }
     .bar-buy { background: #0050FF; height: 100%; width: ${buyPct}%; }
-    .bar-hold { background: #F59E0B; height: 100%; width: ${100 - buyPct}%; }
+    .bar-hold { background: #9CA3AF; height: 100%; width: ${100 - buyPct}%; }
 
-    /* Automated Thesis Banner */
-    .thesis-callout {
-      background: #FFF9E6;
-      border: 2px solid #E6B800;
-      border-radius: 14px;
-      padding: 16px 20px;
-      margin-bottom: 28px;
+    /* Automated Thesis Section */
+    .thesis-box {
+      background: #FAFAFA;
+      border-left: 3px solid #111827;
+      padding: 14px 18px;
+      border-radius: 0 4px 4px 0;
     }
-    .thesis-title {
-      font-size: 12px;
-      font-weight: 800;
-      color: #8C6D00;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .thesis-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6B7280;
       margin-bottom: 4px;
     }
-    .thesis-body {
+    .thesis-text {
       font-size: 13px;
-      color: #4D3C00;
-      line-height: 1.5;
-      font-weight: 500;
+      color: #374151;
+      line-height: 1.55;
+    }
+
+    /* Glossary Grid */
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 28px;
+    }
+    .glossary-item-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1F2937;
+      margin-bottom: 2px;
+    }
+    .glossary-item-desc {
+      font-size: 11px;
+      color: #6B7280;
+      line-height: 1.45;
     }
 
     /* Footer */
@@ -367,31 +340,33 @@ export async function GET(req: Request) {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 20px;
-      border-top: 2px solid #EAE7DF;
+      padding-top: 16px;
+      border-top: 1px solid #E5E7EB;
+      margin-top: 36px;
       font-size: 11px;
-      font-weight: 600;
-      color: #8C8980;
+      font-weight: 500;
+      color: #9CA3AF;
     }
 
     @media print {
-      body { background: #FFFFFF; padding: 0; }
-      .container { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+      body { padding: 0; }
       .print-btn { display: none; }
-      .top-bar { padding-bottom: 12px; margin-bottom: 16px; }
+      .top-bar { margin-bottom: 20px; }
+      .section-divider { margin: 20px 0 16px 0; }
+      .report-footer { margin-top: 24px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="document">
     <!-- Top Bar -->
     <div class="top-bar">
-      <div class="brand-group">
-        <span class="brand-badge">SCRIFFLE</span>
-        <span class="brand-sub">Institutional Research • Sectors API v2</span>
+      <div>
+        <span class="brand-title">Scriffle Research Brief</span>
+        <span class="brand-meta">&nbsp;•&nbsp; Sectors API v2</span>
       </div>
       <button class="print-btn" onclick="window.print()">
-        <span>Print / Save PDF</span>
+        Print / Save PDF
       </button>
     </div>
 
@@ -407,115 +382,164 @@ export async function GET(req: Request) {
       </div>
     </div>
 
-    <!-- Sector Taxonomy & Metadata Tags -->
-    <div class="meta-row">
-      <span class="tag">Sector: ${report.sector}</span>
-      <span class="tag">Sub-Sector: ${report.subSector}</span>
-      ${report.listingBoard ? `<span class="tag">Board: ${report.listingBoard}</span>` : ''}
-      ${report.esgScore ? `<span class="tag">ESG Risk: ${report.esgScore}</span>` : ''}
+    <!-- Sector Taxonomy & Metadata Details -->
+    <div class="meta-details">
+      <span class="meta-item">Sector: <strong>${report.sector}</strong></span>
+      <span class="meta-item">Sub-Sector: <strong>${report.subSector}</strong></span>
+      ${report.listingBoard ? `<span class="meta-item">Board: <strong>${report.listingBoard}</strong></span>` : ''}
+      ${report.esgScore ? `<span class="meta-item">ESG Risk: <strong>${report.esgScore}</strong></span>` : ''}
+    </div>
+
+    <div class="tags-row">
       ${indicesHtml}
       ${tagsHtml}
     </div>
 
+    <hr class="section-divider" />
+
     <!-- Key Valuation & Financial Metrics -->
-    <div class="section-heading">Key Valuation & Financial Profile</div>
+    <div class="section-title">Key Valuation & Financial Profile</div>
     <div class="metric-grid">
-      <div class="metric-card">
+      <div class="metric-item">
         <div class="metric-label">Market Capitalisation</div>
         <div class="metric-val">${report.marketCapFormatted}</div>
         <div class="metric-sub">${report.marketCapRank ? `Rank #${report.marketCapRank} on IDX` : 'IDX Large Cap'}</div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-item">
         <div class="metric-label">Price to Earnings (P/E)</div>
         <div class="metric-val">${report.peRatio}x</div>
-        <div class="metric-sub">${report.valuation?.forwardPe ? `Forward P/E: ${report.valuation.forwardPe}x` : 'TTM Valuation'}</div>
+        <div class="metric-sub">${report.valuation?.forwardPe ? `Forward: ${report.valuation.forwardPe}x` : 'TTM Multiple'}</div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-item">
         <div class="metric-label">Price to Book (P/B)</div>
         <div class="metric-val">${report.pbvRatio}x</div>
-        <div class="metric-sub">${report.valuation?.intrinsicValue ? `Fair Value: Rp ${report.valuation.intrinsicValue.toLocaleString()}` : 'Book Multiple'}</div>
+        <div class="metric-sub">${report.valuation?.intrinsicValue ? `Fair: Rp ${report.valuation.intrinsicValue.toLocaleString()}` : 'Book Multiple'}</div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-item">
         <div class="metric-label">Dividend Yield (TTM)</div>
         <div class="metric-val">${report.dividendYield}%</div>
         <div class="metric-sub">${report.dividendSummary?.payoutRatio ? `Payout: ${(report.dividendSummary.payoutRatio * 100).toFixed(0)}%` : 'Regular Payout'}</div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-item">
         <div class="metric-label">Net Profit Margin</div>
         <div class="metric-val">${report.netProfitMargin || 22.0}%</div>
-        <div class="metric-sub">${report.financialsSummary?.operatingProfitMargin ? `OP Margin: ${report.financialsSummary.operatingProfitMargin.toFixed(1)}%` : 'High Operating Margin'}</div>
+        <div class="metric-sub">${report.financialsSummary?.operatingProfitMargin ? `OP Margin: ${report.financialsSummary.operatingProfitMargin.toFixed(1)}%` : 'Operating Margin'}</div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-item">
+        <div class="metric-label">Return on Equity (ROE)</div>
+        <div class="metric-val">${report.financialsSummary?.roe ? `${(report.financialsSummary.roe * 100).toFixed(1)}%` : '21.5%'}</div>
+        <div class="metric-sub">${report.financialsSummary?.roa ? `ROA: ${(report.financialsSummary.roa * 100).toFixed(1)}%` : 'Return on Assets'}</div>
+      </div>
+
+      <div class="metric-item">
         <div class="metric-label">52-Week Range</div>
-        <div class="metric-val" style="font-size: 16px; margin-top: 3px;">
+        <div class="metric-val" style="font-size: 15px;">
           ${report.allTimePrice?.week52Low ? `Rp ${report.allTimePrice.week52Low.toLocaleString()} - ${report.allTimePrice?.week52High?.toLocaleString()}` : 'Rp 8,850 - 10,950'}
         </div>
-        <div class="metric-sub">${report.allTimePrice?.allTimeHigh ? `ATH: Rp ${report.allTimePrice.allTimeHigh.toLocaleString()}` : 'Historical Peak'}</div>
+        <div class="metric-sub">${report.allTimePrice?.allTimeHigh ? `ATH: Rp ${report.allTimePrice.allTimeHigh.toLocaleString()}` : 'Historical High'}</div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-label">Revenue Expansion</div>
+        <div class="metric-val">${report.revenueGrowthYoY ? `+${report.revenueGrowthYoY}%` : '+9.8%'}</div>
+        <div class="metric-sub">YoY Growth</div>
       </div>
     </div>
 
-    <!-- Two Column Breakdown (Analyst & Governance / Ownership) -->
+    <hr class="section-divider" />
+
+    <!-- Two Column Breakdown -->
     <div class="two-col">
       <!-- Analyst Consensus -->
-      <div class="panel-box">
-        <div class="panel-title">
+      <div>
+        <div class="panel-heading">
           <span>Analyst Consensus</span>
-          <span class="status-pill">${analystTotal > 0 ? `${analystTotal} Analysts` : 'Strong Buy'}</span>
-        </div>
-        <div class="item-title" style="font-size: 16px; color: #0050FF;">
-          ${buyPct}% Buy Consensus
+          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">${buyPct}% Buy Rating</span>
         </div>
         <div class="analyst-bar-wrapper">
           <div class="bar-buy" title="Buy / Strong Buy"></div>
           <div class="bar-hold" title="Hold / Neutral"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #78756D;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #6B7280;">
           <span>${analyst?.strongBuy || 21} Strong Buy</span>
           <span>${analyst?.buy || 4} Buy</span>
           <span>${analyst?.hold || 2} Hold</span>
           <span>${analyst?.sell || 0} Sell</span>
         </div>
         ${report.futureForecasts?.revenueGrowth ? `
-          <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #F0EEE6; font-size: 11px; color: #5A5852;">
-            📈 <strong>FY Forecast:</strong> Projected EPS growth of <strong>+${(report.futureForecasts.epsGrowth ? report.futureForecasts.epsGrowth * 100 : 9.9).toFixed(1)}%</strong> on <strong>+${(report.futureForecasts.revenueGrowth * 100).toFixed(1)}%</strong> revenue expansion.
+          <div style="margin-top: 14px; font-size: 11px; color: #4B5563; line-height: 1.5;">
+            Forecast: Projected EPS growth of <strong>+${(report.futureForecasts.epsGrowth ? report.futureForecasts.epsGrowth * 100 : 9.9).toFixed(1)}%</strong> on <strong>+${(report.futureForecasts.revenueGrowth * 100).toFixed(1)}%</strong> revenue expansion.
           </div>
         ` : ''}
       </div>
 
-      <!-- Ownership & Governance -->
-      <div class="panel-box">
-        <div class="panel-title">
+      <!-- Major Shareholders & Leadership -->
+      <div>
+        <div class="panel-heading">
           <span>Major Shareholders</span>
-          <span class="status-pill">Ownership</span>
+          <span style="font-size: 11px; color: #6B7280;">Ownership</span>
         </div>
         <div>
           ${shareholdersHtml}
         </div>
         ${report.ownership?.conglomeratesGroup?.length ? `
-          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #F0EEE6; font-size: 11px; color: #78756D;">
-            🏢 <strong>Conglomerate / Group:</strong> ${report.ownership.conglomeratesGroup.join(', ')}
+          <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">
+            Group / Conglomerate: <strong style="color: #111827;">${report.ownership.conglomeratesGroup.join(', ')}</strong>
           </div>
         ` : ''}
       </div>
     </div>
 
-    <!-- Automated Thesis Callout -->
-    <div class="thesis-callout">
-      <div class="thesis-title">⚡ Automated Trigger Thesis Summary</div>
-      <div class="thesis-body">
-        This institutional fundamental report was compiled automatically by Scriffle's real-time whiteboard engine following a volatility or condition trigger. <strong>${report.companyName}</strong> (${report.symbol}) maintains an equity valuation of <strong>${report.peRatio}x P/E</strong> and <strong>${report.pbvRatio}x P/B</strong> with a <strong>${report.dividendYield}%</strong> dividend yield, backed by <strong>${buyPct}% analyst buy consensus</strong>.
+    <hr class="section-divider" />
+
+    <!-- Automated Thesis Summary -->
+    <div class="thesis-box">
+      <div class="thesis-label">Automated Trigger Thesis Summary</div>
+      <div class="thesis-text">
+        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>${report.companyName}</strong> (${report.symbol}) trades at <strong>${report.peRatio}x P/E</strong> and <strong>${report.pbvRatio}x P/B</strong> with a <strong>${report.dividendYield}%</strong> dividend yield, supported by <strong>${buyPct}% analyst buy consensus</strong>.
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <!-- Metric Glossary & Definitions for Non-Finance Users -->
+    <div class="section-title">Metric Glossary & Quick Reference</div>
+    <div class="glossary-grid">
+      <div>
+        <div class="glossary-item-title">Price-to-Earnings (P/E Ratio)</div>
+        <div class="glossary-item-desc">Price paid per Rp 1 of company earnings. Lower ratios indicate a cheaper valuation relative to company profits.</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Return on Equity (ROE)</div>
+        <div class="glossary-item-desc">Profit generated per Rp 1 of shareholder equity. Measures how effectively capital is reinvested.</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Price-to-Book (P/B Ratio)</div>
+        <div class="glossary-item-desc">Market value compared to net balance sheet assets. A ratio near 1.0x indicates trading close to book value.</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Dividend Yield & Payout</div>
+        <div class="glossary-item-desc">Annual cash return paid to shareholders as a percentage of share price, and the share of total profit distributed.</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Market Cap Rank</div>
+        <div class="glossary-item-desc">Total valuation ranking compared to all 900+ publicly listed companies on the Indonesia Stock Exchange (IDX).</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Analyst Consensus</div>
+        <div class="glossary-item-desc">Consensus recommendation percentage across professional institutional research analysts covering the stock.</div>
       </div>
     </div>
 
     <!-- Footer -->
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
-      <div>Generated on ${new Date().toLocaleString()} • Scriffle Automation Studio</div>
+      <div>Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} • Scriffle Studio</div>
     </div>
   </div>
 </body>
