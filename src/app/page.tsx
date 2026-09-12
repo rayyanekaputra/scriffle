@@ -150,7 +150,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
       } else if (type === 'text') {
         defaultConfig = { text: 'Freeform research hypothesis' };
       } else if (type === 'sticker') {
-        defaultConfig = { stickerType: 'rocket' };
+        defaultConfig = { emoji: '🚀', label: 'Breakout', color: 'blue' };
       } else if (type === 'alert') {
         defaultConfig = { channel: 'ui' };
       } else if (type === 'action') {
@@ -879,14 +879,14 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
               onOpenSearch={() => setShowSearchModal(true)}
               onOpenShortcuts={() => setShowShortcutsModal(true)}
             />
-          </ReactFlowProvider>
 
-          {/* Figma-style Floating Bottom NavToolbar */}
-          <NavToolbar
-            toolMode={toolMode}
-            onSetToolMode={(mode) => setToolMode(mode)}
-            onAddNode={(type, config) => handleAddNode(type, undefined, config)}
-          />
+            {/* Figma-style Floating Bottom NavToolbar */}
+            <NavToolbar
+              toolMode={toolMode}
+              onSetToolMode={(mode) => setToolMode(mode)}
+              onAddNode={(type, config, pos) => handleAddNode(type, pos, config)}
+            />
+          </ReactFlowProvider>
         </div>
 
         {/* Hideable Live Activity & Log Sidebar */}

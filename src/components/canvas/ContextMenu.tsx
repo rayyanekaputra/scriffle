@@ -292,24 +292,35 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
           <button
             onClick={() => {
-              onAddElement('sticker', { stickerType: 'bullish' });
+              onAddElement('sticker', { emoji: '🚀', label: 'Breakout', color: 'blue' });
               onClose();
             }}
             className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}
           >
-            <MingIcon name="chart_line" size={16} className={iconColor} />
+            <span className="text-base leading-none">🚀</span>
+            <span>Sticker: Breakout</span>
+          </button>
+
+          <button
+            onClick={() => {
+              onAddElement('sticker', { emoji: '📈', label: 'Bullish', color: 'green' });
+              onClose();
+            }}
+            className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}
+          >
+            <span className="text-base leading-none">📈</span>
             <span>Sticker: Bullish</span>
           </button>
 
           <button
             onClick={() => {
-              onAddElement('sticker', { stickerType: 'rocket' });
+              onAddElement('sticker', { emoji: '📉', label: 'Bearish', color: 'red' });
               onClose();
             }}
             className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 font-semibold transition cursor-pointer ${buttonHover}`}
           >
-            <MingIcon name="rocket_line" size={16} className={iconColor} />
-            <span>Sticker: Breakout</span>
+            <span className="text-base leading-none">📉</span>
+            <span>Sticker: Bearish</span>
           </button>
 
           <div className={`my-1 h-[1px] ${dividerColor}`} />

@@ -107,11 +107,12 @@ export function extractNodeSearchText(node: CanvasNodeData): {
       break;
     }
     case 'sticker': {
-      const stickerType = cfg.stickerType || 'rocket';
-      title = `Sticker: ${stickerType}`;
-      subtitle = 'Canvas badge marker';
-      badge = stickerType;
-      searchTokens.push('sticker', 'badge', stickerType, 'marker');
+      const emoji = cfg.emoji || '🚀';
+      const label = cfg.label || cfg.stickerType || 'Sticker';
+      title = `${emoji} ${label}`;
+      subtitle = cfg.color ? `${cfg.color} sticker badge` : 'Canvas sticker badge';
+      badge = cfg.color || 'Sticker';
+      searchTokens.push('sticker', 'badge', label, emoji, cfg.color || '', cfg.stickerType || '');
       break;
     }
     case 'image': {

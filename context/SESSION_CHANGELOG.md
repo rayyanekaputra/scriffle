@@ -4,7 +4,29 @@
 
 ---
 
-## 1. Navigation & Productivity Suite (Spotlight Search, Shortcuts Guide & Non-Oscillating Spatial Tab Traversal)
+## 1. Canvas UX & Formatting Fixes (Emoji Picker, Viewport Placement & Text Toolbar Stability)
+
+**Key Issues Resolved:**
+1. **Sticker Node Editing & Emoji Picker (`EditNodeModal.tsx` & `StickerNode.tsx`)**:
+   - Double-clicking a sticker node previously showed an empty edit modal because `sticker` was unhandled.
+   - Added full sticker editing support to `EditNodeModal.tsx`: 32-emoji grid picker (🚀, 📈, 📉, 🎯, ⭐, ⚠️, ✅, 💎, 🐂, 🐻, 💰, 📊, 🔥, 💡, ⏳, 🛑, 🔍, 🏆, ⚡, 📌, 🏷️, 👀, 🔔, 💼, 🏦, 🪙, etc.), custom emoji input, label field, 7-color badge palette, and live sticker preview badge.
+   - Added an inline quick-picker popover in `StickerNode.tsx` when clicking the emoji icon directly on the canvas.
+   - Converted the toolbar Sticker button in `NavToolbar.tsx` into a split button: single click immediately drops a sticker at viewport center, and dropdown chevron allows selecting between 8 quick presets with outside-click dismiss.
+2. **Viewport-Centered Node Placement (`NavToolbar.tsx` & `src/app/page.tsx`)**:
+   - Previously, clicking any tool button in `NavToolbar` dropped nodes at static coordinates `(300, 200)` at the canvas top.
+   - Integrated `useReactFlow().screenToFlowPosition` in `NavToolbar.tsx` to dynamically convert window center `(window.innerWidth / 2, window.innerHeight / 2)` to canvas flow coordinates with slight natural scatter jitter (`±20px`).
+   - Moved `<NavToolbar>` inside `<ReactFlowProvider>` in `src/app/page.tsx` and updated `handleAddNode` to place nodes right where the user is currently panning and zooming.
+3. **Free-Text Formatting Toolbar Stability (`TextNode.tsx` & `TextFormatToolbar.tsx`)**:
+   - The floating typography toolbar previously closed when clicking formatting buttons because the `<textarea>` lost focus (`blur`), setting `isEditing = false` and unmounting the toolbar before/during click.
+   - Added `onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}` and `onPointerDown` preventDefault in `TextFormatToolbar.tsx` to prevent focus loss.
+   - Updated `showToolbar` in `TextNode.tsx` to `(selected || isEditing) && selectedCount === 1` so the toolbar remains accessible and active whenever the text node is selected or actively being edited.
+4. **Unit Testing & Search Indexing**:
+   - Updated `src/lib/searchIndexer.ts` to index custom emoji, label, and color for sticker nodes.
+   - Added sticker search tests in `src/__tests__/unit/searchIndexer.test.ts`. All **106 tests** pass.
+
+---
+
+## 2. Navigation & Productivity Suite (Spotlight Search, Shortcuts Guide & Non-Oscillating Spatial Tab Traversal)
 
 **Feature Overview:**
 Equipped Scriffle with a Figma/FigJam-inspired spatial navigation and productivity system:

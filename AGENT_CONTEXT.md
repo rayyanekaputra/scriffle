@@ -316,6 +316,11 @@ hackathon/
 ## 10. Open Backlog (Prioritized)
 
 ### ✅ Recently Completed (This Session)
+- **Canvas UX & Formatting Fixes (Emoji Picker, Viewport Placement & Text Toolbar Stability)**:
+  - **Sticker Node & Modal Editor (`EditNodeModal.tsx` & `StickerNode.tsx`)**: Fixed empty modal on double-click sticker; added 32-emoji grid picker, custom emoji input, label field, 7-color badge palette, and live preview. Added inline quick emoji popover on canvas and converted toolbar Sticker button into a split button (direct click drops sticker at viewport center, chevron opens 8 presets with click-outside dismiss).
+  - **Viewport-Centered Node Placement (`NavToolbar.tsx` & `src/app/page.tsx`)**: Replaced static top-left coordinate fallback `(300, 200)` with `useReactFlow().screenToFlowPosition` converting viewport center `(window.innerWidth / 2, window.innerHeight / 2)` to flow coordinates with natural scatter jitter. Wrapped `NavToolbar` inside `ReactFlowProvider`.
+  - **Free-Text Formatting Toolbar Stability (`TextNode.tsx` & `TextFormatToolbar.tsx`)**: Added `onMouseDown` preventDefault in `TextFormatToolbar` to stop focus theft from `<textarea>`, and updated `showToolbar` to `(selected || isEditing) && selectedCount === 1` so formatting controls remain active and accessible.
+  - **Search Indexer & Testing**: Updated `searchIndexer.ts` with custom emoji and label search tokens; increased unit tests to 106 passing tests.
 - **Navigation & Productivity Suite (`SpotlightSearchModal.tsx`, `ShortcutsModal.tsx`, `ZoomControls.tsx`)** — Implemented Figma/FigJam-inspired spatial navigation: Spotlight Search (`Cmd+K`/`Cmd+F`) with real-time fuzzy indexer (`searchIndexer.ts`) across all tickers, prompts, rules, notes, and files with smooth camera pan & zoom (`setCenter`); visual Keyboard Shortcuts Guide modal (`?` / `Shift+/`); and interactive bottom-left Zoom Controls with live percentage pill, preset dropdown (`50%`, `100%`, `150%`, `200%`, `Fit All`), and viewport hotkeys (`Shift+1` fit to screen, `Shift+0`/`Cmd+0` 100% reset).
 - **AI Natural Language Company Screener (`/v2/companies/?q=...`)** — Added dedicated `ScreenerNode` (`ScreenerNode.tsx`) on the canvas supporting natural language queries (e.g. *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies by revenue"*). Integrated `fetchCompaniesScreener` with dynamic `query_values` unpacking, full Sectors API field coverage, smart metric stat capsule formatting, 3 AI credits notice, and downstream automation (`[Screener] -> [Note / Action / Watcher]`).
 - **Auto-Spawned Watcher Complete Automation Pipeline (`create_watcher`)** — When an Action node triggers `create_watcher` (from Top Gainers/Losers Radar or single breakout events), it now automatically spawns a complete, connected downstream automation pipeline: `[New Watcher] -> [Condition (price_change > 0)] -> [Sticky Note]`. This ensures newly discovered breakout stocks immediately execute live tracking on subsequent polling ticks without manual wiring.
@@ -420,7 +425,7 @@ src/__tests__/
     ├── interpolateTemplate.test.ts ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
     ├── leaderboard.test.ts        ← 18 tests — gainers/losers formatting, rank indicators, empty input
     ├── screenerNote.test.ts       ← 15 tests — screener output structure, company rows, fallbacks
-    ├── searchIndexer.test.ts      ← 14 tests — fuzzy node search indexing, ticker & rule matching, edge cases
+    ├── searchIndexer.test.ts      ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     └── spatialNavigator.test.ts   ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
 ```
 

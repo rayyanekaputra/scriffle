@@ -369,6 +369,154 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
             </>
           )}
 
+          {node.type === 'sticker' && (
+            <>
+              {/* Sticker Preview Badge */}
+              <div>
+                <label className={`font-bold block mb-1.5 ${labelColor}`}>Live Sticker Preview</label>
+                <div className="flex items-center justify-center p-4 rounded-2xl border-2 border-dashed border-slate-200 dark:border-[#282A36]">
+                  <div className={`flex items-center gap-2 rounded-2xl border-2 px-3.5 py-2 font-bold text-xs transition-all ${
+                    config.color === 'green' ? 'bg-emerald-100 border-emerald-400 text-emerald-900' :
+                    config.color === 'red' ? 'bg-rose-100 border-rose-400 text-rose-900' :
+                    config.color === 'amber' ? 'bg-amber-100 border-amber-400 text-amber-900' :
+                    config.color === 'purple' ? 'bg-purple-100 border-purple-400 text-purple-900' :
+                    config.color === 'teal' ? 'bg-teal-100 border-teal-400 text-teal-900' :
+                    config.color === 'slate' ? 'bg-slate-100 border-slate-400 text-slate-800' :
+                    'bg-indigo-100 border-indigo-400 text-indigo-900'
+                  }`}>
+                    <span className="text-xl shrink-0">{config.emoji || '🚀'}</span>
+                    <span className="truncate max-w-[200px]">{config.label || 'My Sticker'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Emoji Picker Grid */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className={`font-bold block ${labelColor}`}>Pick Emoji Icon</label>
+                  <span className={`text-[11px] ${secondaryColor}`}>Click to select</span>
+                </div>
+                <div className="grid grid-cols-8 gap-1.5 p-2 rounded-2xl border-2 max-h-36 overflow-y-auto ${inputBg}">
+                  {[
+                    '🚀', '📈', '📉', '🎯', '⭐', '⚠️', '✅', '💎',
+                    '🐂', '🐻', '💰', '📊', '🔥', '💡', '⏳', '🛑',
+                    '🔍', '🏆', '⚡', '📌', '🏷️', '👀', '🔔', '💼',
+                    '🏦', '🪙', '🧠', '🛡️', '🔒', '🌱', '☀️', '☕',
+                  ].map((em) => (
+                    <button
+                      key={em}
+                      type="button"
+                      onClick={() => setConfig({ ...config, emoji: em })}
+                      className={`h-9 w-9 text-lg flex items-center justify-center rounded-xl transition-all cursor-pointer ${
+                        (config.emoji || '🚀') === em
+                          ? 'bg-blue-500/20 border-2 border-blue-500 scale-110 shadow-xs'
+                          : 'hover:bg-black/5 dark:hover:bg-white/10 hover:scale-105'
+                      }`}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Emoji Input & Label */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-1">
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Custom Emoji</label>
+                  <input
+                    type="text"
+                    maxLength={4}
+                    value={config.emoji || ''}
+                    onChange={(e) => setConfig({ ...config, emoji: e.target.value })}
+                    placeholder="🚀"
+                    className={`w-full text-center text-lg rounded-xl border-2 p-2 font-bold focus:outline-none ${inputBg}`}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Sticker Label Text</label>
+                  <input
+                    type="text"
+                    maxLength={40}
+                    value={config.label || ''}
+                    onChange={(e) => setConfig({ ...config, label: e.target.value })}
+                    placeholder="e.g. Breakout Ready, Top Pick"
+                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                  />
+                </div>
+              </div>
+
+              {/* Color Theme Selector */}
+              <div>
+                <label className={`font-bold block mb-1.5 ${labelColor}`}>Badge Color Theme</label>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {[
+                    { key: 'green', label: 'Green', dot: 'bg-emerald-400' },
+                    { key: 'red', label: 'Red', dot: 'bg-rose-400' },
+                    { key: 'blue', label: 'Blue', dot: 'bg-indigo-400' },
+                    { key: 'amber', label: 'Amber', dot: 'bg-amber-400' },
+                    { key: 'purple', label: 'Purple', dot: 'bg-purple-400' },
+                    { key: 'teal', label: 'Teal', dot: 'bg-teal-400' },
+                    { key: 'slate', label: 'Slate', dot: 'bg-slate-400' },
+                  ].map((c) => (
+                    <button
+                      key={c.key}
+                      type="button"
+                      onClick={() => setConfig({ ...config, color: c.key })}
+                      title={c.label}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition cursor-pointer ${
+                        (config.color || 'blue') === c.key
+                          ? 'border-blue-500 bg-blue-500/10 scale-105'
+                          : 'border-slate-200 dark:border-[#2C2E3A] hover:border-slate-400'
+                      }`}
+                    >
+                      <span className={`h-3 w-3 rounded-full ${c.dot}`} />
+                      <span className="capitalize">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {node.type === 'image' && (
+            <>
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Image URL</label>
+                <input
+                  type="text"
+                  value={config.url || ''}
+                  onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                  placeholder="https://... or data:image/..."
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Caption (Optional)</label>
+                <input
+                  type="text"
+                  value={config.caption || ''}
+                  onChange={(e) => setConfig({ ...config, caption: e.target.value })}
+                  placeholder="e.g. Technical chart breakout analysis"
+                  className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="img-trans"
+                  checked={config.isTransparent ?? true}
+                  onChange={(e) => setConfig({ ...config, isTransparent: e.target.checked })}
+                  className="rounded"
+                />
+                <label htmlFor="img-trans" className={`font-bold cursor-pointer select-none ${labelColor}`}>
+                  Transparent Background (Zero white border box)
+                </label>
+              </div>
+            </>
+          )}
+
           {node.type === 'alert' && (
             <>
               <div>

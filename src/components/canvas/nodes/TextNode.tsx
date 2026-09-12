@@ -31,6 +31,13 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Guard against React Flow's pointer-down deselect race condition:
+  // React Flow briefly flips selected=false on pointer-down, then re-selects on pointer-up.
+  // We debounce the deselect exit so a quick re-select cancels the close.
+  const deselectedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track whether this node was selected on the previous render (for single-click-to-edit).
+  const wasSelectedRef = useRef<boolean>(false);
+
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';
 
@@ -71,11 +78,27 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
     setContainerStyle(config.containerStyle || 'plain');
   }, [config.containerStyle]);
 
-  // When node gets deselected, always exit editing mode
+  // Debounced deselect guard: only exit editing if the node stays deselected for >200ms.
+  // This prevents React Flow's pointer-down momentary deselect from closing edit mode.
   useEffect(() => {
     if (!selected) {
-      setIsEditing(false);
+      deselectedTimerRef.current = setTimeout(() => {
+        setIsEditing(false);
+      }, 200);
+    } else {
+      // Node is selected — cancel any pending deselect close
+      if (deselectedTimerRef.current) {
+        clearTimeout(deselectedTimerRef.current);
+        deselectedTimerRef.current = null;
+      }
     }
+    wasSelectedRef.current = Boolean(selected);
+
+    return () => {
+      if (deselectedTimerRef.current) {
+        clearTimeout(deselectedTimerRef.current);
+      }
+    };
   }, [selected]);
 
   // Auto-resize textarea height to match EXACT content scrollHeight
@@ -207,9 +230,15 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
     }
   };
 
-  // Double-click to enter editing mode & focus textarea
-  const handleDoubleClick = (e: React.MouseEvent) => {
+  // Single-click enters edit mode if the node is already selected (FigJam / Notion behavior).
+  // Double-click always enters edit mode regardless of prior selection state.
+  const enterEditMode = (e: React.MouseEvent) => {
     e.stopPropagation();
+    // Cancel any pending deselect-exit timer before entering edit mode
+    if (deselectedTimerRef.current) {
+      clearTimeout(deselectedTimerRef.current);
+      deselectedTimerRef.current = null;
+    }
     setIsEditing(true);
     setTimeout(() => {
       if (textareaRef.current) {
@@ -218,6 +247,18 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
       }
     }, 20);
   };
+
+  const handleClick = (e: React.MouseEvent) => {
+    // Only enter edit mode on a plain single-click if the node was already selected
+    if (wasSelectedRef.current && !isEditing) {
+      enterEditMode(e);
+    }
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    enterEditMode(e);
+  };
+
 
   // Font size classes
   const normalizedSize: 'title' | 'header' | 'body' | 'caption' =
@@ -305,7 +346,7 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
 
   const allNodes = getNodes();
   const selectedCount = allNodes.filter((n) => n.selected).length;
-  const showToolbar = isEditing && selectedCount === 1;
+  const showToolbar = (selected || isEditing) && selectedCount === 1;
 
   // Exact shared typography styles across textarea and display div
   const sharedTypographyClasses = `w-full bg-transparent ${fontClass} ${alignClass} ${decorationClass} ${highlightClass} ${textColor} m-0 p-0 border-0 outline-none`;
@@ -313,6 +354,7 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
   return (
     <div
       style={{ width: customWidth, minWidth: 160, maxWidth: 850 }}
+      onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       className={`relative group transition-all duration-150 ${containerClass} ${selectedBorder}`}
     >
