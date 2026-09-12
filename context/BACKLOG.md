@@ -14,6 +14,13 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - `FileNode` now shows a green `✓ Saved` pill when `savedLocally: true` or `isDownloaded: true` in `FileConfig`. Eliminates confusion about whether a file exists on disk or is a web-only link.
 - [x] **⭐ Free-Text `Enter` to Commit (`TextNode.tsx`)**
   - `Enter` now commits changes and exits edit mode. `Shift+Enter` creates a new line (with bullet continuation). `Escape` also commits.
+- [x] **🔥 Top Gainers & Losers Ranking Leaderboard & Query Parameters Upgrade (`/v2/companies/top-changes/`)**
+  - Leaderboard card rendering in `WatcherNode.tsx` displaying multi-stock rankings (`#1`, `#2`, `#3`... with ticker, company name, formatted price, and `% move` badges).
+  - Supported official Sectors API query parameters (`n_stock`, `periods`, `classifications`, `min_mcap_billion`) in `sectorsApi.ts`.
+  - Upgraded graph engine with `executeGraphForRadarWatcher` to persist `state.movers` without single-tick overwrites.
+  - Implemented Flow 1: Connected sticky notes format full multi-line ranked leaderboard tables.
+  - Implemented Flow 2: Connected action nodes (`create_note`) spawn individual sticky notes for each ranked mover with non-overlapping spatial offsets.
+  - Expanded `EditNodeModal.tsx` with limit (Top 1–20), periods (`1d`, `7d`, `14d`, `30d`, `365d`, `all`), and minimum market cap (Billion IDR) filter.
 - [x] **⚡ Top Market Movers & Gainers Radar (`/v2/companies/top-changes/`)**
   - Integrated into `WatcherNode.tsx`, `EditNodeModal.tsx`, `ContextMenu.tsx`, and `/api/engine/trigger`.
   - Supports `Top Gainers` & `Top Losers` modes with custom % move threshold filtering and automated downstream graph execution.

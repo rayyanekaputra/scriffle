@@ -166,66 +166,116 @@ export interface TopMoversResult {
 
 const MOCK_TOP_GAINERS: MarketEvent[] = [
   {
-    symbol: 'CUAN',
-    price: 8450,
-    prevPrice: 7350,
-    price_change: 14.97,
-    volume: 34500000,
+    symbol: 'JECX',
+    name: 'PT Nitrasanata Dharma Tbk',
+    price: 1950,
+    prevPrice: 1560,
+    price_change: 25.0,
+    volume: 38500000,
     avg_volume: 12000000,
     rank: 1,
     timestamp: new Date().toLocaleTimeString(),
   },
   {
-    symbol: 'BREN',
-    price: 9800,
-    prevPrice: 8950,
-    price_change: 9.50,
+    symbol: 'AGII',
+    name: 'PT Samator Indo Gas Tbk',
+    price: 3080,
+    prevPrice: 2500,
+    price_change: 23.2,
     volume: 48000000,
     avg_volume: 20000000,
     rank: 2,
     timestamp: new Date().toLocaleTimeString(),
   },
   {
-    symbol: 'AMMN',
-    price: 11200,
-    prevPrice: 10400,
-    price_change: 7.69,
+    symbol: 'MPRO',
+    name: 'PT Maha Properti Indonesia Tbk',
+    price: 9800,
+    prevPrice: 8000,
+    price_change: 22.5,
     volume: 29000000,
     avg_volume: 15000000,
     rank: 3,
     timestamp: new Date().toLocaleTimeString(),
   },
   {
-    symbol: 'BRPT',
-    price: 1420,
-    prevPrice: 1340,
-    price_change: 5.97,
+    symbol: 'BREN',
+    name: 'PT Barito Renewables Tbk',
+    price: 9800,
+    prevPrice: 8950,
+    price_change: 9.5,
     volume: 52000000,
     avg_volume: 25000000,
     rank: 4,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    symbol: 'CUAN',
+    name: 'PT Petrindo Jaya Kreasi Tbk',
+    price: 8450,
+    prevPrice: 7850,
+    price_change: 7.64,
+    volume: 34500000,
+    avg_volume: 18000000,
+    rank: 5,
     timestamp: new Date().toLocaleTimeString(),
   },
 ];
 
 const MOCK_TOP_LOSERS: MarketEvent[] = [
   {
+    symbol: 'BKSL',
+    name: 'Sentul City Tbk',
+    price: 61,
+    prevPrice: 67,
+    price_change: -8.96,
+    volume: 310000000,
+    avg_volume: 180000000,
+    rank: 1,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    symbol: 'ELPI',
+    name: 'PT Pelayaran Nasional Ekalya Tbk',
+    price: 1040,
+    prevPrice: 1245,
+    price_change: -16.47,
+    volume: 45000000,
+    avg_volume: 22000000,
+    rank: 2,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    symbol: 'EMAS',
+    name: 'PT Merdeka Gold Resources Tbk',
+    price: 5550,
+    prevPrice: 6825,
+    price_change: -18.68,
+    volume: 28000000,
+    avg_volume: 14000000,
+    rank: 3,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    symbol: 'PSAB',
+    name: 'J Resources Asia Pasifik Tbk',
+    price: 404,
+    prevPrice: 540,
+    price_change: -25.19,
+    volume: 85000000,
+    avg_volume: 40000000,
+    rank: 4,
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
     symbol: 'GOTO',
+    name: 'PT GoTo Gojek Tokopedia Tbk',
     price: 52,
     prevPrice: 56,
     price_change: -7.14,
     volume: 420000000,
     avg_volume: 300000000,
-    rank: 1,
-    timestamp: new Date().toLocaleTimeString(),
-  },
-  {
-    symbol: 'BUKA',
-    price: 115,
-    prevPrice: 122,
-    price_change: -5.74,
-    volume: 85000000,
-    avg_volume: 60000000,
-    rank: 2,
+    rank: 5,
     timestamp: new Date().toLocaleTimeString(),
   },
 ];
@@ -233,38 +283,87 @@ const MOCK_TOP_LOSERS: MarketEvent[] = [
 /**
  * Fetches top market movers / gainers / losers from Sectors API v2 (/v2/companies/top-changes/)
  */
-export async function getTopMarketMovers(sessionApiKey?: string): Promise<TopMoversResult> {
+export async function getTopMarketMovers(
+  sessionApiKey?: string,
+  options?: {
+    classifications?: string;
+    periods?: string;
+    nStock?: number;
+    minMcapBillion?: number;
+  }
+): Promise<TopMoversResult> {
   const apiKey = sessionApiKey || process.env.SECTORS_API_KEY;
+  const targetPeriod = options?.periods || '1d';
+  const targetStockCount = options?.nStock || 5;
 
   if (apiKey && apiKey.trim().length > 0) {
     try {
+      const params: Record<string, any> = {
+        periods: targetPeriod,
+        n_stock: targetStockCount,
+        classifications: options?.classifications || 'all',
+      };
+
+      if (options?.minMcapBillion !== undefined && options.minMcapBillion > 0) {
+        params.min_mcap_billion = options.minMcapBillion;
+      }
+
       const res = await axios.get(`${SECTORS_V2_BASE_URL}/companies/top-changes/`, {
         headers: {
           Authorization: apiKey.trim(),
         },
+        params,
         timeout: 7000,
       });
 
       const data = res.data;
       if (data) {
-        const gainersData = data.top_gainers || data.gainers || [];
-        const losersData = data.top_losers || data.losers || [];
+        // Helper to extract an array of stock items from various Sectors API response formats
+        const extractList = (raw: any, period: string): any[] => {
+          if (!raw) return [];
+          if (Array.isArray(raw)) return raw;
+          if (typeof raw === 'object') {
+            // If requested a specific period and it's present as a key (e.g. raw['1d'])
+            if (raw[period] && Array.isArray(raw[period])) {
+              return raw[period];
+            }
+            // If periods=all, check standard periods in priority order or flatten
+            if (period === 'all') {
+              const flattened: any[] = [];
+              const seen = new Set<string>();
+              for (const pKey of ['1d', '7d', '14d', '30d', '365d']) {
+                if (Array.isArray(raw[pKey])) {
+                  for (const item of raw[pKey]) {
+                    const sym = (item.symbol || item.ticker || '').toUpperCase();
+                    if (sym && !seen.has(sym)) {
+                      seen.add(sym);
+                      flattened.push({ ...item, period: pKey });
+                    }
+                  }
+                }
+              }
+              if (flattened.length > 0) return flattened;
+            }
+            // Fallback: search for first non-empty array inside object
+            for (const [key, val] of Object.entries(raw)) {
+              if (Array.isArray(val) && val.length > 0) {
+                return (val as any[]).map((v) => ({ ...v, period: key }));
+              }
+            }
+          }
+          return [];
+        };
 
-        // Support both direct array and nested period object e.g. { "1d": [...], "7d": [...] }
-        const rawGainers = Array.isArray(gainersData)
-          ? gainersData
-          : gainersData['1d'] || gainersData['7d'] || gainersData['30d'] || Object.values(gainersData)[0] || [];
-
-        const rawLosers = Array.isArray(losersData)
-          ? losersData
-          : losersData['1d'] || losersData['7d'] || losersData['30d'] || Object.values(losersData)[0] || [];
+        const rawGainers = extractList(data.top_gainers || data.gainers, targetPeriod);
+        const rawLosers = extractList(data.top_losers || data.losers, targetPeriod);
 
         const mapMover = (item: any, rankIdx: number): MarketEvent => {
           const sym = (item.symbol || item.ticker || 'BBCA').toUpperCase().replace('.JK', '');
+          const name = item.name || item.company_name || sym;
           const price = item.last_close_price || item.price || item.close || item.last_price || 1000;
           let rawChange = item.price_change !== undefined ? Number(item.price_change) : item.change || 0;
-          
-          // If change is represented as decimal fraction like 0.25 for 25%, normalize to percentage
+
+          // Convert fractional ratio (e.g. 0.25 -> 25.0%, -0.0895 -> -8.96%)
           if (Math.abs(rawChange) < 1.0 && rawChange !== 0) {
             rawChange = rawChange * 100;
           }
@@ -274,23 +373,25 @@ export async function getTopMarketMovers(sessionApiKey?: string): Promise<TopMov
 
           return {
             symbol: sym,
+            name: name,
             price: Math.round(price),
             prevPrice: Math.round(prevPrice),
             price_change: change,
             volume: item.volume || 15000000,
             avg_volume: item.avg_volume || 10000000,
-            rank: rankIdx + 1,
+            rank: typeof item.rank === 'number' ? item.rank : rankIdx + 1,
+            period: item.period || targetPeriod,
             timestamp: new Date().toLocaleTimeString(),
           };
         };
 
-        const gainers = (Array.isArray(rawGainers) ? rawGainers : []).map((g: any, i: number) => mapMover(g, i));
-        const losers = (Array.isArray(rawLosers) ? rawLosers : []).map((l: any, i: number) => mapMover(l, i));
+        const gainers = rawGainers.slice(0, targetStockCount).map((g: any, i: number) => mapMover(g, i));
+        const losers = rawLosers.slice(0, targetStockCount).map((l: any, i: number) => mapMover(l, i));
 
         if (gainers.length > 0 || losers.length > 0) {
           return {
-            gainers: gainers.length > 0 ? gainers : MOCK_TOP_GAINERS,
-            losers: losers.length > 0 ? losers : MOCK_TOP_LOSERS,
+            gainers: gainers.length > 0 ? gainers : MOCK_TOP_GAINERS.slice(0, targetStockCount),
+            losers: losers.length > 0 ? losers : MOCK_TOP_LOSERS.slice(0, targetStockCount),
             isLive: true,
           };
         }
@@ -303,8 +404,8 @@ export async function getTopMarketMovers(sessionApiKey?: string): Promise<TopMov
   }
 
   return {
-    gainers: MOCK_TOP_GAINERS,
-    losers: MOCK_TOP_LOSERS,
+    gainers: MOCK_TOP_GAINERS.slice(0, targetStockCount),
+    losers: MOCK_TOP_LOSERS.slice(0, targetStockCount),
     isLive: false,
   };
 }

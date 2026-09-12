@@ -89,23 +89,35 @@ export interface FileConfig {
 
 ---
 
-## 6. Files Changed This Session
+## 6. Top Gainers & Losers Ranking Leaderboard & Dual Workflows
 
-| File | Change Type | Summary |
-|---|---|---|
-| `src/app/api/export/report/route.ts` | Modified | Full CSS + HTML layout rewrite — borderless clean document, glossary section |
-| `src/server/services/reportExporter.ts` | **New** | Auto-exports standalone report HTML to `reports/{project_name}/` on disk |
-| `src/server/services/graphEngine.ts` | Modified | Calls `exportReportToDisk` on `fundamental_report` action; FileNode config updated with `savedLocally: true` |
-| `src/components/canvas/nodes/FileNode.tsx` | Modified | Added `✓ Saved` status pill when `savedLocally` or `isDownloaded` is true |
-| `src/components/canvas/nodes/TextNode.tsx` | Modified | `Enter` commits, `Shift+Enter` inserts newline |
-| `src/types/canvas.ts` | Modified | `FileConfig` extended with `savedLocally`, `isDownloaded`, `downloadedAt` |
-| `AGENT_CONTEXT.md` | Modified | Design rules updated (no all-caps, no letter-spacing); backlog updated; context index updated |
-| `context/AUTO_EXPORT_AND_DOWNLOAD_STATUS_PLAN.md` | **New** | Implementation plan for auto-export & download status indicator |
-| `context/SESSION_CHANGELOG.md` | **New** | This file |
+**Problem:** Top Gainers/Losers Watcher was stuck perpetually on stock #4 because sequential scalar ticks were overwriting the node's state, only single prices were rendered, and official query parameters (`min_mcap_billion`, nested periods) were not handled.
+
+**Solution:**
+- **Leaderboard Card Mode (`WatcherNode.tsx`):** Renders multi-item ranking table (`#1`, `#2`, `#3`... with ticker, company name, formatted price, and Mint/Coral % badges).
+- **Official Parameters (`sectorsApi.ts`):** Supports `n_stock` (1–20), `periods` (`1d`, `7d`, `14d`, `30d`, `365d`, `all`), `classifications` (`all`), and `min_mcap_billion` on `GET /v2/companies/top-changes/`. Normalizes percentage returns (`* 100`) and removes `.JK` ticker suffix.
+- **Engine Execution (`graphEngine.ts` & `trigger/route.ts`):** Added `executeGraphForRadarWatcher` to persist `state.movers` without single-tick overwriting.
+- **Flow 1 (Connected Note):** Direct connected sticky note automatically formats the full multi-stock ranked summary table.
+- **Flow 2 (Action Node Multi-Spawn):** Connected `create_note` action node spawns separate individual notes for each ranked stock with non-overlapping spatial offsets (`x: action.x + 280, y: action.y + index * 190`).
+- **Edit Modal (`EditNodeModal.tsx`):** Added Top 20 limit option and Min Market Cap filter input.
 
 ---
 
-## 7. Build Status
+## 7. Files Changed This Session
+
+| File | Change Type | Summary |
+|---|---|---|
+| `src/types/canvas.ts` | Modified | Added `minMcapBillion`, `classifications` to `WatcherConfig`; added `name`, `period` to `MarketEvent`; added `movers` to state |
+| `src/server/services/sectorsApi.ts` | Modified | Upgraded `getTopMarketMovers` with `min_mcap_billion`, period extraction, percentage math, and 5-item mock sets |
+| `src/server/services/graphEngine.ts` | Modified | Added `generateLeaderboardNoteContent` and `executeGraphForRadarWatcher` for Flow 1 & Flow 2 |
+| `src/app/api/engine/trigger/route.ts` | Modified | Dispatches radar watchers to `executeGraphForRadarWatcher` with full mover arrays |
+| `src/components/canvas/nodes/WatcherNode.tsx` | Modified | Added multi-row ranked Leaderboard card view with rank badges and prices |
+| `src/components/controls/EditNodeModal.tsx` | Modified | Added Top 20 limit option and Min Market Cap filter |
+| `context/TOP_MOVERS_RANKING_LEADERBOARD_PLAN.md` | **New** | Full technical specification and architecture plan |
+
+---
+
+## 8. Build Status
 
 All changes verified clean with `bun run build` — zero TypeScript errors.
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { syncMarketSnapshots, getTopMarketMovers } from '@/server/services/sectorsApi';
-import { executeGraphForEvent } from '@/server/services/graphEngine';
+import { executeGraphForEvent, executeGraphForRadarWatcher } from '@/server/services/graphEngine';
 
 export async function POST(req: Request) {
   try {
@@ -26,60 +26,61 @@ export async function POST(req: Request) {
     }
 
     const watcherNodes = targetCanvas.nodes.filter((n) => n.type === 'watcher');
-
-    // Check if any watcher node is running in Top Movers Radar mode
-    const radarGainers = watcherNodes.some((n) => {
-      try {
-        const cfg = JSON.parse(n.configJson);
-        const sym = cfg.symbol?.toUpperCase();
-        return cfg.mode === 'top_gainers' || sym === 'TOP_GAINERS' || sym === 'TOP GAINERS';
-      } catch {
-        return false;
-      }
-    });
-
-    const radarLosers = watcherNodes.some((n) => {
-      try {
-        const cfg = JSON.parse(n.configJson);
-        const sym = cfg.symbol?.toUpperCase();
-        return cfg.mode === 'top_losers' || sym === 'TOP_LOSERS' || sym === 'TOP LOSERS';
-      } catch {
-        return false;
-      }
-    });
-
     const allEvents = [];
     let isOverallLive = true;
+    const results = [];
 
     const upperRequested = requestedSymbols?.map((s) => s.toUpperCase().replace(/\s+/g, '_'));
 
-    if (
-      radarGainers ||
-      radarLosers ||
-      (upperRequested &&
-        (upperRequested.includes('TOP_GAINERS') ||
-          upperRequested.includes('TOP_LOSERS') ||
-          upperRequested.includes('TOP GAINERS') ||
-          upperRequested.includes('TOP LOSERS')))
-    ) {
-      const { gainers, losers, isLive } = await getTopMarketMovers(apiKey);
-      if (!isLive) isOverallLive = false;
+    // 1. Process each Radar Watcher (Top Gainers / Top Losers)
+    for (const watcher of watcherNodes) {
+      try {
+        const cfg = JSON.parse(watcher.configJson || '{}');
+        const sym = cfg.symbol?.toUpperCase();
+        const isGainers = cfg.mode === 'top_gainers' || sym === 'TOP_GAINERS' || sym === 'TOP GAINERS';
+        const isLosers = cfg.mode === 'top_losers' || sym === 'TOP_LOSERS' || sym === 'TOP LOSERS';
 
-      if (radarGainers || upperRequested?.includes('TOP_GAINERS') || upperRequested?.includes('TOP GAINERS')) {
-        allEvents.push(...gainers);
-      }
-      if (radarLosers || upperRequested?.includes('TOP_LOSERS') || upperRequested?.includes('TOP LOSERS')) {
-        allEvents.push(...losers);
+        if (isGainers || isLosers) {
+          // If specific symbol was requested, check if this radar watcher matches
+          if (upperRequested && upperRequested.length > 0) {
+            const matchesGainers = isGainers && (upperRequested.includes('TOP_GAINERS') || upperRequested.includes('TOP GAINERS'));
+            const matchesLosers = isLosers && (upperRequested.includes('TOP_LOSERS') || upperRequested.includes('TOP LOSERS'));
+            if (!matchesGainers && !matchesLosers) continue;
+          }
+
+          const limit = typeof cfg.limit === 'number' && cfg.limit > 0 ? cfg.limit : 5;
+          const period = cfg.period || '1d';
+          const minMcapBillion = typeof cfg.minMcapBillion === 'number' ? cfg.minMcapBillion : undefined;
+          const classifications = cfg.classifications || 'all';
+
+          const { gainers, losers, isLive } = await getTopMarketMovers(apiKey, {
+            nStock: limit,
+            periods: period,
+            minMcapBillion,
+            classifications,
+          });
+
+          if (!isLive) isOverallLive = false;
+
+          const selectedMovers = isGainers ? gainers : losers;
+          if (selectedMovers.length > 0) {
+            allEvents.push(...selectedMovers);
+            const radarRes = await executeGraphForRadarWatcher(targetCanvas.id, watcher.id, selectedMovers);
+            results.push({ watcherId: watcher.id, type: isGainers ? 'top_gainers' : 'top_losers', ...radarRes });
+          }
+        }
+      } catch (err) {
+        console.error('Error processing radar watcher:', err);
       }
     }
 
-    // Extract standard single monitored symbols
-    let symbols = Array.from(
+    // 2. Extract and process standard single monitored symbols
+    let singleSymbols = Array.from(
       new Set(
         watcherNodes
           .map((n) => {
             try {
-              const cfg = JSON.parse(n.configJson);
+              const cfg = JSON.parse(n.configJson || '{}');
               const sym = cfg.symbol?.toUpperCase();
               if (cfg.mode === 'top_gainers' || cfg.mode === 'top_losers') return null;
               if (sym === 'TOP_GAINERS' || sym === 'TOP_LOSERS' || sym === 'TOP GAINERS' || sym === 'TOP LOSERS') return null;
@@ -94,23 +95,27 @@ export async function POST(req: Request) {
 
     if (requestedSymbols && requestedSymbols.length > 0) {
       const upperReq = requestedSymbols.map((s) => s.toUpperCase());
-      symbols = symbols.filter((s) => upperReq.includes(s));
+      singleSymbols = singleSymbols.filter((s) => upperReq.includes(s));
     }
 
-    if (symbols.length > 0) {
-      const { events, isLive } = await syncMarketSnapshots(symbols, apiKey);
+    if (singleSymbols.length > 0) {
+      const { events, isLive } = await syncMarketSnapshots(singleSymbols, apiKey);
       if (!isLive) isOverallLive = false;
       allEvents.push(...events);
-    } else if (allEvents.length === 0 && (!requestedSymbols || requestedSymbols.length === 0)) {
+
+      for (const ev of events) {
+        const res = await executeGraphForEvent(targetCanvas.id, ev);
+        results.push({ symbol: ev.symbol, ...res });
+      }
+    } else if (allEvents.length === 0 && (!requestedSymbols || requestedSymbols.length === 0) && watcherNodes.length === 0) {
       const { events, isLive } = await syncMarketSnapshots(['BBCA'], apiKey);
       if (!isLive) isOverallLive = false;
       allEvents.push(...events);
-    }
 
-    const results = [];
-    for (const ev of allEvents) {
-      const res = await executeGraphForEvent(targetCanvas.id, ev);
-      results.push({ symbol: ev.symbol, ...res });
+      for (const ev of events) {
+        const res = await executeGraphForEvent(targetCanvas.id, ev);
+        results.push({ symbol: ev.symbol, ...res });
+      }
     }
 
     return NextResponse.json({

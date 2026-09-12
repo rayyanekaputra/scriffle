@@ -117,10 +117,10 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
           />
           <span className="truncate">
             {config.action === 'fundamental_report'
-              ? 'Fundamental Report (Sectors API)'
+              ? 'Fundamental Brief & PDF'
               : config.action === 'create_watcher'
               ? `Spawn Peer Watcher (${config.params?.symbol || 'BBRI'})`
-              : 'Create Child Sticky Note'}
+              : 'Auto-Spawn New Note'}
           </span>
         </div>
 
@@ -128,10 +128,10 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
           isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500'
         }`}>
           {config.action === 'fundamental_report'
-            ? 'Fetches P/E, P/B & Market Cap from Sectors API v2 and auto-attaches research note & PDF card.'
+            ? 'Fetches P/E, P/B & dividend metrics from Sectors API v2 and spawns a new research note + PDF card.'
             : config.action === 'create_watcher'
-            ? 'Dynamically generates a related sector stock watcher on canvas.'
-            : 'Spawns a new connected sticky note when condition passes.'}
+            ? 'Dynamically generates a new related stock watcher node on canvas.'
+            : 'Creates a brand new sticky note on canvas every time this action fires.'}
         </div>
       </div>
 

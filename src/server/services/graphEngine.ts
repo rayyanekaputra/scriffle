@@ -14,13 +14,81 @@ export interface GraphExecutionResult {
  * Interpolates string templates like "${symbol} surged ${price_change}% at ${timestamp}"
  */
 function interpolateTemplate(template: string, event: MarketEvent): string {
+  const formattedPrice = event.price ? `Rp ${event.price.toLocaleString('id-ID')}` : 'Rp 0';
+  const formattedVolume = event.volume
+    ? event.volume >= 1_000_000_000
+      ? `${(event.volume / 1_000_000_000).toFixed(1)}B`
+      : event.volume >= 1_000_000
+      ? `${(event.volume / 1_000_000).toFixed(1)}M`
+      : `${(event.volume / 1_000).toFixed(0)}K`
+    : '0';
+  const formattedChange =
+    event.price_change !== undefined
+      ? `${event.price_change >= 0 ? '+' : ''}${event.price_change}%`
+      : '0%';
+  const direction = (event.price_change || 0) >= 0 ? 'Gainer' : 'Loser';
+  const rankStr = event.rank ? `#${event.rank}` : '';
+
+  const extendedVars: Record<string, string> = {
+    symbol: event.symbol || '',
+    price: formattedPrice,
+    raw_price: String(event.price || 0),
+    price_change: formattedChange,
+    raw_price_change: String(event.price_change || 0),
+    volume: formattedVolume,
+    raw_volume: String(event.volume || 0),
+    rank: rankStr,
+    direction: direction,
+    timestamp: event.timestamp || new Date().toLocaleTimeString(),
+  };
+
   return template.replace(/\$\{(\w+)\}/g, (match, key) => {
+    if (key in extendedVars) {
+      return extendedVars[key];
+    }
     if (key in event) {
       const val = (event as any)[key];
       return typeof val === 'number' ? (Number.isInteger(val) ? val.toString() : val.toFixed(2)) : String(val);
     }
     return match;
   });
+}
+
+function generateDefaultNoteContent(event: MarketEvent): string {
+  const isGainer = (event.price_change || 0) >= 0;
+  const icon = isGainer ? '🚀' : '🔻';
+  const category = event.rank ? `${isGainer ? 'TOP GAINER' : 'TOP LOSER'} #${event.rank}` : `${event.symbol} MARKET TICK`;
+  const formattedPrice = event.price ? `Rp ${event.price.toLocaleString('id-ID')}` : 'N/A';
+  const formattedChange = `${isGainer ? '+' : ''}${event.price_change}%`;
+  const formattedVolume = event.volume
+    ? event.volume >= 1_000_000_000
+      ? `${(event.volume / 1_000_000_000).toFixed(1)}B shares`
+      : event.volume >= 1_000_000
+      ? `${(event.volume / 1_000_000).toFixed(1)}M shares`
+      : `${(event.volume / 1_000).toFixed(0)}K shares`
+    : 'N/A';
+
+  return `${icon} ${category}\n• Stock: ${event.symbol}${event.name ? ` (${event.name})` : ''}\n• Price: ${formattedPrice} (${formattedChange})\n• Volume: ${formattedVolume}\n• Time: ${event.timestamp || new Date().toLocaleTimeString()}`;
+}
+
+export function generateLeaderboardNoteContent(movers: MarketEvent[], mode?: string, period?: string): string {
+  if (!movers || movers.length === 0) {
+    return `📊 TOP MOVERS LEADERBOARD\n• No movers data available\n• Time: ${new Date().toLocaleTimeString()}`;
+  }
+  const isGainer = mode === 'top_gainers' || mode === 'Top Gainers' || (movers[0] && movers[0].price_change >= 0);
+  const icon = isGainer ? '🚀' : '🔻';
+  const title = isGainer ? 'TOP GAINERS LEADERBOARD' : 'TOP LOSERS LEADERBOARD';
+  const periodStr = period ? ` (${period.toUpperCase()})` : '';
+
+  const rows = movers.map((m, idx) => {
+    const rank = m.rank ? `#${m.rank}` : `#${idx + 1}`;
+    const sym = m.symbol;
+    const priceStr = m.price ? `Rp ${m.price.toLocaleString('id-ID')}` : 'N/A';
+    const changeStr = `${m.price_change >= 0 ? '+' : ''}${m.price_change}%`;
+    return `• ${rank} ${sym}: ${priceStr} (${changeStr})`;
+  });
+
+  return `${icon} ${title}${periodStr}\n${rows.join('\n')}\n• Updated: ${new Date().toLocaleTimeString()}`;
 }
 
 /**
@@ -64,14 +132,18 @@ export async function executeGraphForEvent(
       if (mode === 'top_gainers' || sym === 'TOP_GAINERS' || sym === 'TOP GAINERS') {
         const isGainer = event.price_change > 0;
         const threshold = typeof cfg.threshold === 'number' ? cfg.threshold : 0;
-        return isGainer && event.price_change >= threshold;
+        const limit = typeof cfg.limit === 'number' && cfg.limit > 0 ? cfg.limit : 5;
+        const rankMatch = event.rank !== undefined ? event.rank <= limit : true;
+        return isGainer && event.price_change >= threshold && rankMatch;
       }
 
       // Check Top Losers radar mode
       if (mode === 'top_losers' || sym === 'TOP_LOSERS' || sym === 'TOP LOSERS') {
         const isLoser = event.price_change < 0;
         const threshold = typeof cfg.threshold === 'number' ? cfg.threshold : 0;
-        return isLoser && Math.abs(event.price_change) >= Math.abs(threshold);
+        const limit = typeof cfg.limit === 'number' && cfg.limit > 0 ? cfg.limit : 5;
+        const rankMatch = event.rank !== undefined ? event.rank <= limit : true;
+        return isLoser && Math.abs(event.price_change) >= Math.abs(threshold) && rankMatch;
       }
 
       return false;
@@ -165,10 +237,8 @@ export async function executeGraphForEvent(
       if (rawText.includes('${')) {
         updatedContent = interpolateTemplate(rawText, curEvent);
       } else {
-        // Natural sticky note update: append or update with live market stamp
-        updatedContent = rawText
-          ? `${rawText}\n\n[Triggered: ${curEvent.symbol} ${curEvent.price_change >= 0 ? '+' : ''}${curEvent.price_change}% at ${curEvent.timestamp}]`
-          : `Live: ${curEvent.symbol} surged ${curEvent.price_change}% at ${curEvent.timestamp}`;
+        // Natural sticky note update: generate clean structured financial summary
+        updatedContent = generateDefaultNoteContent(curEvent);
       }
 
       await prisma.node.update({
@@ -224,8 +294,10 @@ export async function executeGraphForEvent(
       });
 
       if (nodeConfig.action === 'create_note') {
-        const rawContent = nodeConfig.params?.template || 'Breakout confirmed for ${symbol} at ${timestamp}.';
-        const noteContent = interpolateTemplate(rawContent, curEvent);
+        const rawContent = nodeConfig.params?.template || nodeConfig.template;
+        const noteContent = rawContent
+          ? interpolateTemplate(rawContent, curEvent)
+          : generateDefaultNoteContent(curEvent);
 
         // Count how many children this action node has already spawned to cascade cleanly
         const existingSpawned = canvas.edges.filter((e) => e.fromId === node.id);
@@ -243,9 +315,9 @@ export async function executeGraphForEvent(
             positionY: newY,
             configJson: JSON.stringify({
               content: noteContent,
-              color: spawnIndex % 2 === 0 ? 'mint' : 'pink',
+              color: (curEvent.price_change || 0) >= 0 ? 'mint' : 'pink',
               width: 300,
-              height: 150,
+              height: 160,
             }),
             stateJson: JSON.stringify({
               status: 'passed',
@@ -416,6 +488,267 @@ export async function executeGraphForEvent(
         eventSummary: `Market event for ${event.symbol} (${event.price_change > 0 ? '+' : ''}${event.price_change}%) flowed through ${triggeredNodes.length} cards`,
         triggeredNodes: JSON.stringify(triggeredNodes),
         detailsJson: JSON.stringify({ event, logs }),
+      },
+    });
+  }
+
+  return {
+    triggeredNodes,
+    mutationsCount,
+    logs,
+  };
+}
+
+/**
+ * Executes graph traversal and mutations for a Top Gainers / Losers Radar Watcher
+ * using the full list of ranked movers.
+ */
+export async function executeGraphForRadarWatcher(
+  canvasId: string,
+  watcherId: string,
+  movers: MarketEvent[]
+): Promise<GraphExecutionResult> {
+  const triggeredNodes: string[] = [];
+  const logs: string[] = [];
+  let mutationsCount = 0;
+
+  if (!movers || movers.length === 0) {
+    return { triggeredNodes, mutationsCount, logs };
+  }
+
+  const canvas = await prisma.canvas.findUnique({
+    where: { id: canvasId },
+    include: { nodes: true, edges: true },
+  });
+
+  if (!canvas) return { triggeredNodes, mutationsCount, logs };
+
+  const watcher = canvas.nodes.find((n) => n.id === watcherId);
+  if (!watcher) return { triggeredNodes, mutationsCount, logs };
+
+  let watcherCfg: any = {};
+  let watcherState: any = {};
+  try {
+    if (watcher.configJson) watcherCfg = JSON.parse(watcher.configJson);
+    if (watcher.stateJson) watcherState = JSON.parse(watcher.stateJson);
+  } catch {}
+
+  const newCycleCount = (watcherState.cycleCount || 0) + 1;
+  const top1 = movers[0];
+
+  // 1. Update Watcher node state with full movers list
+  await prisma.node.update({
+    where: { id: watcher.id },
+    data: {
+      stateJson: JSON.stringify({
+        status: 'passed',
+        lastValue: top1,
+        movers: movers,
+        cycleCount: newCycleCount,
+        lastTriggeredAt: new Date().toLocaleTimeString(),
+      }),
+    },
+  });
+  triggeredNodes.push(watcher.id);
+
+  // 2. Traverse outgoing edges from this radar watcher
+  const outgoingEdges = canvas.edges.filter((e) => e.fromId === watcher.id);
+
+  for (const edge of outgoingEdges) {
+    const targetNode = canvas.nodes.find((n) => n.id === edge.toId);
+    if (!targetNode) continue;
+
+    let targetCfg: any = {};
+    try {
+      if (targetNode.configJson) targetCfg = JSON.parse(targetNode.configJson);
+    } catch {}
+
+    if (targetNode.type === 'note') {
+      // Flow 1: Direct connected note -> Formats full ranked leaderboard summary
+      triggeredNodes.push(targetNode.id);
+      const rawText = targetCfg.template || targetCfg.content || '';
+      let updatedContent = '';
+
+      if (rawText.includes('${rankings_table}') || rawText.includes('${rankings_list}')) {
+        const tableStr = generateLeaderboardNoteContent(movers, watcherCfg.mode, watcherCfg.period);
+        updatedContent = rawText
+          .replace(/\$\{rankings_table\}/g, tableStr)
+          .replace(/\$\{rankings_list\}/g, tableStr);
+      } else if (rawText.includes('${') && !rawText.startsWith('🚀') && !rawText.startsWith('🔻')) {
+        // Interpolate using top #1 mover details
+        updatedContent = interpolateTemplate(rawText, top1);
+      } else {
+        // Default: Clean structured leaderboard note content
+        updatedContent = generateLeaderboardNoteContent(movers, watcherCfg.mode, watcherCfg.period);
+      }
+
+      await prisma.node.update({
+        where: { id: targetNode.id },
+        data: {
+          configJson: JSON.stringify({
+            ...targetCfg,
+            content: updatedContent,
+          }),
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+      mutationsCount++;
+      logs.push(`Sticky note updated with Top Movers leaderboard`);
+    } else if (targetNode.type === 'action') {
+      // Flow 2: Action Node -> create_note or other actions
+      triggeredNodes.push(targetNode.id);
+      await prisma.node.update({
+        where: { id: targetNode.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+
+      if (targetCfg.action === 'create_note') {
+        // Spawn individual notes for each ranked stock in movers
+        const existingSpawned = canvas.edges.filter((e) => e.fromId === targetNode.id);
+        const baseSpawnIndex = existingSpawned.length;
+
+        for (let i = 0; i < movers.length; i++) {
+          const mover = movers[i];
+          const rawContent = targetCfg.params?.template || targetCfg.template;
+          const noteContent = rawContent
+            ? interpolateTemplate(rawContent, mover)
+            : generateDefaultNoteContent(mover);
+
+          const spawnIdx = baseSpawnIndex + i;
+          const newX = targetNode.positionX + 280 + (spawnIdx % 2 === 1 ? 25 : 0);
+          const newY = targetNode.positionY + spawnIdx * 190 - 40;
+
+          const newNode = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'note',
+              positionX: newX,
+              positionY: newY,
+              configJson: JSON.stringify({
+                content: noteContent,
+                color: (mover.price_change || 0) >= 0 ? 'mint' : 'pink',
+                width: 300,
+                height: 160,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: targetNode.id,
+              toId: newNode.id,
+            },
+          });
+
+          mutationsCount++;
+        }
+        logs.push(`Spawned ${movers.length} individual sticky notes for Top Movers`);
+      } else if (targetCfg.action === 'fundamental_report') {
+        const report = await getCompanyFundamentalReport(top1.symbol);
+        let exportedFile: any = null;
+        try {
+          exportedFile = await exportReportToDisk(canvas.name || 'default_project', top1.symbol);
+        } catch (exportErr) {
+          console.error('Failed to auto-export report:', exportErr);
+        }
+
+        const existingSpawned = canvas.edges.filter((e) => e.fromId === targetNode.id);
+        const spawnIdx = existingSpawned.length;
+        const newX = targetNode.positionX + 280;
+        const newY = targetNode.positionY + spawnIdx * 200;
+
+        const newFileNode = await prisma.node.create({
+          data: {
+            canvasId,
+            type: 'file',
+            positionX: newX,
+            positionY: newY,
+            configJson: JSON.stringify({
+              fileName: exportedFile?.fileName || `${top1.symbol}_Fundamental_Brief.html`,
+              fileSize: exportedFile?.fileSize || '145 KB',
+              fileType: 'html',
+              category: 'report',
+              fileUrl: `/api/export/report?symbol=${top1.symbol}`,
+              filePath: exportedFile?.filePath || `reports/${top1.symbol}_Fundamental_Brief.html`,
+              savedLocally: !!exportedFile?.savedLocally,
+              isDownloaded: true,
+              downloadedAt: new Date().toLocaleTimeString(),
+              symbol: top1.symbol,
+              title: `${top1.symbol} Fundamental Analysis Report`,
+            }),
+            stateJson: JSON.stringify({
+              status: 'passed',
+              lastTriggeredAt: new Date().toLocaleTimeString(),
+            }),
+          },
+        });
+
+        await prisma.edge.create({
+          data: {
+            canvasId,
+            fromId: targetNode.id,
+            toId: newFileNode.id,
+          },
+        });
+        mutationsCount++;
+        logs.push(`Generated fundamental brief for Top 1 mover (${top1.symbol})`);
+      }
+    } else if (targetNode.type === 'alert') {
+      triggeredNodes.push(targetNode.id);
+      const isGainer = (top1.price_change || 0) >= 0;
+      const alertMsg = targetCfg.messageTemplate
+        ? interpolateTemplate(targetCfg.messageTemplate, top1)
+        : `Leaderboard Alert: Top 1 ${isGainer ? 'Gainer' : 'Loser'} is ${top1.symbol} (${top1.price_change >= 0 ? '+' : ''}${top1.price_change}%)`;
+
+      await prisma.node.update({
+        where: { id: targetNode.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+
+      await prisma.log.create({
+        data: {
+          canvasId,
+          eventSummary: alertMsg,
+          triggeredNodes: JSON.stringify([targetNode.id]),
+          detailsJson: JSON.stringify(movers),
+        },
+      });
+      logs.push(`Notification fired: ${alertMsg}`);
+    } else if (targetNode.type === 'condition') {
+      // Evaluate condition for each mover and propagate
+      for (const mover of movers) {
+        await executeGraphForEvent(canvasId, mover);
+      }
+    }
+  }
+
+  // Record main execution log
+  if (triggeredNodes.length > 0) {
+    const isGainer = watcherCfg.mode === 'top_gainers' || watcherCfg.mode === 'Top Gainers';
+    await prisma.log.create({
+      data: {
+        canvasId,
+        eventSummary: `Leaderboard poll: Top ${movers.length} ${isGainer ? 'Gainers' : 'Losers'} (${top1.symbol} #${top1.rank}) flowed through ${triggeredNodes.length} cards`,
+        triggeredNodes: JSON.stringify(triggeredNodes),
+        detailsJson: JSON.stringify({ movers, logs }),
       },
     });
   }

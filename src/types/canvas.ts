@@ -15,6 +15,12 @@ export interface WatcherConfig {
   symbol: string;         // e.g. "BBCA", "BBRI", "BMRI"
   metric: 'price' | 'price_change' | 'volume' | 'rank';
   interval: number;       // in seconds, e.g. 300
+  mode?: 'single' | 'top_gainers' | 'top_losers';
+  threshold?: number;     // e.g. 5 for 5% move
+  limit?: number;         // e.g. 3 for Top 3, 5 for Top 5, 10 for Top 10 (defaults to 5)
+  period?: '1d' | '7d' | '14d' | '30d' | '365d' | 'all'; // e.g. "1d" (defaults to "1d")
+  minMcapBillion?: number; // e.g. 5000 for 5,000 Billion IDR
+  classifications?: string; // e.g. "all"
 }
 
 export interface ConditionConfig {
@@ -126,6 +132,7 @@ export interface CanvasNodeData {
     cycleCount?: number;
     lastTriggeredAt?: string;
     lastValue?: any;
+    movers?: MarketEvent[];
     status?: 'idle' | 'running' | 'passed' | 'failed' | 'error';
     error?: string;
   };
@@ -140,6 +147,7 @@ export interface CanvasEdgeData {
 
 export interface MarketEvent {
   symbol: string;
+  name?: string;
   price: number;
   prevPrice: number;
   price_change: number; // Percentage e.g. 6.2 for +6.2%
@@ -147,6 +155,7 @@ export interface MarketEvent {
   avg_volume: number;
   rank?: number;
   rank_change?: number;
+  period?: string;
   timestamp: string;
 }
 

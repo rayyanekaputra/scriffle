@@ -315,6 +315,7 @@ hackathon/
 ## 10. Open Backlog (Prioritized)
 
 ### ✅ Recently Completed (This Session)
+- **Top Gainers & Losers Ranking Leaderboard & Dual Note Workflows (`/v2/companies/top-changes/`)** — Upgraded `WatcherNode.tsx` with dedicated ranked Leaderboard card view, implemented full query parameters (`n_stock`, `periods`, `classifications`, `min_mcap_billion`) in `sectorsApi.ts`, added `executeGraphForRadarWatcher` in `graphEngine.ts` to support both Flow 1 (direct connected note receives formatted leaderboard table) and Flow 2 (action node `create_note` spawns separate notes for each mover with non-overlapping layout offsets), and added limit/mcap filter controls in `EditNodeModal.tsx`.
 - **PDF / Fundamental Report Redesign** — Fully redesigned `/api/export/report` to a clean, borderless institutional document: white canvas, subtle hairline dividers, selective colour highlights (Mint for gains, Coral for losses, Blue for ratings bar), metric glossary & quick reference section at the bottom, and `@media print` CSS.
 - **Auto-Export Reports to Disk** — When `ActionNode` fires `fundamental_report`, the report is automatically saved to `reports/{project_name}/{symbol}_Fundamental_Brief.html` via `src/server/services/reportExporter.ts`. No manual download required.
 - **FileNode Download Status Indicator** — `FileNode.tsx` now shows a green `✓ Saved` pill when `savedLocally: true` or `isDownloaded: true` in `FileConfig`. Eliminates confusion about whether a file is on-disk or just a web link.
@@ -379,4 +380,5 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `SECTORS_API_KEY_LIVE_POLL_PLAN.md` | API key session management |
 | `FILE_NODE_PLAN.md` | Universal FileNode architecture |
 | `AUTO_EXPORT_AND_DOWNLOAD_STATUS_PLAN.md` | Auto-export to disk & FileNode download status indicator |
+| `TOP_MOVERS_RANKING_LEADERBOARD_PLAN.md` | Top Gainers & Losers Leaderboard display, official query params & engine fix |
 

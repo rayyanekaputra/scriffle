@@ -117,19 +117,67 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   />
                 </div>
               ) : (
-                <div>
-                  <label className={`font-bold block mb-1 ${labelColor}`}>Minimum % Move Filter</label>
-                  <input
-                    type="number"
-                    value={config.threshold || 0}
-                    onChange={(e) => setConfig({ ...config, threshold: parseFloat(e.target.value) || 0 })}
-                    placeholder="e.g. 5 for +5.0%"
-                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
-                  />
-                  <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
-                    Filter movers with at least this percentage move before triggering downstream flow.
-                  </span>
-                </div>
+                <>
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Leaderboard Size (Top N Movers)</label>
+                    <select
+                      value={config.limit || 5}
+                      onChange={(e) => setConfig({ ...config, limit: parseInt(e.target.value) || 5 })}
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    >
+                      <option value="1">Top 1 Mover</option>
+                      <option value="3">Top 3 Movers</option>
+                      <option value="5">Top 5 Movers</option>
+                      <option value="10">Top 10 Movers</option>
+                      <option value="20">Top 20 Movers</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Time Period</label>
+                    <select
+                      value={config.period || '1d'}
+                      onChange={(e) => setConfig({ ...config, period: e.target.value as any })}
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    >
+                      <option value="1d">1 Day (Daily Gainers / Losers)</option>
+                      <option value="7d">7 Days (Weekly)</option>
+                      <option value="14d">14 Days (Bi-Weekly)</option>
+                      <option value="30d">30 Days (Monthly)</option>
+                      <option value="365d">365 Days (1 Year)</option>
+                      <option value="all">All Periods Combined</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Min Market Cap Filter (Billion IDR)</label>
+                    <input
+                      type="number"
+                      value={config.minMcapBillion || ''}
+                      onChange={(e) => setConfig({ ...config, minMcapBillion: e.target.value ? parseFloat(e.target.value) : undefined })}
+                      placeholder="e.g. 5000 for IDR 5 Trillion"
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    />
+                    <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
+                      Optional: Only include companies with market cap above this threshold (in Billion IDR).
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Minimum % Move Filter</label>
+                    <input
+                      type="number"
+                      value={config.threshold || 0}
+                      onChange={(e) => setConfig({ ...config, threshold: parseFloat(e.target.value) || 0 })}
+                      placeholder="e.g. 5 for +5.0%"
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    >
+                    </input>
+                    <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
+                      Filter movers with at least this percentage move before triggering downstream flow.
+                    </span>
+                  </div>
+                </>
               )}
 
               <div>
@@ -262,10 +310,15 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   onChange={(e) => setConfig({ ...config, action: e.target.value })}
                   className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
                 >
-                  <option value="create_note">Auto-Spawn Research Note</option>
-                  <option value="fundamental_report">Generate Fundamental Report (Sectors API)</option>
-                  <option value="create_watcher">Auto-Spawn Peer Watcher</option>
+                  <option value="create_note">➕ Auto-Spawn New Sticky Note (Generates new card)</option>
+                  <option value="fundamental_report">📊 Generate Fundamental Report & PDF (Sectors API)</option>
+                  <option value="create_watcher">⚡ Auto-Spawn Peer Watcher</option>
                 </select>
+                <div className={`mt-2 rounded-xl p-2.5 text-[11px] leading-relaxed border ${
+                  isDark ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]' : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}>
+                  💡 <strong>Tip:</strong> If you want an <em>existing</em> sticky note to simply update in-place on every tick, connect your Watcher or Condition directly to that <strong>Sticky Note</strong> node instead of an Action node!
+                </div>
               </div>
 
               {config.action === 'create_watcher' ? (
