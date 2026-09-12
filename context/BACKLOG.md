@@ -34,14 +34,8 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 📌 Open Candidate Endpoints & Features
 
-### 1. 📄 Redesign PDF & Export Brief Layout (Scriffle Design System) — High Priority
-- **Status**: 🟡 Open / Needs Polish
-- **Issue**: The current `/api/export/report` document layout looks too plain and does not use Scriffle's signature visual style.
-- **Goal**: Redesign the research brief to match Scriffle's FigJam/Neo-brutalist aesthetic:
-  - 2px solid dark borders, zero blurry drop shadows, crisp high-contrast cards.
-  - Distinctive tag capsules, company identity cards, and clear metric grids (Valuation, Financial Health, Profitability, Peer Comparison).
-  - Print-friendly layout (`@media print`) for institutional-grade PDF and physical printouts.
-  - Multi-theme preview support (Light, Warm Mono `#F4F3EF`, Dark `#181920`).
+### 1. 📄 Redesign PDF & Export Brief Layout (Scriffle Design System)
+- **Status**: ✅ Completed (Clean institutional layout, metric glossary, `@media print`, auto-export to disk)
 
 ---
 

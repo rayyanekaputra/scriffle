@@ -47,12 +47,34 @@ export async function executeGraphForEvent(
     throw new Error(`Canvas with ID ${canvasId} not found`);
   }
 
-  // 2. Identify active Watcher nodes matching event symbol
+  // 2. Identify active Watcher nodes matching event symbol or radar mode
   const matchingWatchers = canvas.nodes.filter((node) => {
     if (node.type !== 'watcher') return false;
     try {
       const cfg = JSON.parse(node.configJson);
-      return cfg.symbol?.toUpperCase() === event.symbol.toUpperCase();
+      const sym = cfg.symbol?.toUpperCase();
+      const mode = cfg.mode;
+
+      // Check standard single-symbol match
+      if (sym === event.symbol.toUpperCase()) {
+        return true;
+      }
+
+      // Check Top Gainers radar mode
+      if (mode === 'top_gainers' || sym === 'TOP_GAINERS' || sym === 'TOP GAINERS') {
+        const isGainer = event.price_change > 0;
+        const threshold = typeof cfg.threshold === 'number' ? cfg.threshold : 0;
+        return isGainer && event.price_change >= threshold;
+      }
+
+      // Check Top Losers radar mode
+      if (mode === 'top_losers' || sym === 'TOP_LOSERS' || sym === 'TOP LOSERS') {
+        const isLoser = event.price_change < 0;
+        const threshold = typeof cfg.threshold === 'number' ? cfg.threshold : 0;
+        return isLoser && Math.abs(event.price_change) >= Math.abs(threshold);
+      }
+
+      return false;
     } catch {
       return false;
     }
