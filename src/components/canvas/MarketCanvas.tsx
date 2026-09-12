@@ -927,7 +927,9 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
               const text = e.target?.result as string;
               const parsed = JSON.parse(text);
               if (parsed.nodes || parsed.format === 'scriffle') {
-                const res = await fetch('/api/canvas/restore', {
+                const canvasTargetId = canvasData?.id;
+                const restoreUrl = `/api/canvas/restore${canvasTargetId ? `?id=${canvasTargetId}` : ''}`;
+                const res = await fetch(restoreUrl, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: text,

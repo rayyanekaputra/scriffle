@@ -80,12 +80,15 @@ function resolveNodeMeta(node?: CanvasNodeData, theme = 'light') {
         label: `Action (${cfg.action || 'Mutation'})`,
         bg: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100',
       };
-    case 'sticker':
+    case 'sticker': {
+      const stickerLabel = cfg.label || cfg.stickerType || 'Badge';
+      const stickerEmoji = cfg.emoji || '🏷️';
       return {
         icon: 'star_line',
-        label: `Sticker (${cfg.stickerType || 'Badge'})`,
+        label: `${stickerEmoji} ${stickerLabel}`,
         bg: 'bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100',
       };
+    }
     case 'text':
       return {
         icon: 'font_size_line',

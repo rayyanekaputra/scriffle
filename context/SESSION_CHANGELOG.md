@@ -4,7 +4,29 @@
 
 ---
 
-## 1. Navigation & Productivity Suite (Spotlight Search, Shortcuts Guide & Non-Oscillating Spatial Tab Traversal)
+## 1. Canvas UX & Formatting Fixes (Emoji Picker, Viewport Placement & Text Toolbar Stability)
+
+**Key Issues Resolved:**
+1. **Sticker Node Editing & Emoji Picker (`EditNodeModal.tsx` & `StickerNode.tsx`)**:
+   - Double-clicking a sticker node previously showed an empty edit modal because `sticker` was unhandled.
+   - Added full sticker editing support to `EditNodeModal.tsx`: 32-emoji grid picker (🚀, 📈, 📉, 🎯, ⭐, ⚠️, ✅, 💎, 🐂, 🐻, 💰, 📊, 🔥, 💡, ⏳, 🛑, 🔍, 🏆, ⚡, 📌, 🏷️, 👀, 🔔, 💼, 🏦, 🪙, etc.), custom emoji input, label field, 7-color badge palette, and live sticker preview badge.
+   - Added an inline quick-picker popover in `StickerNode.tsx` when clicking the emoji icon directly on the canvas.
+   - Converted the toolbar Sticker button in `NavToolbar.tsx` into a split button: single click immediately drops a sticker at viewport center, and dropdown chevron allows selecting between 8 quick presets with outside-click dismiss.
+2. **Viewport-Centered Node Placement (`NavToolbar.tsx` & `src/app/page.tsx`)**:
+   - Previously, clicking any tool button in `NavToolbar` dropped nodes at static coordinates `(300, 200)` at the canvas top.
+   - Integrated `useReactFlow().screenToFlowPosition` in `NavToolbar.tsx` to dynamically convert window center `(window.innerWidth / 2, window.innerHeight / 2)` to canvas flow coordinates with slight natural scatter jitter (`±20px`).
+   - Moved `<NavToolbar>` inside `<ReactFlowProvider>` in `src/app/page.tsx` and updated `handleAddNode` to place nodes right where the user is currently panning and zooming.
+3. **Free-Text Formatting Toolbar Stability (`TextNode.tsx` & `TextFormatToolbar.tsx`)**:
+   - The floating typography toolbar previously closed when clicking formatting buttons because the `<textarea>` lost focus (`blur`), setting `isEditing = false` and unmounting the toolbar before/during click.
+   - Added `onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}` and `onPointerDown` preventDefault in `TextFormatToolbar.tsx` to prevent focus loss.
+   - Updated `showToolbar` in `TextNode.tsx` to `(selected || isEditing) && selectedCount === 1` so the toolbar remains accessible and active whenever the text node is selected or actively being edited.
+4. **Unit Testing & Search Indexing**:
+   - Updated `src/lib/searchIndexer.ts` to index custom emoji, label, and color for sticker nodes.
+   - Added sticker search tests in `src/__tests__/unit/searchIndexer.test.ts`. All **106 tests** pass.
+
+---
+
+## 2. Navigation & Productivity Suite (Spotlight Search, Shortcuts Guide & Non-Oscillating Spatial Tab Traversal)
 
 **Feature Overview:**
 Equipped Scriffle with a Figma/FigJam-inspired spatial navigation and productivity system:
@@ -179,28 +201,45 @@ export interface FileConfig {
   - Automatically spawns a downstream `NoteNode` (pastel `mint` card with template `🚀 Auto-Tracked: ${symbol}\n• Price: Rp ${price}\n• Change: ${price_change}%\n• Updated: ${timestamp}`) and connects `Condition -> Note`.
   - On every subsequent polling cycle, the newly spawned Watcher triggers its own automated pipeline seamlessly.
 
+## 9. Collision-Free Canvas Restore & Multi-Tab Isolation (`/api/canvas/restore`)
+
+**Problem:**
+When restoring/importing `.scriffle` files on multi-project boards (e.g. `/b/[canvasId]`), preset or handcrafted node and edge IDs (e.g. `watcher-bbca`, `e1`) collided with existing node primary keys in other canvas records in SQLite, causing:
+```
+Unique constraint failed on the fields: (`id`)
+```
+Additionally, frontend restore calls in `MarketCanvas.tsx` (`onDrop`) and `page.tsx` (`handleUndo`, `handleRedo`, starter templates) did not pass `?id=${canvasId}`, risking restore ops targeting fallback canvas instances.
+
+**Solution:**
+- **Dynamic ID Collision Engine ([`src/app/api/canvas/restore/route.ts`](src/app/api/canvas/restore/route.ts))**:
+  - Implemented an atomic `idMap` mapping (`originalId -> assignedId`).
+  - Pre-fetches all existing node and edge IDs across other canvases in SQLite.
+  - If an incoming node or edge ID already exists on another canvas or in the current batch, dynamically generates a fresh UUID.
+  - Remaps all edge connections (`fromId` and `toId`) through `idMap` so signal wiring stays 100% intact.
+  - Deduplicates parallel edge insertions against Prisma's `@@unique([fromId, toId])` constraint.
+- **Scoped Canvas URL Query**:
+  - Updated all restore fetch endpoints in `MarketCanvas.tsx` and `page.tsx` to include `?id=${canvasId}`.
+- **Preset Validation**:
+  - Verified with [`presets/idx_omnibus_alpha_command_center.scriffle`](presets/idx_omnibus_alpha_command_center.scriffle) (142 nodes, 75 edges) restored cleanly across multiple tabs with status 200.
+
 ---
 
-## 9. Files Changed This Session
+## 10. Files Changed This Session
 
 | File | Change Type | Summary |
 |---|---|---|
-| `src/server/services/graphEngine.ts` | Modified | Added full downstream Condition + Note automation pipeline for auto-spawned watchers; threaded `sessionApiKey` for fundamental reports |
-| `src/server/services/sectorsApi.ts` | Modified | Added fundamental datasets for all top movers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`) and `buildDynamicCompanyReport` fallback |
-| `src/server/services/reportExporter.ts` | Modified | Accepted `sessionApiKey` and forwarded to `getCompanyFundamentalReport` |
-| `src/app/api/engine/trigger/route.ts` | Modified | Forwarded `apiKey` to graph execution functions |
-| `src/app/api/export/report/route.ts` | Modified | Forwarded `apiKey` header / query param to `getCompanyFundamentalReport` |
-| `src/types/canvas.ts` | Modified | Added `minMcapBillion`, `classifications` to `WatcherConfig`; added `name`, `period` to `MarketEvent`; added `movers` to state |
-| `src/components/canvas/nodes/WatcherNode.tsx` | Modified | Added multi-row ranked Leaderboard card view with rank badges and prices |
-| `src/components/controls/EditNodeModal.tsx` | Modified | Added Top 20 limit option and Min Market Cap filter |
-| `AGENT_CONTEXT.md` | Modified | Master handover context updated |
-| `context/BACKLOG.md` | Modified | Backlog and completed items updated |
-| `context/CHECKPOINT.md` | Modified | Checkpoint updated |
+| `src/app/api/canvas/restore/route.ts` | Modified | Added collision-free `idMap` allocation and edge remapping for multi-canvas imports |
+| `src/app/page.tsx` | Modified | Passed `?id=${canvasId}` in undo, redo, import, and preset restore calls |
+| `src/components/canvas/MarketCanvas.tsx` | Modified | Passed `?id=${canvasData.id}` on dropped `.scriffle` file imports |
+| `presets/idx_omnibus_alpha_command_center.scriffle` | Added | Master 6-sector 142-node benchmark `.scriffle` project |
+| `AGENT_CONTEXT.md` | Modified | Handover documentation updated with restore fix details |
+| `context/SESSION_CHANGELOG.md` | Modified | Added restore fix session notes |
 
 ---
 
-## 10. Build Status
+## 11. Build & Test Status
 
-All changes verified clean with `bun run build` — zero TypeScript errors.
+- `bun test`: **105 pass, 0 fail (115ms)**
+- `bun run build`: Zero TypeScript errors.
 
 

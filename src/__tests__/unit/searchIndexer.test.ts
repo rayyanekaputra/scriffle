@@ -100,6 +100,12 @@ describe('extractNodeSearchText', () => {
     expect(extracted.title).toBe('BBCA_Fundamental_Brief.html');
     expect(extracted.badge).toBe('Saved');
   });
+
+  it('extracts sticker node attributes with emoji and label', () => {
+    const extracted = extractNodeSearchText(mockNodes[7]);
+    expect(extracted.title).toContain('bullish');
+    expect(extracted.searchTokens).toContain('sticker');
+  });
 });
 
 describe('searchCanvasNodes', () => {

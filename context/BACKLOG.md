@@ -97,19 +97,57 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ---
 
-## 🎨 Whiteboard QoL & UX Experience Improvements (FigJam × n8n × Figma × Miro)
-
 ### 🌟 Top Recommendations for Immediate Hackathon Polish
 
-1. **Spotlight Search (`Cmd+K` / `Cmd+F`) & Shortcuts Cheat Sheet (`?`)** — High demo impact, instant spatial navigation across complex research boards.
-2. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
-3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+1. ~~**🎨 In-Place Customizable Emoji & Label Stickers (`StickerNode.tsx`)**~~ ✅ **Complete**
+   - Replaced rigid `stickerType` enum with free-form `{ emoji, label, color }` schema in `StickerConfig`.
+   - `StickerNode.tsx` fully rewritten: double-click emoji to change it, double-click label to rename it, color palette appears on hover/select.
+   - Backward-compatible with old `.scriffle` files that use `stickerType` (legacy map auto-converts to emoji/label/color).
+   - `NavToolbar.tsx` + `ContextMenu.tsx` updated to seed stickers with `{ emoji, label, color }`.
+   - `ActivityFeed.tsx` shows the emoji + label for sticker nodes.
+
+   - **Problem:** Current stickers are hardcoded, static badges (`bullish`, `bearish`, `rocket`, `target`, `star`, `warning`, `approved`) with zero in-place editability on the canvas. The fixed `bullish` and `bearish` presets are rigid and repetitive.
+   - **Proposed Solution & Experience:**
+     - **Kill fixed bullish/bearish presets**: Replace the static lookup with a flexible, customizable sticker schema (`{ emoji: string, label: string, color?: string }`).
+     - **In-Place Emoji Picker**: Clicking the sticker icon opens a lightweight emoji / icon quick-picker dropdown directly on the canvas (e.g. 🚀, 🎯, ⭐, 🔥, 💎, ⚠️, 🐻, 🐂, 📈, 📉, 🍜, ⚡, 🏆).
+     - **In-Place Editable Label**: Double-clicking or clicking the label allows inline typing directly on the canvas card (e.g. *"Accumulation Zone"*, *"High Conviction"*, *"Earnings Catalyst"*) with `Enter` / `Esc` to commit.
+     - **Color Swatch / Pill Selector**: Option to customize badge background accent tint (Mint, Rose, Amber, Indigo, Teal, Warm Slate).
+2. **🖼️ Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)**
+   - **Problem:** Current `ImageNode` only supports resize handles (`NodeResizer`). Users cannot edit image URLs, swap/replace image files in-place, inline-edit the caption, toggle transparency/borders, or configure images via `EditNodeModal` (which currently lacks an `image` node tab).
+   - **Proposed Solution & Experience:**
+     - **In-Place Image Replace / Upload**: Hover action bar or double-click to swap the image URL or upload a new image from disk directly.
+     - **Inline Caption Editing**: Click/double-click caption text on canvas to type directly with `Enter`/`Escape` commit.
+     - **Transparency & Card Border Toggle**: Quick toggle between transparent sticker mode (`isTransparent: true`) and bordered card mode (`rounded-2xl border-2 border-slate-300 bg-white p-2`).
+     - **Edit Modal Integration**: Add dedicated `image` configuration tab in `EditNodeModal.tsx` (URL input, upload dropzone, caption text, aspect ratio reset, dimensions).
+3. ~~**🐛 Fix Free-Form Text Node (`TextNode.tsx`) — Edit Mode Closes Itself on Click**~~ ✅ **Fixed**
+   - **Root Cause:** `useEffect` watching `selected` prop called `setIsEditing(false)` during React Flow's pointer-down momentary de-select race.
+   - **Fix applied in [`TextNode.tsx`](src/components/canvas/nodes/TextNode.tsx):**
+     - Replaced the immediate `setIsEditing(false)` with a **200ms debounce** (`deselectedTimerRef`) that cancels if the node is re-selected in time.
+     - Added **single-click-to-edit** when the node was already selected (`wasSelectedRef`) — matches FigJam/Notion UX.
+     - Double-click still always enters edit mode unconditionally.
+
+
+4. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
+5. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
 
 ---
 
 ### Candidate QoL Features
 
-#### 1. ⚡ Automation & Flow Building (n8n-inspired)
+#### 1. 🏷️ Sticker & Visual Annotation Modernization (FigJam-inspired)
+- [ ] **In-Place Editable Sticker Component (`StickerNode.tsx`)**:
+  - Replace static `STICKER_META` lookup (`bullish`/`bearish`) with inline stateful config (`emoji`, `label`, `color`).
+  - Native inline text editor for sticker title with keyboard commit (`Enter`/`Escape`).
+  - Floating emoji picker popover on icon click.
+  - Context menu & `EditNodeModal` support for sticker customization.
+  - Update `.scriffle` format schema and AI generator spec (`SCRIFFLE_AI_SPEC.md`) to support arbitrary `{ emoji, label, color }` configs.
+- [ ] **In-Place Image Editor & Re-uploader (`ImageNode.tsx` & `EditNodeModal.tsx`)**:
+  - Double-click / context menu to open Image property editor in `EditNodeModal`.
+  - In-place image replacement button / file dropper.
+  - Inline editable caption below image with `Enter`/`Esc` commit.
+  - Quick transparency vs bordered card toggle.
+
+#### 2. ⚡ Automation & Flow Building (n8n-inspired)
 - [ ] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
 - [ ] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on surge"`, `"export"`) to make automation pathways self-documenting.
 - [ ] **Live Signal Flow Pulses**: Visual pulsing packet animating along connecting edges when a watcher or condition triggers downstream nodes.

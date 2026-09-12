@@ -101,7 +101,17 @@ export interface ImageConfig {
 }
 
 export interface StickerConfig {
-  stickerType: 'bullish' | 'bearish' | 'rocket' | 'target' | 'star' | 'warning' | 'approved';
+  /** Free-form emoji displayed as the sticker icon (e.g. "🚀", "⚠️", "🎯") */
+  emoji?: string;
+  /** Editable label text shown beside the emoji */
+  label?: string;
+  /**
+   * Accent color key for the sticker badge.
+   * Controls background, border, and text colors in light mode.
+   */
+  color?: 'green' | 'red' | 'blue' | 'amber' | 'purple' | 'teal' | 'slate';
+  /** @deprecated use emoji/label/color instead */
+  stickerType?: string;
   size?: number;
 }
 

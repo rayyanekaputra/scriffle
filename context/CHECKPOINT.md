@@ -37,7 +37,7 @@
   * **Interactive Width Resizing:** Corner `<NodeResizer />` drag handles to set custom wrapping boundaries persisted to SQLite.
   * **Markdown Prefix Triggers:** `# ` auto-converts to H1 Title, `## ` auto-converts to H2 Header, `- ` / `* ` starts bulleted lists with `Enter` continuation.
   * **`T` Hotkey Placement:** Press `T` anywhere on canvas to immediately drop free-text at mouse cursor with auto-focus.
-* **`sticker` (Market Stickers):** Flat badge stickers with MingCute icons (`Bullish`, `Bearish`, `Breakout Ready`, `Target Hit`, `Top Pick`, `High Volatility`, `Thesis Approved`).
+* **`sticker` (Customizable Emoji & Label Stickers):** Free-form sticker badges featuring an inline quick emoji picker popover on canvas, double-click full modal editor with 32-emoji grid, custom label text, and 7-color badge palette (`green`, `red`, `blue`, `amber`, `purple`, `teal`, `slate`). Toolbar button split action supports 1-click addition at viewport center or selecting from 8 quick presets.
 * **`image` (Image Studio Node):**
   * **Upload:** Via top toolbar button, right-click context menu, or file drop.
   * **Clipboard Copy & Paste:** Press `Ctrl+V` / `Cmd+V` to paste images directly from OS clipboard onto the canvas at current cursor coordinates.
@@ -49,7 +49,7 @@
   * **Save / Export:** 1-click **Save** button in top navbar creates and downloads `<canvas_name>.scriffle` (UTF-8 JSON formatted).
   * **Open / Import:** **Open** button with native file picker (`.scriffle`, `.json`) + Drag & Drop `.scriffle` file directly onto the canvas to restore full graph.
   * **Starter Presets:** Quick template dropdown in Demo Controls to load `"Rotation Engine"` (complex multi-branching pipeline), `"Momentum Breakout Loop"`, or `"Banking Sector Trio"`.
-  * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0.
+  * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0; equipped with automatic `idMap` allocation preventing cross-tab `UNIQUE constraint` collisions and preserving 100% of graph edge connections.
 * **Group & Ungroup System (`Cmd+G` / `Cmd+Shift+G`):**
   * **Cohesive Selection & Dragging:** Multi-select nodes and press `Cmd+G` to group them into a single cohesive unit. Clicking any member node selects and drags the whole group synchronously.
   * **Group-Aware Copy & Paste (`Cmd+C` / `Cmd+V` / `Cmd+D`):** Copies group members, their relative spatial offsets, and internal connecting edges. Pasting assigns a fresh `groupId` and recreates the internal connections at the cursor position.
@@ -187,6 +187,7 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
+* **Run Unit Tests:** `bun test` (106 tests across 6 files, ~115ms)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
 * **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`

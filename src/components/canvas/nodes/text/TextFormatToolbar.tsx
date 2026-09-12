@@ -95,6 +95,14 @@ export const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
     <div
       className={`nodrag nowheel pointer-events-auto absolute -top-13 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-2xl border-2 p-1 backdrop-blur-md transition-all duration-150 select-none whitespace-nowrap ${toolbarBg}`}
       onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
     >
       {/* 1. Typography Scale Selector */}
       <div className={`flex items-center rounded-xl p-0.5 border ${
