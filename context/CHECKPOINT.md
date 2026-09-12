@@ -21,6 +21,12 @@
   * **Single Stock Mode:** Monitors individual Indonesian stock tickers (`BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`) with current price, % move, and cycle counter (`⚡ 12 runs`).
   * **Top Gainers / Losers Leaderboard Mode:** Full multi-mover ranking table (`#1`, `#2`, `#3`... with ticker, company name, last close price, and Mint/Coral % badges) querying `GET /v2/companies/top-changes/` with `n_stock`, `periods`, `classifications`, and `min_mcap_billion` parameters.
   * **Dual Downstream Workflows:** Direct connected sticky notes (`NoteNode`) auto-format the full ranked summary table; connected action nodes (`create_note`) spawn separate individual sticky notes for each ranked mover with non-overlapping spatial offsets.
+* **`screener` (AI Natural Language Company Screener):**
+  * **Natural Language Queries:** Users query Indonesian stocks in plain English (e.g., *"top 5 banks by market cap"*, *"mining companies with high dividend"*, *"tech companies by revenue"*).
+  * **Sectors API Integration:** Calls `GET /v2/companies/?q={query}&include_query_values=true` or structured SQL (`where`, `order_by`). Unpacks nested `query_values` into direct company properties.
+  * **Smart Stat Capsule (`formatStatCapsule`):** Dynamically prioritizes and renders the exact requested metric (e.g. `Rev'23 Rp 149.2 T`, `P/E 18.2x`, `Div 6.1%`, `Rp 1.28 Q`).
+  * **Token Credit Cost:** Clearly displays `🪙 3 AI credits / query` notice.
+  * **Downstream Automations:** Connected sticky notes format ranked tables; connected action nodes auto-spawn complete watcher pipelines (`[Watcher] -> [Condition] -> [Note]`) or generate institutional fundamental reports with disk auto-export.
 * **`condition` (Rule capsule):** Evaluates boolean rules safely using `expr-eval` (e.g. `price_change > 5 AND volume > 1000000`). Zero insecure `eval()`.
 * **`note` (FigJam Sticky Note):** **Direct inline editable on canvas** without popups. Supports pastel color themes (`yellow`, `mint`, `pink`, `blue`, `purple`) and template interpolation (e.g. `${symbol} surged ${price_change}%`).
 * **`alert` (Notification sticker):** Emits UI notifications and logs them to the activity feed.

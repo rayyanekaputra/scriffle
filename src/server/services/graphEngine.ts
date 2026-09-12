@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
-import { MarketEvent } from '@/types/canvas';
+import { MarketEvent, ScreenerCompanyResult } from '@/types/canvas';
 import { evaluateCondition } from './dslEngine';
-import { getCompanyFundamentalReport } from './sectorsApi';
+import { getCompanyFundamentalReport, fetchCompaniesScreener } from './sectorsApi';
 import { exportReportToDisk } from './reportExporter';
 
 export interface GraphExecutionResult {
@@ -355,6 +355,7 @@ export async function executeGraphForEvent(
           const newX = node.positionX + 280;
           const newY = node.positionY + 20;
 
+          // 1. Create Watcher Node
           const newWatcher = await prisma.node.create({
             data: {
               canvasId,
@@ -383,8 +384,63 @@ export async function executeGraphForEvent(
             },
           });
 
-          mutationsCount++;
-          logs.push(`Auto-spawned related sector watcher (${targetSymbol}) on canvas`);
+          // 2. Auto-spawn downstream Condition Node connected to the new Watcher
+          const condNode = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'condition',
+              positionX: newX + 260,
+              positionY: newY,
+              configJson: JSON.stringify({
+                rule: 'price_change > 0',
+              }),
+              stateJson: JSON.stringify({
+                status: (curEvent.price_change || 0) > 0 ? 'passed' : 'idle',
+                lastValue: curEvent.price_change,
+                lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: newWatcher.id,
+              toId: condNode.id,
+            },
+          });
+
+          // 3. Auto-spawn downstream Note Node connected to Condition Node
+          const noteNode = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'note',
+              positionX: newX + 520,
+              positionY: newY - 20,
+              configJson: JSON.stringify({
+                content: `🚀 Auto-Tracked: ${targetSymbol}\n• Price: Rp ${(curEvent.price || 0).toLocaleString()}\n• Change: ${curEvent.price_change >= 0 ? '+' : ''}${curEvent.price_change}%\n• Status: Active Pipeline`,
+                template: `🚀 Auto-Tracked: \${symbol}\n• Price: Rp \${price}\n• Change: \${price_change}%\n• Updated: \${timestamp}`,
+                color: 'mint',
+                width: 280,
+                height: 150,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: condNode.id,
+              toId: noteNode.id,
+            },
+          });
+
+          mutationsCount += 3;
+          logs.push(`Auto-spawned complete tracking pipeline (${targetSymbol} -> Condition -> Note)`);
         }
       } else if (nodeConfig.action === 'fundamental_report') {
         // Fetch real-time fundamentals via Sectors API v2 /company/report/{symbol}/
@@ -766,8 +822,9 @@ export async function executeGraphForRadarWatcher(
           if (!alreadyExists) {
             const spawnIdx = baseSpawnIndex + spawnedCount;
             const newX = targetNode.positionX + 280;
-            const newY = targetNode.positionY + spawnIdx * 170 - 20;
+            const newY = targetNode.positionY + spawnIdx * 200 - 20;
 
+            // 1. Create Watcher Node
             const newWatcher = await prisma.node.create({
               data: {
                 canvasId,
@@ -796,7 +853,62 @@ export async function executeGraphForRadarWatcher(
               },
             });
 
-            mutationsCount++;
+            // 2. Auto-spawn downstream Condition Node connected to the new Watcher
+            const condNode = await prisma.node.create({
+              data: {
+                canvasId,
+                type: 'condition',
+                positionX: newX + 260,
+                positionY: newY,
+                configJson: JSON.stringify({
+                  rule: 'price_change > 0',
+                }),
+                stateJson: JSON.stringify({
+                  status: (mover.price_change || 0) > 0 ? 'passed' : 'idle',
+                  lastValue: mover.price_change,
+                  lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+                }),
+              },
+            });
+
+            await prisma.edge.create({
+              data: {
+                canvasId,
+                fromId: newWatcher.id,
+                toId: condNode.id,
+              },
+            });
+
+            // 3. Auto-spawn downstream Note Node connected to Condition Node
+            const noteNode = await prisma.node.create({
+              data: {
+                canvasId,
+                type: 'note',
+                positionX: newX + 520,
+                positionY: newY - 20,
+                configJson: JSON.stringify({
+                  content: `🚀 Auto-Tracked: ${targetSymbol}\n• Price: Rp ${(mover.price || 0).toLocaleString()}\n• Change: ${mover.price_change >= 0 ? '+' : ''}${mover.price_change}%\n• Rank #${mover.rank || i + 1} mover`,
+                  template: `🚀 Auto-Tracked: \${symbol}\n• Price: Rp \${price}\n• Change: \${price_change}%\n• Updated: \${timestamp}`,
+                  color: (mover.price_change || 0) >= 0 ? 'mint' : 'pink',
+                  width: 280,
+                  height: 150,
+                }),
+                stateJson: JSON.stringify({
+                  status: 'passed',
+                  lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+                }),
+              },
+            });
+
+            await prisma.edge.create({
+              data: {
+                canvasId,
+                fromId: condNode.id,
+                toId: noteNode.id,
+              },
+            });
+
+            mutationsCount += 3;
             spawnedCount++;
           }
         }
@@ -855,3 +967,466 @@ export async function executeGraphForRadarWatcher(
     logs,
   };
 }
+
+/**
+ * Formats a clean, readable Markdown summary of AI Screener results for Sticky Notes.
+ */
+export function generateScreenerNoteContent(
+  query: string,
+  results: ScreenerCompanyResult[],
+  queryValues?: Record<string, any>
+): string {
+  if (!results || results.length === 0) {
+    return `✨ AI SCREENER RESULTS\n• Query: "${query || 'All Companies'}"\n• No companies matched the screening criteria\n• Time: ${new Date().toLocaleTimeString()}`;
+  }
+
+  const promptTitle = query ? `"${query}"` : 'Market Screener';
+  const rows = results.map((c, idx) => {
+    const rank = `#${idx + 1}`;
+    const sym = c.symbol;
+    const metrics: string[] = [];
+
+    if (c.price) metrics.push(`Rp ${c.price.toLocaleString('id-ID')}`);
+    
+    if (c.market_cap) {
+      const mcapStr =
+        c.market_cap >= 1_000_000_000_000_000
+          ? `Mcap Rp ${(c.market_cap / 1_000_000_000_000_000).toFixed(2)} Q`
+          : c.market_cap >= 1_000_000_000_000
+          ? `Mcap Rp ${(c.market_cap / 1_000_000_000_000).toFixed(1)} T`
+          : `Mcap Rp ${(c.market_cap / 1_000_000_000).toFixed(0)} B`;
+      metrics.push(mcapStr);
+    }
+
+    if (c.pe !== undefined && c.pe !== null) metrics.push(`P/E ${c.pe}x`);
+    if (c.dividend_yield !== undefined && c.dividend_yield !== null) metrics.push(`Div ${c.dividend_yield}%`);
+    if (c.pb !== undefined && c.pb !== null && metrics.length < 4) metrics.push(`P/B ${c.pb}x`);
+    if (c.roe !== undefined && c.roe !== null && metrics.length < 4) metrics.push(`ROE ${c.roe}%`);
+    if (c.revenue !== undefined && c.revenue !== null && metrics.length < 4) {
+      const revStr = c.revenue >= 1_000_000_000_000 ? `Rev Rp ${(c.revenue / 1_000_000_000_000).toFixed(1)} T` : `Rev Rp ${(c.revenue / 1_000_000_000).toFixed(0)} B`;
+      metrics.push(revStr);
+    }
+
+    // Dynamic field check if no metrics were pushed
+    if (metrics.length === 0) {
+      for (const [k, v] of Object.entries(c)) {
+        if (['symbol', 'company_name', 'name', 'sector', 'sub_sector', 'rank', 'id', 'canvasId', 'type'].includes(k)) continue;
+        const n = Number(v);
+        if (!isNaN(n)) {
+          metrics.push(`${k}: ${n >= 1_000_000_000_000 ? `Rp ${(n / 1_000_000_000_000).toFixed(1)} T` : n}`);
+          if (metrics.length >= 3) break;
+        }
+      }
+    }
+
+    if (metrics.length === 0 && (c.sub_sector || c.sector)) {
+      metrics.push(c.sub_sector || c.sector || 'Listed');
+    }
+
+    return `• ${rank} ${sym} (${c.company_name}): ${metrics.join(' | ')}`;
+  });
+
+  return `✨ AI SCREENER: ${promptTitle}\n${rows.join('\n')}\n• Screened: ${new Date().toLocaleTimeString()}`;
+}
+
+/**
+ * Executes graph traversal and mutations for an AI Natural Language Screener node.
+ */
+export async function executeGraphForScreener(
+  canvasId: string,
+  screenerId: string,
+  sessionApiKey?: string
+): Promise<GraphExecutionResult> {
+  const triggeredNodes: string[] = [];
+  const logs: string[] = [];
+  let mutationsCount = 0;
+
+  const canvas = await prisma.canvas.findUnique({
+    where: { id: canvasId },
+    include: { nodes: true, edges: true },
+  });
+
+  if (!canvas) return { triggeredNodes, mutationsCount, logs };
+
+  const screener = canvas.nodes.find((n) => n.id === screenerId);
+  if (!screener) return { triggeredNodes, mutationsCount, logs };
+
+  let screenerCfg: any = {};
+  let screenerState: any = {};
+  try {
+    if (screener.configJson) screenerCfg = JSON.parse(screener.configJson);
+    if (screener.stateJson) screenerState = JSON.parse(screener.stateJson);
+  } catch {}
+
+  const limit = screenerCfg.limit || 5;
+  const screenerResult = await fetchCompaniesScreener(
+    {
+      q: screenerCfg.query || 'top 5 banks by market cap',
+      where: screenerCfg.where,
+      orderBy: screenerCfg.orderBy,
+      desc: screenerCfg.desc,
+      limit,
+    },
+    sessionApiKey
+  );
+
+  const results = screenerResult.data || [];
+  const newCycleCount = (screenerState.cycleCount || 0) + 1;
+
+  // 1. Update Screener node state with results
+  await prisma.node.update({
+    where: { id: screener.id },
+    data: {
+      stateJson: JSON.stringify({
+        status: 'passed',
+        screenerResults: results,
+        queryValues: screenerResult.queryValues,
+        screenerQuery: screenerCfg.query || 'top 5 banks by market cap',
+        cycleCount: newCycleCount,
+        lastTriggeredAt: new Date().toLocaleTimeString(),
+      }),
+    },
+  });
+  triggeredNodes.push(screener.id);
+  logs.push(`AI Screener executed: "${screenerCfg.query || 'top companies'}" (${results.length} companies returned)`);
+
+  if (results.length === 0) {
+    return { triggeredNodes, mutationsCount, logs };
+  }
+
+  // 2. Traverse outgoing edges from this screener node
+  const outgoingEdges = canvas.edges.filter((e) => e.fromId === screener.id);
+
+  for (const edge of outgoingEdges) {
+    const targetNode = canvas.nodes.find((n) => n.id === edge.toId);
+    if (!targetNode) continue;
+
+    let targetCfg: any = {};
+    try {
+      if (targetNode.configJson) targetCfg = JSON.parse(targetNode.configJson);
+    } catch {}
+
+    if (targetNode.type === 'note') {
+      // Flow 1: Direct connected note -> Formats full screener results table
+      triggeredNodes.push(targetNode.id);
+      const updatedContent = generateScreenerNoteContent(
+        screenerCfg.query,
+        results,
+        screenerResult.queryValues
+      );
+
+      await prisma.node.update({
+        where: { id: targetNode.id },
+        data: {
+          configJson: JSON.stringify({
+            ...targetCfg,
+            content: updatedContent,
+          }),
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+      mutationsCount++;
+      logs.push(`Sticky note updated with AI Screener results table`);
+    } else if (targetNode.type === 'action') {
+      // Flow 2: Action Node -> create_note, fundamental_report, create_watcher
+      triggeredNodes.push(targetNode.id);
+      await prisma.node.update({
+        where: { id: targetNode.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+
+      if (targetCfg.action === 'create_note') {
+        // Spawn individual notes for each screened stock
+        const existingSpawned = canvas.edges.filter((e) => e.fromId === targetNode.id);
+        const baseSpawnIndex = existingSpawned.length;
+
+        for (let i = 0; i < results.length; i++) {
+          const comp = results[i];
+          const mcapFormatted = comp.market_cap
+            ? comp.market_cap >= 1_000_000_000_000_000
+              ? `Rp ${(comp.market_cap / 1_000_000_000_000_000).toFixed(2)} Q`
+              : `Rp ${(comp.market_cap / 1_000_000_000_000).toFixed(1)} T`
+            : 'N/A';
+
+          const noteContent = `✨ AI SCREENER RESULT #${i + 1}\n• Company: ${comp.symbol} (${comp.company_name})\n• Sector: ${comp.sector || 'General'}\n• Market Cap: ${mcapFormatted}\n• Valuation: P/E ${comp.pe ? `${comp.pe}x` : 'N/A'} | P/B ${comp.pb ? `${comp.pb}x` : 'N/A'}\n• Dividend Yield: ${comp.dividend_yield ? `${comp.dividend_yield}%` : 'N/A'}\n• Time: ${new Date().toLocaleTimeString()}`;
+
+          const spawnIdx = baseSpawnIndex + i;
+          const newX = targetNode.positionX + 280;
+          const newY = targetNode.positionY + spawnIdx * 190 - 40;
+
+          const newNode = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'note',
+              positionX: newX,
+              positionY: newY,
+              configJson: JSON.stringify({
+                content: noteContent,
+                color: 'blue',
+                width: 310,
+                height: 160,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: targetNode.id,
+              toId: newNode.id,
+            },
+          });
+
+          mutationsCount++;
+        }
+        logs.push(`Spawned ${results.length} individual sticky notes for AI Screener results`);
+      } else if (targetCfg.action === 'fundamental_report') {
+        // Spawn fundamental reports for all screened companies
+        const existingSpawned = canvas.edges.filter((e) => e.fromId === targetNode.id);
+        const baseSpawnIndex = existingSpawned.length;
+
+        for (let i = 0; i < results.length; i++) {
+          const comp = results[i];
+          const report = await getCompanyFundamentalReport(comp.symbol, sessionApiKey);
+          let exportedFile: any = null;
+          try {
+            exportedFile = await exportReportToDisk(canvas.name || 'default_project', comp.symbol, sessionApiKey);
+          } catch (exportErr) {
+            console.error('Failed to auto-export report:', exportErr);
+          }
+
+          const spawnIdx = baseSpawnIndex + i;
+          const newX = targetNode.positionX + 280;
+          const newY = targetNode.positionY + spawnIdx * 220 - 40;
+
+          const fundamentalNoteContent = `📊 Fundamental Report: ${report.symbol}\n${report.companyName}\n• Sector: ${report.sector} (${report.subSector})\n• Market Cap: ${report.marketCapFormatted}\n• Valuation: P/E ${report.peRatio}x | P/B ${report.pbvRatio}x\n• Dividend Yield: ${report.dividendYield}%\n• Margin: ${report.netProfitMargin}%\nRank #${i + 1} from AI Screener: "${screenerCfg.query || 'Screen'}"`;
+
+          const noteNode = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'note',
+              positionX: newX,
+              positionY: newY,
+              configJson: JSON.stringify({
+                content: fundamentalNoteContent,
+                color: 'blue',
+                width: 320,
+                height: 180,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: targetNode.id,
+              toId: noteNode.id,
+            },
+          });
+
+          const reportUrl = `/api/export/report?symbol=${report.symbol}`;
+          const fileNode = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'file',
+              positionX: newX + 350,
+              positionY: newY + 20,
+              configJson: JSON.stringify({
+                fileName: exportedFile?.fileName || `${report.symbol}_Fundamental_Brief.html`,
+                fileUrl: reportUrl,
+                filePath: exportedFile?.filePath || `reports/${canvas.name || 'default'}/${report.symbol}_Fundamental_Brief.html`,
+                fileSize: exportedFile?.fileSize || '18.5 KB',
+                fileCategory: 'document',
+                savedLocally: true,
+                isDownloaded: true,
+                downloadedAt: new Date().toLocaleTimeString(),
+                caption: `Auto-saved to reports/${canvas.name || 'default'}`,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: noteNode.id,
+              toId: fileNode.id,
+            },
+          });
+
+          mutationsCount += 2;
+        }
+        logs.push(`Generated fundamental reports & PDF briefs for ${results.length} screened companies`);
+      } else if (targetCfg.action === 'create_watcher') {
+        // Spawn complete automated Watcher pipelines [Watcher -> Condition -> Note]
+        const existingSpawned = canvas.edges.filter((e) => e.fromId === targetNode.id);
+        const baseSpawnIndex = existingSpawned.length;
+        let spawnedCount = 0;
+
+        for (let i = 0; i < results.length; i++) {
+          const comp = results[i];
+          const targetSymbol = comp.symbol.toUpperCase();
+
+          const alreadyExists = canvas.nodes.some((n) => {
+            if (n.type !== 'watcher') return false;
+            try {
+              const cfg = JSON.parse(n.configJson);
+              return cfg.symbol?.toUpperCase() === targetSymbol;
+            } catch {
+              return false;
+            }
+          });
+
+          if (!alreadyExists) {
+            const spawnIdx = baseSpawnIndex + spawnedCount;
+            const newX = targetNode.positionX + 280;
+            const newY = targetNode.positionY + spawnIdx * 200 - 20;
+
+            const newWatcher = await prisma.node.create({
+              data: {
+                canvasId,
+                type: 'watcher',
+                positionX: newX,
+                positionY: newY,
+                configJson: JSON.stringify({
+                  symbol: targetSymbol,
+                  metric: 'price_change',
+                  interval: 300,
+                  cycleCount: 0,
+                  mode: 'single',
+                }),
+                stateJson: JSON.stringify({
+                  status: 'idle',
+                  cycleCount: 0,
+                  lastTriggeredAt: new Date().toLocaleTimeString(),
+                }),
+              },
+            });
+
+            await prisma.edge.create({
+              data: {
+                canvasId,
+                fromId: targetNode.id,
+                toId: newWatcher.id,
+              },
+            });
+
+            const newCondition = await prisma.node.create({
+              data: {
+                canvasId,
+                type: 'condition',
+                positionX: newX + 260,
+                positionY: newY,
+                configJson: JSON.stringify({
+                  rule: 'price_change > 0',
+                }),
+                stateJson: JSON.stringify({
+                  status: 'idle',
+                  lastTriggeredAt: new Date().toLocaleTimeString(),
+                }),
+              },
+            });
+
+            await prisma.edge.create({
+              data: {
+                canvasId,
+                fromId: newWatcher.id,
+                toId: newCondition.id,
+              },
+            });
+
+            const newNote = await prisma.node.create({
+              data: {
+                canvasId,
+                type: 'note',
+                positionX: newX + 540,
+                positionY: newY,
+                configJson: JSON.stringify({
+                  content: `📡 Live Watcher: ${targetSymbol} (${comp.company_name})\n• Auto-spawned from AI Screener: "${screenerCfg.query || 'Screen'}"\n• Tracking live market price & volume`,
+                  color: 'mint',
+                  width: 280,
+                  height: 150,
+                }),
+                stateJson: JSON.stringify({
+                  status: 'passed',
+                  lastTriggeredAt: new Date().toLocaleTimeString(),
+                }),
+              },
+            });
+
+            await prisma.edge.create({
+              data: {
+                canvasId,
+                fromId: newCondition.id,
+                toId: newNote.id,
+              },
+            });
+
+            mutationsCount += 3;
+            spawnedCount++;
+          }
+        }
+        logs.push(`Spawned ${spawnedCount} automated watcher pipelines from AI Screener`);
+      }
+    } else if (targetNode.type === 'alert') {
+      triggeredNodes.push(targetNode.id);
+      const alertMsg = `✨ AI Screener found ${results.length} companies matching "${screenerCfg.query || 'query'}"`;
+
+      await prisma.node.update({
+        where: { id: targetNode.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastTriggeredAt: new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+
+      await prisma.log.create({
+        data: {
+          canvasId,
+          eventSummary: alertMsg,
+          triggeredNodes: JSON.stringify([targetNode.id]),
+          detailsJson: JSON.stringify(results),
+        },
+      });
+      logs.push(`Notification fired: ${alertMsg}`);
+    }
+  }
+
+  // Record execution log
+  await prisma.log.create({
+    data: {
+      canvasId,
+      eventSummary: `AI Screener: "${screenerCfg.query || 'top companies'}" returned ${results.length} stocks across ${triggeredNodes.length} cards`,
+      triggeredNodes: JSON.stringify(triggeredNodes),
+      detailsJson: JSON.stringify({ results, logs }),
+    },
+  });
+
+  return {
+    triggeredNodes,
+    mutationsCount,
+    logs,
+  };
+}
+

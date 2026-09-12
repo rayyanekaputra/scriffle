@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MarketEvent } from '@/types/canvas';
+import { MarketEvent, ScreenerCompanyResult } from '@/types/canvas';
 import { prisma } from '@/lib/prisma';
 
 const SECTORS_V2_BASE_URL = 'https://api.sectors.app/v2';
@@ -1842,4 +1842,217 @@ export async function getCompanyFundamentalReport(
   }
 
   return buildDynamicCompanyReport(upperSymbol);
+}
+
+export interface ScreenerFetchOptions {
+  q?: string;
+  where?: string;
+  orderBy?: string;
+  desc?: boolean;
+  limit?: number;
+  offset?: number;
+  includeQueryValues?: boolean;
+}
+
+export interface ScreenerFetchResult {
+  data: ScreenerCompanyResult[];
+  queryValues?: Record<string, any>;
+  query?: string;
+  isLive: boolean;
+}
+
+const MOCK_SCREENER_UNIVERSE: ScreenerCompanyResult[] = [
+  // Banks
+  { symbol: 'BBCA', company_name: 'PT Bank Central Asia Tbk', sector: 'Financials', sub_sector: 'Banks', market_cap: 1285000000000000, price: 10450, pe: 18.2, pb: 4.2, dividend_yield: 2.8, revenue: 110000000000000, earnings: 48600000000000 },
+  { symbol: 'BBRI', company_name: 'PT Bank Rakyat Indonesia Tbk', sector: 'Financials', sub_sector: 'Banks', market_cap: 788000000000000, price: 5200, pe: 12.5, pb: 2.3, dividend_yield: 6.1, revenue: 196000000000000, earnings: 60400000000000 },
+  { symbol: 'BMRI', company_name: 'PT Bank Mandiri Tbk', sector: 'Financials', sub_sector: 'Banks', market_cap: 634000000000000, price: 6800, pe: 11.1, pb: 2.1, dividend_yield: 5.4, revenue: 165000000000000, earnings: 55100000000000 },
+  { symbol: 'BBNI', company_name: 'PT Bank Negara Indonesia Tbk', sector: 'Financials', sub_sector: 'Banks', market_cap: 205000000000000, price: 5500, pe: 8.9, pb: 1.2, dividend_yield: 5.8, revenue: 76000000000000, earnings: 21100000000000 },
+  { symbol: 'BRIS', company_name: 'PT Bank Syariah Indonesia Tbk', sector: 'Financials', sub_sector: 'Banks', market_cap: 122000000000000, price: 2650, pe: 16.5, pb: 2.8, dividend_yield: 1.8, revenue: 25000000000000, earnings: 5700000000000 },
+  
+  // Tech & Telco
+  { symbol: 'TLKM', company_name: 'PT Telkom Indonesia Tbk', sector: 'Infrastructure', sub_sector: 'Telecommunication', market_cap: 307000000000000, price: 3100, pe: 14.8, pb: 2.2, dividend_yield: 5.2, revenue: 149000000000000, earnings: 24500000000000 },
+  { symbol: 'GOTO', company_name: 'PT GoTo Gojek Tokopedia Tbk', sector: 'Technology', sub_sector: 'Software & IT Services', market_cap: 65000000000000, price: 54, pe: -15.2, pb: 0.8, dividend_yield: 0.0, revenue: 14800000000000, earnings: -3200000000000 },
+  { symbol: 'BUKA', company_name: 'PT Bukalapak.com Tbk', sector: 'Technology', sub_sector: 'Software & IT Services', market_cap: 12000000000000, price: 118, pe: -8.4, pb: 0.5, dividend_yield: 0.0, revenue: 4400000000000, earnings: -1300000000000 },
+  { symbol: 'EMTK', company_name: 'PT Elang Mahkota Teknologi Tbk', sector: 'Technology', sub_sector: 'Software & IT Services', market_cap: 28000000000000, price: 460, pe: 19.5, pb: 1.1, dividend_yield: 1.2, revenue: 12000000000000, earnings: 1400000000000 },
+  { symbol: 'MTDL', company_name: 'PT Metrodata Electronics Tbk', sector: 'Technology', sub_sector: 'Software & IT Services', market_cap: 8200000000000, price: 670, pe: 11.2, pb: 1.8, dividend_yield: 3.5, revenue: 22000000000000, earnings: 710000000000 },
+
+  // Energy & Mining
+  { symbol: 'ADRO', company_name: 'PT Alamtri Resources Indonesia Tbk', sector: 'Energy', sub_sector: 'Coal', market_cap: 115000000000000, price: 3600, pe: 4.5, pb: 0.9, dividend_yield: 14.2, revenue: 98000000000000, earnings: 25500000000000 },
+  { symbol: 'PTBA', company_name: 'PT Bukit Asam Tbk', sector: 'Energy', sub_sector: 'Coal', market_cap: 32000000000000, price: 2780, pe: 5.8, pb: 1.4, dividend_yield: 12.8, revenue: 38000000000000, earnings: 6100000000000 },
+  { symbol: 'ITMG', company_name: 'PT Indo Tambangraya Megah Tbk', sector: 'Energy', sub_sector: 'Coal', market_cap: 30000000000000, price: 26500, pe: 5.1, pb: 1.1, dividend_yield: 15.5, revenue: 35000000000000, earnings: 5800000000000 },
+  { symbol: 'BREN', company_name: 'PT Barito Renewables Energy Tbk', sector: 'Utilities', sub_sector: 'Renewable Energy', market_cap: 950000000000000, price: 7100, pe: 180.0, pb: 65.0, dividend_yield: 0.2, revenue: 9200000000000, earnings: 1800000000000 },
+  { symbol: 'CUAN', company_name: 'PT Petrindo Jaya Kreasi Tbk', sector: 'Energy', sub_sector: 'Coal & Mining', market_cap: 85000000000000, price: 7550, pe: 95.0, pb: 28.0, dividend_yield: 0.0, revenue: 4100000000000, earnings: 850000000000 },
+  { symbol: 'MEDC', company_name: 'PT Medco Energi Internasional Tbk', sector: 'Energy', sub_sector: 'Oil & Gas', market_cap: 35000000000000, price: 1390, pe: 6.4, pb: 1.0, dividend_yield: 4.1, revenue: 34000000000000, earnings: 5100000000000 },
+
+  // Consumer Goods & Healthcare
+  { symbol: 'ICBP', company_name: 'PT Indofood CBP Sukses Makmur Tbk', sector: 'Consumer Non-Cyclicals', sub_sector: 'Processed Food', market_cap: 138000000000000, price: 11800, pe: 15.4, pb: 2.8, dividend_yield: 3.2, revenue: 67000000000000, earnings: 9000000000000 },
+  { symbol: 'INDF', company_name: 'PT Indofood Sukses Makmur Tbk', sector: 'Consumer Non-Cyclicals', sub_sector: 'Food Products', market_cap: 58000000000000, price: 6600, pe: 7.1, pb: 1.0, dividend_yield: 4.8, revenue: 111000000000000, earnings: 8100000000000 },
+  { symbol: 'UNVR', company_name: 'PT Unilever Indonesia Tbk', sector: 'Consumer Non-Cyclicals', sub_sector: 'Household & Personal Care', market_cap: 72000000000000, price: 1880, pe: 18.9, pb: 14.5, dividend_yield: 5.5, revenue: 38000000000000, earnings: 4800000000000 },
+  { symbol: 'MYOR', company_name: 'PT Mayora Indah Tbk', sector: 'Consumer Non-Cyclicals', sub_sector: 'Food Products', market_cap: 55000000000000, price: 2460, pe: 16.2, pb: 3.1, dividend_yield: 2.8, revenue: 31000000000000, earnings: 3200000000000 },
+  { symbol: 'KLBF', company_name: 'PT Kalbe Farma Tbk', sector: 'Healthcare', sub_sector: 'Pharmaceuticals', market_cap: 68000000000000, price: 1450, pe: 21.0, pb: 3.4, dividend_yield: 2.5, revenue: 30000000000000, earnings: 3100000000000 },
+  { symbol: 'ASII', company_name: 'PT Astra International Tbk', sector: 'Industrials', sub_sector: 'Automotive & Heavy Equipment', market_cap: 204000000000000, price: 5050, pe: 6.2, pb: 1.0, dividend_yield: 8.5, revenue: 316000000000000, earnings: 33800000000000 },
+];
+
+/**
+ * Fetches companies from Sectors API v2 Screener (/v2/companies/)
+ * Supports both Natural Language query (q) and SQL-like structured conditions (where, order_by).
+ */
+export async function fetchCompaniesScreener(
+  options: ScreenerFetchOptions,
+  sessionApiKey?: string
+): Promise<ScreenerFetchResult> {
+  const apiKey = sessionApiKey || process.env.SECTORS_API_KEY;
+  const qPrompt = (options.q || '').trim();
+  const limit = options.limit || 5;
+
+  if (apiKey && apiKey.trim().length > 0) {
+    try {
+      const params: Record<string, any> = {};
+
+      if (qPrompt.length > 0) {
+        params.q = qPrompt;
+        params.include_query_values = true;
+      } else if (options.where && options.where.trim().length > 0) {
+        params.where = options.where.trim();
+        if (options.orderBy) params.order_by = options.orderBy;
+        if (options.desc !== undefined) params.desc = options.desc;
+        params.limit = limit;
+        if (options.offset) params.offset = options.offset;
+      } else {
+        params.q = 'top 5 companies by market cap';
+        params.include_query_values = true;
+      }
+
+      const res = await axios.get(`${SECTORS_V2_BASE_URL}/companies/`, {
+        headers: {
+          Authorization: apiKey.trim(),
+        },
+        params,
+        timeout: 10000,
+      });
+
+      const responseData = res.data;
+      if (responseData) {
+        let rawList: any[] = [];
+        let queryValues: Record<string, any> | undefined = undefined;
+
+        if (Array.isArray(responseData)) {
+          rawList = responseData;
+        } else if (typeof responseData === 'object') {
+          queryValues = responseData.query_values || responseData.interpreted_query;
+          if (Array.isArray(responseData.data)) {
+            rawList = responseData.data;
+          } else if (Array.isArray(responseData.companies)) {
+            rawList = responseData.companies;
+          } else if (Array.isArray(responseData.results)) {
+            rawList = responseData.results;
+          } else {
+            // Find any array property in the payload
+            for (const val of Object.values(responseData)) {
+              if (Array.isArray(val) && val.length > 0) {
+                rawList = val;
+                break;
+              }
+            }
+          }
+        }
+
+        if (rawList.length > 0) {
+          const normalized: ScreenerCompanyResult[] = rawList.slice(0, limit).map((item, idx) => {
+            // Merge query_values if nested in item
+            const queryVals = item.query_values && typeof item.query_values === 'object' ? item.query_values : {};
+            const mergedItem = { ...queryVals, ...item };
+
+            const rawSymbol = (mergedItem.symbol || mergedItem.ticker || `STOCK${idx + 1}`).toUpperCase().replace('.JK', '');
+            
+            // Helper to find numeric value by key pattern across merged item & query_values
+            const findNum = (patterns: RegExp[]): number | undefined => {
+              for (const p of patterns) {
+                for (const [k, v] of Object.entries(mergedItem)) {
+                  if (p.test(k) && v !== null && v !== undefined && v !== '') {
+                    const n = Number(v);
+                    if (!isNaN(n)) return n;
+                  }
+                }
+              }
+              return undefined;
+            };
+
+            const mcap = findNum([/^market_?cap/i, /^mcap/i, /market_capitalization/i]);
+            const price = findNum([/^last_close_price$/i, /^price$/i, /^close$/i, /^last_price$/i, /^closing_price$/i]);
+            const pe = findNum([/^pe_ttm$/i, /^pe$/i, /^forward_pe$/i, /^pe_ratio$/i, /^per$/i, /^pe\[/i, /price_to_earnings/i]);
+            const pb = findNum([/^pb_mrq$/i, /^pb$/i, /^pb_ratio$/i, /^pbv$/i, /^pb\[/i, /price_to_book/i]);
+            const divYield = findNum([/^yield_ttm$/i, /^dividend_yield$/i, /^total_yield/i, /^dividend_yield_avg$/i, /^dividendYield$/i, /^div_yield$/i, /^yield$/i]);
+            const revenue = findNum([/^total_revenue_mrq$/i, /^revenue$/i, /^total_revenue$/i, /^revenue\[/i, /^revenue_q\[/i, /^sales$/i]);
+            const earnings = findNum([/^earnings_mrq$/i, /^earnings$/i, /^net_profit$/i, /^net_income$/i, /^earnings\[/i, /^earnings_q\[/i]);
+            const roe = findNum([/^roe_ttm$/i, /^roe$/i, /^roe\[/i]);
+            const roa = findNum([/^roa_ttm$/i, /^roa$/i, /^roa\[/i]);
+
+            return {
+              ...mergedItem,
+              symbol: rawSymbol,
+              company_name: mergedItem.company_name || mergedItem.name || mergedItem.companyName || `PT ${rawSymbol} Tbk`,
+              sector: mergedItem.sector || mergedItem.sector_name,
+              sub_sector: mergedItem.sub_sector || mergedItem.sub_sector_name || mergedItem.industry,
+              market_cap: mcap,
+              price: price,
+              pe: pe !== undefined ? parseFloat(Number(pe).toFixed(2)) : undefined,
+              pb: pb !== undefined ? parseFloat(Number(pb).toFixed(2)) : undefined,
+              dividend_yield: divYield !== undefined ? parseFloat(Number(divYield).toFixed(2)) : undefined,
+              revenue: revenue,
+              earnings: earnings,
+              roe: roe !== undefined ? parseFloat(Number(roe).toFixed(2)) : undefined,
+              roa: roa !== undefined ? parseFloat(Number(roa).toFixed(2)) : undefined,
+            };
+          });
+
+          return {
+            data: normalized,
+            queryValues: queryValues || responseData.llm_translation?.translated_params,
+            query: qPrompt,
+            isLive: true,
+          };
+        }
+      }
+    } catch (err: any) {
+      console.warn(
+        `Sectors API v2 /companies/ screener failed (${err.response?.status || err.message}), fallback to mock:`
+      );
+    }
+  }
+
+  // --- Offline Mock Fallback Engine ---
+  const queryLower = qPrompt.toLowerCase();
+  let filtered = [...MOCK_SCREENER_UNIVERSE];
+
+  if (queryLower.includes('bank') || queryLower.includes('financial')) {
+    filtered = filtered.filter((c) => c.sector === 'Financials' || c.sub_sector === 'Banks');
+  } else if (queryLower.includes('tech') || queryLower.includes('software') || queryLower.includes('digital')) {
+    filtered = filtered.filter((c) => c.sector === 'Technology' || c.symbol === 'TLKM');
+  } else if (queryLower.includes('coal') || queryLower.includes('energy') || queryLower.includes('mining') || queryLower.includes('oil')) {
+    filtered = filtered.filter((c) => c.sector === 'Energy' || c.sector === 'Utilities');
+  } else if (queryLower.includes('consumer') || queryLower.includes('food') || queryLower.includes('f&b')) {
+    filtered = filtered.filter((c) => c.sector === 'Consumer Non-Cyclicals' || c.sector === 'Healthcare');
+  } else if (queryLower.includes('dividend') || queryLower.includes('yield')) {
+    filtered = filtered.sort((a, b) => (b.dividend_yield || 0) - (a.dividend_yield || 0));
+  } else if (queryLower.includes('pe <') || queryLower.includes('low pe') || queryLower.includes('undervalued')) {
+    filtered = filtered.filter((c) => (c.pe || 999) > 0).sort((a, b) => (a.pe || 999) - (b.pe || 999));
+  } else if (queryLower.includes('revenue') || queryLower.includes('sales')) {
+    filtered = filtered.sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+  } else {
+    // Default sorting by market cap descending
+    filtered = filtered.sort((a, b) => (b.market_cap || 0) - (a.market_cap || 0));
+  }
+
+  const results = filtered.slice(0, limit);
+
+  return {
+    data: results,
+    queryValues: {
+      interpreted_query: qPrompt || 'top companies by market cap',
+      mock_filter_applied: true,
+    },
+    query: qPrompt,
+    isLive: false,
+  };
 }

@@ -6,6 +6,15 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⭐ AI Natural Language Company Screener (`/v2/companies/?q=...`)**
+  - Added dedicated `ScreenerNode` (`ScreenerNode.tsx`) on the canvas supporting plain-English queries (e.g. *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies with positive revenue growth"*).
+  - Integrated `fetchCompaniesScreener` into `sectorsApi.ts` supporting `q`, `include_query_values=true`, and SQL `where`/`order_by`.
+  - Added rich mock universe dataset for Banks, Tech, Mining/Energy, and Consumer Goods with dynamic fallback.
+  - Implemented `executeGraphForScreener` in `graphEngine.ts`: formats connected sticky note summary tables and executes downstream actions (`create_watcher` complete pipelines, `fundamental_report` generation + disk auto-export, `create_note`).
+  - Added right-click context menu, bottom navigation toolbar button, and full property editor in `EditNodeModal.tsx`.
+- [x] **⭐ Auto-Spawned Watcher Complete Automation Pipeline (`create_watcher` in `graphEngine.ts`)**
+  - Newly auto-spawned Watchers (from Top Movers Radar or Sector Peer triggers) now automatically spawn and connect a complete downstream pipeline: `[New Watcher] -> [Condition Node (price_change > 0)] -> [Sticky Note Node]`.
+  - Enables immediate automated live-tracking on subsequent polling ticks with 0 manual wiring.
 - [x] **⭐ Correlated Symbol Fundamental Note & Dynamic Fallback Fix (`sectorsApi.ts` & `graphEngine.ts`)**
   - Added dedicated mock fundamental records for all Top Gainers and Losers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`).
   - Added `buildDynamicCompanyReport` dynamic fallback generator preventing unknown tickers from inheriting `BBCA` profile.
@@ -55,9 +64,10 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 ---
 
 ### 2. 🤖 AI Natural Language Screener (`/v2/companies/?q=...`)
+- **Status**: ✅ Completed (`ScreenerNode.tsx`, `fetchCompaniesScreener`, `executeGraphForScreener`, `EditNodeModal.tsx`)
 - **API**: `GET /v2/companies/?q={natural_language_query}&include_query_values=true`
-- **Description**: Natural language company screener allowing users to type freeform queries (e.g. *"top 3 banks by market cap"*, *"mining companies with PE < 10 and dividend yield > 5%"*).
-- **Canvas Integration**: Dynamic Screener Node that resolves and streams multi-ticker event payloads to downstream Condition and Action nodes.
+- **Description**: Natural language company screener allowing users to type freeform queries (e.g. *"top 5 banks by market cap"*, *"mining companies with PE < 10 and dividend yield > 5%"*).
+- **Canvas Integration**: Dynamic Screener Node that resolves and streams multi-ticker event payloads to downstream Notes, Actions, and Condition pipelines.
 
 ---
 

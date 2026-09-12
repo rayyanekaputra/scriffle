@@ -256,6 +256,20 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
           <button
             onClick={() => {
+              onAddElement('screener', { query: 'top 5 banks by market cap', limit: 5 });
+              onClose();
+            }}
+            className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}
+          >
+            <div className="flex items-center gap-2">
+              <MingIcon name="ai_line" size={16} className={iconColor} />
+              <span>AI company screener</span>
+            </div>
+            <span className="text-[10px] text-amber-500 font-bold">3 cr</span>
+          </button>
+
+          <button
+            onClick={() => {
               onAddElement('watcher', { symbol: 'BBCA' });
               onClose();
             }}

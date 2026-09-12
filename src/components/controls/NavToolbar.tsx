@@ -172,6 +172,15 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
           onChange={handleGenericFileUpload}
         />
 
+        {/* Screener Node */}
+        <button
+          onClick={() => onAddNode('screener', { query: 'top 5 banks by market cap', limit: 5 })}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+        >
+          <MingIcon name="ai_line" size={16} />
+          <span className="whitespace-nowrap">AI Screener</span>
+        </button>
+
         {/* Watcher Node */}
         <button
           onClick={() => onAddNode('watcher', { symbol: 'BBCA', metric: 'price_change', interval: 300 })}

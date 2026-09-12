@@ -1,6 +1,33 @@
-# 📋 Session Changelog — 2026-09-10
+# 📋 Session Changelog — 2026-09-12
 
 > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
+
+---
+
+## 1. AI Natural Language Company Screener (`/v2/companies/?q=...`)
+
+**Feature Overview:**
+Added a full-featured **AI Screener Node** (`ScreenerNode.tsx`) to the canvas allowing users to query Indonesian stocks in natural language (e.g., *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies with positive revenue growth"*).
+
+**Key Components & Changes:**
+- **API Client (`src/server/services/sectorsApi.ts`)**:
+  - Implemented `fetchCompaniesScreener(options, apiKey)` communicating with `GET /v2/companies/?q={query}&include_query_values=true` or structured SQL (`where`, `order_by`, `desc`, `limit`, `offset`).
+  - **`query_values` Unpacking**: Unpacks nested `item.query_values` returned by Sectors API LLM into top-level company properties (`market_cap`, `pe_ttm`, `pb_mrq`, `yield_ttm`, `revenue[2023]`, `eps[2024]`, `roe_ttm`, etc.).
+  - Rich offline mock dataset for standard sectors (Banking, Tech, Mining, Consumer) with dynamic keyword fallback.
+- **Canvas Node UI (`src/components/canvas/nodes/ScreenerNode.tsx`)**:
+  - Interactive card featuring query prompt badge, `🪙 3 AI credits / query` cost badge, `⚡ Run` manual execution button, cycle counter, and live ranked result table.
+  - **Smart Stat Capsule Formatter (`formatStatCapsule`)**: Dynamically extracts and formats the exact queried metric (e.g. `Rev'23 Rp 149.2 T`, `P/E 18.2x`, `Div 6.1%`, `Rp 1.28 Q`), eliminating any `N/A` placeholders.
+- **Graph Engine (`src/server/services/graphEngine.ts`)**:
+  - `executeGraphForScreener(canvasId, screenerId, apiKey)`:
+    - **Connected Note Node**: Formats ranked multi-stock summary table via `generateScreenerNoteContent`.
+    - **Connected Action Node**:
+      - `create_watcher`: Auto-spawns complete `[Watcher] -> [Condition] -> [Note]` automation pipelines for all screened companies.
+      - `fundamental_report`: Fetches fundamental reports, auto-exports HTML briefs to disk (`reports/`), and spawns attached `FileNode` documents.
+      - `create_note`: Spawns individual cards with detailed financial metrics.
+- **Controls & Context Menu**:
+  - Added Screener options in `ContextMenu.tsx` (with `3 cr` indicator) and `NavToolbar.tsx`.
+  - Added dedicated Screener configuration tab in `EditNodeModal.tsx` with preset prompt chips, 3 AI credits usage notice, and limit/interval selectors.
+- **Documentation**: Added [`context/SCREENER_FIELDS.md`](file:///home/abzolute/Projects/hackathon/context/SCREENER_FIELDS.md) and updated [`context/BACKLOG.md`](file:///home/abzolute/Projects/hackathon/context/BACKLOG.md).
 
 ---
 
@@ -119,12 +146,25 @@ export interface FileConfig {
 
 ---
 
-## 8. Files Changed This Session
+## 8. Auto-Spawned Watcher Complete Automation Pipeline (`create_watcher`)
+
+**Problem:** When `create_watcher` was executed by an Action Node (e.g. tracking incoming breakout tickers from Top Gainers/Losers or sector peers), the new Market Watcher node was spawned as an isolated card on the canvas with no downstream condition or note attached. It could not execute automation on subsequent polling ticks without manual wiring.
+
+**Solution:**
+- Upgraded `create_watcher` in both `executeGraphForEvent` and `executeGraphForRadarWatcher` in [`graphEngine.ts`](src/server/services/graphEngine.ts):
+  - Spawns the new `WatcherNode` (e.g. `MPRO`, `300s` interval).
+  - Automatically spawns a downstream `ConditionNode` (`rule: 'price_change > 0'`) and connects `newWatcher -> Condition`.
+  - Automatically spawns a downstream `NoteNode` (pastel `mint` card with template `🚀 Auto-Tracked: ${symbol}\n• Price: Rp ${price}\n• Change: ${price_change}%\n• Updated: ${timestamp}`) and connects `Condition -> Note`.
+  - On every subsequent polling cycle, the newly spawned Watcher triggers its own automated pipeline seamlessly.
+
+---
+
+## 9. Files Changed This Session
 
 | File | Change Type | Summary |
 |---|---|---|
+| `src/server/services/graphEngine.ts` | Modified | Added full downstream Condition + Note automation pipeline for auto-spawned watchers; threaded `sessionApiKey` for fundamental reports |
 | `src/server/services/sectorsApi.ts` | Modified | Added fundamental datasets for all top movers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`) and `buildDynamicCompanyReport` fallback |
-| `src/server/services/graphEngine.ts` | Modified | Threaded `sessionApiKey` through `executeGraphForEvent` and `executeGraphForRadarWatcher` for fundamental report actions |
 | `src/server/services/reportExporter.ts` | Modified | Accepted `sessionApiKey` and forwarded to `getCompanyFundamentalReport` |
 | `src/app/api/engine/trigger/route.ts` | Modified | Forwarded `apiKey` to graph execution functions |
 | `src/app/api/export/report/route.ts` | Modified | Forwarded `apiKey` header / query param to `getCompanyFundamentalReport` |
@@ -137,7 +177,7 @@ export interface FileConfig {
 
 ---
 
-## 9. Build Status
+## 10. Build Status
 
 All changes verified clean with `bun run build` — zero TypeScript errors.
 

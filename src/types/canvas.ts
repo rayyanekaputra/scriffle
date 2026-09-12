@@ -4,12 +4,39 @@ export type NodeType =
   | 'note'
   | 'alert'
   | 'action'
+  | 'screener'
   | 'text'
   | 'image'
   | 'sticker'
   | 'file';
 
 export type CanvasToolMode = 'select' | 'hand';
+
+export interface ScreenerCompanyResult {
+  symbol: string;
+  company_name: string;
+  sector?: string;
+  sub_sector?: string;
+  market_cap?: number;
+  price?: number;
+  pe?: number;
+  pb?: number;
+  dividend_yield?: number;
+  revenue?: number;
+  earnings?: number;
+  [key: string]: any;
+}
+
+export interface ScreenerConfig {
+  query: string;               // Natural language query, e.g. "top 5 banks by market cap"
+  mode?: 'natural' | 'structured';
+  where?: string;              // Optional SQL-like query
+  orderBy?: string;            // Optional sort field
+  desc?: boolean;
+  limit?: number;              // default 5
+  interval?: number;           // in seconds
+  cycleCount?: number;         // run counter
+}
 
 export interface WatcherConfig {
   symbol: string;         // e.g. "BBCA", "BBRI", "BMRI"
@@ -114,6 +141,7 @@ export type NodeConfig = (
   | NoteConfig
   | AlertConfig
   | ActionConfig
+  | ScreenerConfig
   | TextConfig
   | ImageConfig
   | StickerConfig
@@ -133,6 +161,9 @@ export interface CanvasNodeData {
     lastTriggeredAt?: string;
     lastValue?: any;
     movers?: MarketEvent[];
+    screenerResults?: ScreenerCompanyResult[];
+    queryValues?: Record<string, any>;
+    screenerQuery?: string;
     status?: 'idle' | 'running' | 'passed' | 'failed' | 'error';
     error?: string;
   };

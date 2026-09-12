@@ -27,6 +27,7 @@ import { TextNode } from './nodes/TextNode';
 import { ImageNode } from './nodes/ImageNode';
 import { StickerNode } from './nodes/StickerNode';
 import { FileNode } from './nodes/FileNode';
+import { ScreenerNode } from './nodes/ScreenerNode';
 import { ContextMenu } from './ContextMenu';
 import { SelectionBoundingBox } from './SelectionBoundingBox';
 import { CanvasData, CanvasToolMode, NodeType } from '@/types/canvas';
@@ -96,6 +97,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       note: NoteNode,
       alert: AlertNode,
       action: ActionNode,
+      screener: ScreenerNode,
       text: TextNode,
       image: ImageNode,
       sticker: StickerNode,

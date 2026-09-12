@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSAB - Institutional Equity Research Brief</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #FFFFFF;
+      color: #111827;
+      padding: 48px 24px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .document {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1.5px solid #111827;
+      margin-bottom: 28px;
+    }
+    .brand-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111827;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .brand-meta {
+      font-size: 12px;
+      color: #6B7280;
+      font-weight: 500;
+    }
+    .print-btn {
+      background: #111827;
+      color: #FFFFFF;
+      border: 1px solid #111827;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s ease;
+    }
+    .print-btn:hover {
+      opacity: 0.85;
+    }
+
+    .header-profile {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .symbol-title {
+      font-size: 30px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.1;
+    }
+    .company-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #4B5563;
+      margin-top: 4px;
+    }
+    .price-box {
+      text-align: right;
+    }
+    .current-price {
+      font-size: 24px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #111827;
+      line-height: 1.1;
+    }
+    .price-change {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      background: #FEF2F2;
+      color: #DC2626;
+    }
+
+    .meta-details {
+      font-size: 12px;
+      color: #4B5563;
+      margin-bottom: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+    }
+    .meta-item strong {
+      color: #111827;
+      font-weight: 600;
+    }
+    .tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: #4B5563;
+      background: #F3F4F6;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .index-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0050FF;
+      background: #EFF6FF;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid #E5E7EB;
+      margin: 28px 0 20px 0;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 16px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px 16px;
+      margin-bottom: 8px;
+    }
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6B7280;
+      margin-bottom: 4px;
+    }
+    .metric-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #111827;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.2;
+    }
+    .metric-sub {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+    }
+    .panel-heading {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #F3F4F6;
+      font-size: 12px;
+    }
+    .list-item:last-child {
+      border-bottom: none;
+    }
+    .item-title {
+      font-weight: 600;
+      color: #1F2937;
+    }
+    .item-sub {
+      font-size: 11px;
+      color: #6B7280;
+    }
+    .share-pct {
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #111827;
+    }
+
+    .analyst-bar-wrapper {
+      background: #F3F4F6;
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+      display: flex;
+      margin: 10px 0 8px 0;
+    }
+    .bar-buy { background: #0050FF; height: 100%; width: 85%; }
+    .bar-hold { background: #9CA3AF; height: 100%; width: 15%; }
+
+    .thesis-box {
+      background: #FAFAFA;
+      border-left: 3px solid #111827;
+      padding: 14px 18px;
+      border-radius: 0 4px 4px 0;
+    }
+    .thesis-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6B7280;
+      margin-bottom: 4px;
+    }
+    .thesis-text {
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.55;
+    }
+
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 28px;
+    }
+    .glossary-item-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1F2937;
+      margin-bottom: 2px;
+    }
+    .glossary-item-desc {
+      font-size: 11px;
+      color: #6B7280;
+      line-height: 1.45;
+    }
+
+    .report-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid #E5E7EB;
+      margin-top: 36px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #9CA3AF;
+    }
+
+    @media print {
+      body { padding: 0; }
+      .print-btn { display: none; }
+      .top-bar { margin-bottom: 20px; }
+      .section-divider { margin: 20px 0 16px 0; }
+      .report-footer { margin-top: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="document">
+    <div class="top-bar">
+      <div>
+        <span class="brand-title">Scriffle Research Brief</span>
+        <span class="brand-meta">&nbsp;•&nbsp; Sectors API v2</span>
+      </div>
+      <button class="print-btn" onclick="window.print()">
+        Print / Save PDF
+      </button>
+    </div>
+
+    <div class="header-profile">
+      <div>
+        <h1 class="symbol-title">PSAB</h1>
+        <div class="company-name">J Resources Asia Pasifik Tbk</div>
+      </div>
+      <div class="price-box">
+        <div class="current-price">Rp 580</div>
+        <div class="price-change">-0.85% Today</div>
+      </div>
+    </div>
+
+    <div class="meta-details">
+      <span class="meta-item">Sector: <strong>Basic Materials</strong></span>
+      <span class="meta-item">Sub-Sector: <strong>Basic Materials</strong></span>
+      <span class="meta-item">Board: <strong>Development</strong></span>
+      <span class="meta-item">ESG Risk: <strong>47.27</strong></span>
+    </div>
+
+    <div class="tags-row">
+      <span class="index-pill">KOMPAS100</span>
+      <span class="tag">#dividend yield ttm above 5 percent</span><span class="tag">#public float under 25</span>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="section-title">Key Valuation & Financial Profile</div>
+    <div class="metric-grid">
+      <div class="metric-item">
+        <div class="metric-label">Market Capitalisation</div>
+        <div class="metric-val">Rp 15.3 T</div>
+        <div class="metric-sub">Rank #120 on IDX</div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-label">Price to Earnings (P/E)</div>
+        <div class="metric-val">-8.32x</div>
+        <div class="metric-sub">TTM Multiple</div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-label">Price to Book (P/B)</div>
+        <div class="metric-val">0.48x</div>
+        <div class="metric-sub">Fair: Rp 501</div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-label">Dividend Yield (TTM)</div>
+        <div class="metric-val">18.1%</div>
+        <div class="metric-sub">Payout: 89%</div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-label">Net Profit Margin</div>
+        <div class="metric-val">0.1%</div>
+        <div class="metric-sub">OP Margin: 22.3%</div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-label">Return on Equity (ROE)</div>
+        <div class="metric-val">0.1%</div>
+        <div class="metric-sub">ROA: 0.0%</div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-label">52-Week Range</div>
+        <div class="metric-val" style="font-size: 15px;">
+          Rp 360 - 755
+        </div>
+        <div class="metric-sub">ATH: Rp 755</div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-label">Revenue Expansion</div>
+        <div class="metric-val">+8.5%</div>
+        <div class="metric-sub">YoY Growth</div>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="two-col">
+      <div>
+        <div class="panel-heading">
+          <span>Analyst Consensus</span>
+          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">85% Buy Rating</span>
+        </div>
+        <div class="analyst-bar-wrapper">
+          <div class="bar-buy" title="Buy / Strong Buy"></div>
+          <div class="bar-hold" title="Hold / Neutral"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #6B7280;">
+          <span>21 Strong Buy</span>
+          <span>4 Buy</span>
+          <span>2 Hold</span>
+          <span>0 Sell</span>
+        </div>
+        
+      </div>
+
+      <div>
+        <div class="panel-heading">
+          <span>Major Shareholders</span>
+          <span style="font-size: 11px; color: #6B7280;">Ownership</span>
+        </div>
+        <div>
+          
+      <div class="list-item">
+        <div class="item-title">Jimmy Budiarto</div>
+        <span class="share-pct">undefined</span>
+      </div>
+    
+      <div class="list-item">
+        <div class="item-title">Public</div>
+        <span class="share-pct">undefined</span>
+      </div>
+    
+      <div class="list-item">
+        <div class="item-title">Nsl-Client Segregated A/C</div>
+        <span class="share-pct">undefined</span>
+      </div>
+    
+        </div>
+        
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="thesis-box">
+      <div class="thesis-label">Automated Trigger Thesis Summary</div>
+      <div class="thesis-text">
+        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>J Resources Asia Pasifik Tbk</strong> (PSAB) trades at <strong>-8.32x P/E</strong> and <strong>0.48x P/B</strong> with a <strong>18.1%</strong> dividend yield, supported by <strong>85% analyst buy consensus</strong>.
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="section-title">Metric Glossary & Quick Reference</div>
+    <div class="glossary-grid">
+      <div>
+        <div class="glossary-item-title">Price-to-Earnings (P/E Ratio)</div>
+        <div class="glossary-item-desc">Price paid per Rp 1 of company earnings. Lower ratios indicate a cheaper valuation relative to company profits.</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Return on Equity (ROE)</div>
+        <div class="glossary-item-desc">Profit generated per Rp 1 of shareholder equity. Measures how effectively capital is reinvested.</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Price-to-Book (P/B Ratio)</div>
+        <div class="glossary-item-desc">Market value compared to net balance sheet assets. A ratio near 1.0x indicates trading close to book value.</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Dividend Yield & Payout</div>
+        <div class="glossary-item-desc">Annual cash return paid to shareholders as a percentage of share price, and the share of total profit distributed.</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Market Cap Rank</div>
+        <div class="glossary-item-desc">Total valuation ranking compared to all 900+ publicly listed companies on the Indonesia Stock Exchange (IDX).</div>
+      </div>
+      <div>
+        <div class="glossary-item-title">Analyst Consensus</div>
+        <div class="glossary-item-desc">Consensus recommendation percentage across professional institutional research analysts covering the stock.</div>
+      </div>
+    </div>
+
+    <div class="report-footer">
+      <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
+      <div>Generated on Sep 12, 2026 • Scriffle Studio</div>
+    </div>
+  </div>
+</body>
+</html>

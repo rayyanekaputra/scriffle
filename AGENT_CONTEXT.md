@@ -60,6 +60,7 @@
 
 | Node | Visual | Purpose | Key Config |
 |---|---|---|---|
+| `screener` | AI Screener card (blue header, prompt pill, 3 credits badge) | Natural language company screener (Sectors API `/v2/companies/`) | `query`, `limit`, `interval` |
 | `watcher` | Radar sticker (white card, blue accents) | Monitors IDX stock tickers | `symbol`, `metric`, `interval` (seconds) |
 | `condition` | Yellow rule capsule | Evaluates DSL boolean rules with `expr-eval` | `rule` (e.g. `price_change > 5 AND volume > 1000000`) |
 | `note` | Pastel sticky note (5 colors) | Auto-updates text on trigger; direct inline edit | `content`, `template` (e.g. `${symbol} surged ${price_change}%`) |
@@ -75,7 +76,7 @@
 | `image` | Resizable transparent image — `NodeResizer`, aspect-ratio locked, persisted dimensions |
 | `file` | Universal file attachment — browser preview, open location, copy link |
 
-> **Rule:** The `text`, `sticker`, `image`, `file` types are canvas-only annotations. Only `watcher`, `condition`, `note`, `alert`, `action` participate in the graph engine.
+> **Rule:** The `text`, `sticker`, `image`, `file` types are canvas-only annotations. Only `screener`, `watcher`, `condition`, `note`, `alert`, `action` participate in the graph engine.
 
 ---
 
@@ -315,6 +316,8 @@ hackathon/
 ## 10. Open Backlog (Prioritized)
 
 ### ✅ Recently Completed (This Session)
+- **AI Natural Language Company Screener (`/v2/companies/?q=...`)** — Added dedicated `ScreenerNode` (`ScreenerNode.tsx`) on the canvas supporting natural language queries (e.g. *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies by revenue"*). Integrated `fetchCompaniesScreener` with dynamic `query_values` unpacking, full Sectors API field coverage, smart metric stat capsule formatting, 3 AI credits notice, and downstream automation (`[Screener] -> [Note / Action / Watcher]`).
+- **Auto-Spawned Watcher Complete Automation Pipeline (`create_watcher`)** — When an Action node triggers `create_watcher` (from Top Gainers/Losers Radar or single breakout events), it now automatically spawns a complete, connected downstream automation pipeline: `[New Watcher] -> [Condition (price_change > 0)] -> [Sticky Note]`. This ensures newly discovered breakout stocks immediately execute live tracking on subsequent polling ticks without manual wiring.
 - **Correlated Symbol Fundamental Note & Dynamic Fallback Fix** — Fixed bug where top mover fundamental reports/notes fell back to spreading `BBCA` data; added full mock datasets for all Top Gainers and Losers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`), implemented `buildDynamicCompanyReport` for arbitrary tickers, and threaded `sessionApiKey` through `executeGraphForRadarWatcher`, `executeGraphForEvent`, `exportReportToDisk`, and `/api/export/report`.
 - **Top Gainers & Losers Ranking Leaderboard & Dual Note Workflows (`/v2/companies/top-changes/`)** — Upgraded `WatcherNode.tsx` with dedicated ranked Leaderboard card view, implemented full query parameters (`n_stock`, `periods`, `classifications`, `min_mcap_billion`) in `sectorsApi.ts`, added `executeGraphForRadarWatcher` in `graphEngine.ts` to support both Flow 1 (direct connected note receives formatted leaderboard table) and Flow 2 (action node `create_note` spawns separate notes for each mover with non-overlapping layout offsets), and added limit/mcap filter controls in `EditNodeModal.tsx`.
 - **PDF / Fundamental Report Redesign** — Fully redesigned `/api/export/report` to a clean, borderless institutional document: white canvas, subtle hairline dividers, selective colour highlights (Mint for gains, Coral for losses, Blue for ratings bar), metric glossary & quick reference section at the bottom, and `@media print` CSS.
@@ -323,11 +326,10 @@ hackathon/
 - **Free-Text `Enter` to Commit** — In `TextNode.tsx`, `Enter` now commits and exits edit mode. `Shift+Enter` creates a new line (with bullet list continuation). `Escape` also commits and exits.
 
 ### 🟡 Medium Priority (Planned Sectors API Integrations)
-1. **AI Natural Language Screener** — `ScreenerNode.tsx` using `GET /v2/companies/?q={query}&include_query_values=true`
-2. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-3. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-4. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-5. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+1. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+2. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+3. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+4. **Volume Breakout Scanner** — `GET /v2/most-traded/`
 
 ---
 

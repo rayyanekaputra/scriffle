@@ -202,6 +202,105 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
             </>
           )}
 
+          {node.type === 'screener' && (
+            <>
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Natural Language Query Prompt</label>
+                <textarea
+                  value={config.query || ''}
+                  onChange={(e) => setConfig({ ...config, query: e.target.value })}
+                  rows={3}
+                  placeholder="e.g. top 5 banks by market cap, mining stocks with high dividend..."
+                  className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <span className={`font-bold block mb-1 text-[11px] ${secondaryColor}`}>Preset Query Prompts</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'Top 5 banks by market cap',
+                    'Top 5 tech companies by market cap',
+                    'Coal mining companies with high dividend',
+                    'Consumer goods companies with high ROE',
+                    'Undervalued stocks with PE < 10',
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setConfig({ ...config, query: preset })}
+                      className={`px-2 py-1 rounded-lg border text-[10px] font-medium transition cursor-pointer ${
+                        config.query === preset
+                          ? 'bg-[#0050FF] text-white border-[#0050FF]'
+                          : isDark
+                          ? 'bg-[#1C1E26] border-[#292B38] text-[#BAC0D0] hover:border-[#383B4A]'
+                          : isMono
+                          ? 'bg-[#F4F3EF] border-[#D8D4CA] text-[#242321] hover:border-[#B5B0A2]'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Max Results Limit</label>
+                  <select
+                    value={config.limit || 5}
+                    onChange={(e) => setConfig({ ...config, limit: parseInt(e.target.value, 10) })}
+                    className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                  >
+                    <option value={3}>Top 3</option>
+                    <option value={5}>Top 5</option>
+                    <option value={10}>Top 10</option>
+                    <option value={20}>Top 20</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Re-screen Interval</label>
+                  <select
+                    value={config.interval || 300}
+                    onChange={(e) => setConfig({ ...config, interval: parseInt(e.target.value, 10) })}
+                    className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
+                  >
+                    <option value={60}>Every 1 min</option>
+                    <option value={300}>Every 5 mins</option>
+                    <option value={900}>Every 15 mins</option>
+                    <option value={3600}>Every 1 hour</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={`rounded-xl p-3 border space-y-1.5 ${
+                isDark ? 'bg-[#191A22] border-[#252732]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6]' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#0050FF]">
+                    <MingIcon name="sparkles_line" size={14} />
+                    <span>Sectors API v2 /companies/</span>
+                  </div>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                    isDark
+                      ? 'bg-[#20222B] text-amber-400 border-amber-400/20'
+                      : isMono
+                      ? 'bg-[#ECE8DE] text-amber-700 border-amber-600/20'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    <MingIcon name="coin_line" size={11} />
+                    3 AI credits / query
+                  </span>
+                </div>
+                <p className={`text-[11px] leading-relaxed ${secondaryColor}`}>
+                  Uses Sectors.app AI Natural Language engine to dynamically resolve ticker filters, metric sorting, and financial ratios. Each execution consumes 3 AI token credits.
+                </p>
+              </div>
+            </>
+          )}
+
           {node.type === 'condition' && (
             <>
               <div>

@@ -1,18 +1,24 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { syncMarketSnapshots, getTopMarketMovers } from '@/server/services/sectorsApi';
-import { executeGraphForEvent, executeGraphForRadarWatcher } from '@/server/services/graphEngine';
+import {
+  executeGraphForEvent,
+  executeGraphForRadarWatcher,
+  executeGraphForScreener,
+} from '@/server/services/graphEngine';
 
 export async function POST(req: Request) {
   try {
     let canvasId: string | undefined;
     let apiKey: string | undefined;
     let requestedSymbols: string[] | undefined;
+    let targetNodeId: string | undefined;
 
     try {
       const body = await req.json();
       canvasId = body.canvasId;
       apiKey = body.apiKey;
+      targetNodeId = body.nodeId || body.screenerId || body.watcherId;
       if (body.symbol) requestedSymbols = [body.symbol];
       if (body.symbols && Array.isArray(body.symbols)) requestedSymbols = body.symbols;
     } catch {}
@@ -98,6 +104,18 @@ export async function POST(req: Request) {
       singleSymbols = singleSymbols.filter((s) => upperReq.includes(s));
     }
 
+    // 3. Process Screener nodes
+    const screenerNodes = targetCanvas.nodes.filter((n) => n.type === 'screener');
+    for (const screener of screenerNodes) {
+      if (targetNodeId && targetNodeId !== screener.id) continue;
+      try {
+        const screenerRes = await executeGraphForScreener(targetCanvas.id, screener.id, apiKey);
+        results.push({ screenerId: screener.id, type: 'screener', ...screenerRes });
+      } catch (err) {
+        console.error('Error executing screener node:', err);
+      }
+    }
+
     if (singleSymbols.length > 0) {
       const { events, isLive } = await syncMarketSnapshots(singleSymbols, apiKey);
       if (!isLive) isOverallLive = false;
@@ -107,7 +125,7 @@ export async function POST(req: Request) {
         const res = await executeGraphForEvent(targetCanvas.id, ev, apiKey);
         results.push({ symbol: ev.symbol, ...res });
       }
-    } else if (allEvents.length === 0 && (!requestedSymbols || requestedSymbols.length === 0) && watcherNodes.length === 0) {
+    } else if (allEvents.length === 0 && (!requestedSymbols || requestedSymbols.length === 0) && watcherNodes.length === 0 && screenerNodes.length === 0) {
       const { events, isLive } = await syncMarketSnapshots(['BBCA'], apiKey);
       if (!isLive) isOverallLive = false;
       allEvents.push(...events);
