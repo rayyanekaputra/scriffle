@@ -322,21 +322,32 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
               </div>
 
               {config.action === 'create_watcher' ? (
-                <div>
-                  <label className={`font-bold block mb-1 ${labelColor}`}>Target Stock Symbol to Spawn</label>
-                  <input
-                    type="text"
-                    value={config.targetSymbol || config.params?.symbol || ''}
-                    onChange={(e) =>
-                      setConfig({
-                        ...config,
-                        targetSymbol: e.target.value.toUpperCase(),
-                        params: { ...config.params, symbol: e.target.value.toUpperCase() },
-                      })
-                    }
-                    placeholder="e.g. BBRI, BMRI, TLKM"
-                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Target Stock Symbol (Optional Override)</label>
+                    <input
+                      type="text"
+                      value={config.targetSymbol || config.params?.symbol || ''}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          targetSymbol: e.target.value.toUpperCase(),
+                          params: { ...config.params, symbol: e.target.value.toUpperCase() },
+                        })
+                      }
+                      placeholder="Leave empty to auto-track incoming tickers dynamically"
+                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    />
+                  </div>
+                  <div className={`rounded-xl p-3 text-xs leading-relaxed border ${
+                    isDark
+                      ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]'
+                      : isMono
+                      ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
+                      : 'bg-slate-50 border-slate-200 text-slate-600'
+                  }`}>
+                    ⚡ <strong>Dynamic Watcher Spawning:</strong> By default, this action automatically spawns dedicated Watcher cards on the canvas for each incoming top gainer/loser ticker (with 300s polling interval).
+                  </div>
                 </div>
               ) : config.action === 'fundamental_report' ? (
                 <div className={`rounded-xl p-3 text-xs leading-relaxed border ${
@@ -346,7 +357,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                     ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
                     : 'bg-blue-50 border-blue-200 text-blue-900'
                 }`}>
-                  💡 <strong>Automated Sectors API Brief:</strong> When triggered by an upstream event (e.g. +4% breakout), Scriffle queries <code>/v2/company/report/${'{symbol}'}/</code> to extract P/E, P/B, Market Cap, and Dividend Yield, then auto-spawns a formatted research sticky note and linked PDF brief.
+                  📊 <strong>Multi-Symbol Automated Sectors Brief:</strong> When triggered by Top Gainers/Losers or single breakout events, Scriffle fetches fundamentals from <code>/v2/company/report/{'${symbol}'}/</code> for <strong>each outputted ticker</strong>, generating structured research notes and auto-saved PDF briefs.
                 </div>
               ) : (
                 <div>

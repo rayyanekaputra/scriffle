@@ -103,21 +103,42 @@ export interface FileConfig {
 
 ---
 
-## 7. Files Changed This Session
+## 7. Correlated Symbol Fundamental Note & Dynamic Report Fallback Fix
 
-| File | Change Type | Summary |
-|---|---|---|
-| `src/types/canvas.ts` | Modified | Added `minMcapBillion`, `classifications` to `WatcherConfig`; added `name`, `period` to `MarketEvent`; added `movers` to state |
-| `src/server/services/sectorsApi.ts` | Modified | Upgraded `getTopMarketMovers` with `min_mcap_billion`, period extraction, percentage math, and 5-item mock sets |
-| `src/server/services/graphEngine.ts` | Modified | Added `generateLeaderboardNoteContent` and `executeGraphForRadarWatcher` for Flow 1 & Flow 2 |
-| `src/app/api/engine/trigger/route.ts` | Modified | Dispatches radar watchers to `executeGraphForRadarWatcher` with full mover arrays |
-| `src/components/canvas/nodes/WatcherNode.tsx` | Modified | Added multi-row ranked Leaderboard card view with rank badges and prices |
-| `src/components/controls/EditNodeModal.tsx` | Modified | Added Top 20 limit option and Min Market Cap filter |
-| `context/TOP_MOVERS_RANKING_LEADERBOARD_PLAN.md` | **New** | Full technical specification and architecture plan |
+**Problem:** When a `fundamental_report` action was triggered from a Top Gainer / Top Loser Watcher (e.g. `MPRO`), the generated research note and brief displayed `MPRO` in the header but had all company details hardcoded to `PT Bank Central Asia Tbk.` (`Financials (Banks)`, `Rp 1,245.0 T`, `P/E 22.4x`, `Margin 46.8%`).
+
+**Root Cause:**
+1. `MOCK_FUNDAMENTAL_DATA` only contained 8 blue-chip tickers and defaulted unlisted tickers to `MOCK_FUNDAMENTAL_DATA['BBCA']`.
+2. Spreading `...mock` copied BBCA's company name and valuation metrics.
+3. `sessionApiKey` was not forwarded into `executeGraphForRadarWatcher` / `executeGraphForEvent`, forcing mock fallback even during live sessions.
+
+**Solution:**
+- **Added Full Fundamental Profiles (`sectorsApi.ts`):** Added complete, realistic fundamental datasets for all Top Gainers and Losers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`).
+- **Dynamic Fallback Builder (`buildDynamicCompanyReport`):** Dynamic synthesis for any unknown ticker, computing matching company name (`PT {SYMBOL} Indonesia Tbk.`), market cap, and valuation without inheriting BBCA.
+- **Threaded `sessionApiKey`:** Propagated `apiKey` through `executeGraphForRadarWatcher`, `executeGraphForEvent`, `exportReportToDisk`, and `/api/export/report`.
 
 ---
 
-## 8. Build Status
+## 8. Files Changed This Session
+
+| File | Change Type | Summary |
+|---|---|---|
+| `src/server/services/sectorsApi.ts` | Modified | Added fundamental datasets for all top movers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`) and `buildDynamicCompanyReport` fallback |
+| `src/server/services/graphEngine.ts` | Modified | Threaded `sessionApiKey` through `executeGraphForEvent` and `executeGraphForRadarWatcher` for fundamental report actions |
+| `src/server/services/reportExporter.ts` | Modified | Accepted `sessionApiKey` and forwarded to `getCompanyFundamentalReport` |
+| `src/app/api/engine/trigger/route.ts` | Modified | Forwarded `apiKey` to graph execution functions |
+| `src/app/api/export/report/route.ts` | Modified | Forwarded `apiKey` header / query param to `getCompanyFundamentalReport` |
+| `src/types/canvas.ts` | Modified | Added `minMcapBillion`, `classifications` to `WatcherConfig`; added `name`, `period` to `MarketEvent`; added `movers` to state |
+| `src/components/canvas/nodes/WatcherNode.tsx` | Modified | Added multi-row ranked Leaderboard card view with rank badges and prices |
+| `src/components/controls/EditNodeModal.tsx` | Modified | Added Top 20 limit option and Min Market Cap filter |
+| `AGENT_CONTEXT.md` | Modified | Master handover context updated |
+| `context/BACKLOG.md` | Modified | Backlog and completed items updated |
+| `context/CHECKPOINT.md` | Modified | Checkpoint updated |
+
+---
+
+## 9. Build Status
 
 All changes verified clean with `bun run build` — zero TypeScript errors.
+
 

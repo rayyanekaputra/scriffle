@@ -26,7 +26,8 @@ function sanitizeProjectSlug(name: string): string {
  */
 export async function exportReportToDisk(
   projectName: string,
-  symbol: string
+  symbol: string,
+  sessionApiKey?: string
 ): Promise<ExportedReportResult> {
   const cleanSymbol = symbol.toUpperCase();
   const projectSlug = sanitizeProjectSlug(projectName);
@@ -37,7 +38,7 @@ export async function exportReportToDisk(
     fs.mkdirSync(reportsDir, { recursive: true });
   }
 
-  const report = await getCompanyFundamentalReport(cleanSymbol);
+  const report = await getCompanyFundamentalReport(cleanSymbol, sessionApiKey);
 
   const price = report.lastClosePrice ? `Rp ${report.lastClosePrice.toLocaleString()}` : 'N/A';
   const priceChange = report.dailyCloseChange !== undefined

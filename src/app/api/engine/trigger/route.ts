@@ -65,7 +65,7 @@ export async function POST(req: Request) {
           const selectedMovers = isGainers ? gainers : losers;
           if (selectedMovers.length > 0) {
             allEvents.push(...selectedMovers);
-            const radarRes = await executeGraphForRadarWatcher(targetCanvas.id, watcher.id, selectedMovers);
+            const radarRes = await executeGraphForRadarWatcher(targetCanvas.id, watcher.id, selectedMovers, apiKey);
             results.push({ watcherId: watcher.id, type: isGainers ? 'top_gainers' : 'top_losers', ...radarRes });
           }
         }
@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       allEvents.push(...events);
 
       for (const ev of events) {
-        const res = await executeGraphForEvent(targetCanvas.id, ev);
+        const res = await executeGraphForEvent(targetCanvas.id, ev, apiKey);
         results.push({ symbol: ev.symbol, ...res });
       }
     } else if (allEvents.length === 0 && (!requestedSymbols || requestedSymbols.length === 0) && watcherNodes.length === 0) {
@@ -113,7 +113,7 @@ export async function POST(req: Request) {
       allEvents.push(...events);
 
       for (const ev of events) {
-        const res = await executeGraphForEvent(targetCanvas.id, ev);
+        const res = await executeGraphForEvent(targetCanvas.id, ev, apiKey);
         results.push({ symbol: ev.symbol, ...res });
       }
     }

@@ -1,70 +1,9 @@
-import { NextResponse } from 'next/server';
-import { getCompanyFundamentalReport } from '@/server/services/sectorsApi';
-
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const symbol = searchParams.get('symbol')?.toUpperCase() || 'BBCA';
-    const apiKey = req.headers.get('Authorization') || searchParams.get('apiKey') || undefined;
-    const report = await getCompanyFundamentalReport(symbol, apiKey);
-
-    const price = report.lastClosePrice ? `Rp ${report.lastClosePrice.toLocaleString()}` : 'N/A';
-    const priceChange = report.dailyCloseChange !== undefined
-      ? `${report.dailyCloseChange >= 0 ? '+' : ''}${(report.dailyCloseChange * 100).toFixed(2)}%`
-      : '0.00%';
-    const isPriceUp = (report.dailyCloseChange || 0) >= 0;
-
-    const analyst = report.futureForecasts?.analystRating;
-    const analystTotal = analyst?.totalAnalysts || 0;
-    const buyPct = analystTotal > 0 ? Math.round(((analyst?.strongBuy || 0) + (analyst?.buy || 0)) / analystTotal * 100) : 85;
-
-    const tagsHtml = (report.tags || ['blue-chip', 'idx-leader', 'top-volume'])
-      .slice(0, 5)
-      .map((t) => `<span class="tag">#${t.replace(/-/g, ' ')}</span>`)
-      .join('');
-
-    const indicesHtml = (report.indices || ['LQ45', 'IDX30', 'KOMPAS100'])
-      .slice(0, 6)
-      .map((idx) => `<span class="index-pill">${idx}</span>`)
-      .join('');
-
-    const executivesHtml = (report.management?.keyExecutives || [
-      { name: 'Board of Directors', position: 'Executive Committee' }
-    ])
-      .slice(0, 3)
-      .map(
-        (exec) => `
-        <div class="list-item">
-          <div>
-            <div class="item-title">${exec.name}</div>
-            <div class="item-sub">${exec.position}</div>
-          </div>
-          <span class="status-pill">Executive</span>
-        </div>
-      `
-      )
-      .join('');
-
-    const shareholdersHtml = (report.ownership?.majorShareholders || [
-      { name: 'Public / Free Float', sharePercentage: '45.0%' }
-    ])
-      .slice(0, 3)
-      .map(
-        (sh) => `
-        <div class="list-item">
-          <div class="item-title">${sh.name}</div>
-          <span class="share-pct">${typeof sh.sharePercentage === 'number' ? `${(sh.sharePercentage * 100).toFixed(2)}%` : sh.sharePercentage}</span>
-        </div>
-      `
-      )
-      .join('');
-
-    const html = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${report.symbol} - Institutional Equity Research Brief</title>
+  <title>CUAN - Institutional Equity Research Brief</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
@@ -84,7 +23,6 @@ export async function GET(req: Request) {
       margin: 0 auto;
     }
 
-    /* Top Brand & Action Bar */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -122,7 +60,6 @@ export async function GET(req: Request) {
       opacity: 0.85;
     }
 
-    /* Header Profile */
     .header-profile {
       display: flex;
       justify-content: space-between;
@@ -159,11 +96,10 @@ export async function GET(req: Request) {
       padding: 2px 8px;
       border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
-      background: ${isPriceUp ? '#ECFDF5' : '#FEF2F2'};
-      color: ${isPriceUp ? '#059669' : '#DC2626'};
+      background: #FEF2F2;
+      color: #DC2626;
     }
 
-    /* Meta Details Row */
     .meta-details {
       font-size: 12px;
       color: #4B5563;
@@ -201,7 +137,6 @@ export async function GET(req: Request) {
       font-family: 'JetBrains Mono', monospace;
     }
 
-    /* Section Typography */
     .section-divider {
       border: none;
       border-top: 1px solid #E5E7EB;
@@ -214,7 +149,6 @@ export async function GET(req: Request) {
       margin-bottom: 16px;
     }
 
-    /* Key Metrics Grid (4 columns, borderless with clean spacing) */
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -245,7 +179,6 @@ export async function GET(req: Request) {
       font-weight: 500;
     }
 
-    /* Two-Column Deep Dive */
     .two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -286,7 +219,6 @@ export async function GET(req: Request) {
       color: #111827;
     }
 
-    /* Analyst Rating Bar */
     .analyst-bar-wrapper {
       background: #F3F4F6;
       border-radius: 4px;
@@ -295,10 +227,9 @@ export async function GET(req: Request) {
       display: flex;
       margin: 10px 0 8px 0;
     }
-    .bar-buy { background: #0050FF; height: 100%; width: ${buyPct}%; }
-    .bar-hold { background: #9CA3AF; height: 100%; width: ${100 - buyPct}%; }
+    .bar-buy { background: #0050FF; height: 100%; width: 100%; }
+    .bar-hold { background: #9CA3AF; height: 100%; width: 0%; }
 
-    /* Automated Thesis Section */
     .thesis-box {
       background: #FAFAFA;
       border-left: 3px solid #111827;
@@ -317,7 +248,6 @@ export async function GET(req: Request) {
       line-height: 1.55;
     }
 
-    /* Glossary Grid */
     .glossary-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -335,7 +265,6 @@ export async function GET(req: Request) {
       line-height: 1.45;
     }
 
-    /* Footer */
     .report-footer {
       display: flex;
       justify-content: space-between;
@@ -359,7 +288,6 @@ export async function GET(req: Request) {
 </head>
 <body>
   <div class="document">
-    <!-- Top Bar -->
     <div class="top-bar">
       <div>
         <span class="brand-title">Scriffle Research Brief</span>
@@ -370,144 +298,147 @@ export async function GET(req: Request) {
       </button>
     </div>
 
-    <!-- Company Header Profile -->
     <div class="header-profile">
       <div>
-        <h1 class="symbol-title">${report.symbol}</h1>
-        <div class="company-name">${report.companyName}</div>
+        <h1 class="symbol-title">CUAN</h1>
+        <div class="company-name">PT Petrindo Jaya Kreasi Tbk</div>
       </div>
       <div class="price-box">
-        <div class="current-price">${price}</div>
-        <div class="price-change">${priceChange} Today</div>
+        <div class="current-price">Rp 945</div>
+        <div class="price-change">-4.06% Today</div>
       </div>
     </div>
 
-    <!-- Sector Taxonomy & Metadata Details -->
     <div class="meta-details">
-      <span class="meta-item">Sector: <strong>${report.sector}</strong></span>
-      <span class="meta-item">Sub-Sector: <strong>${report.subSector}</strong></span>
-      ${report.listingBoard ? `<span class="meta-item">Board: <strong>${report.listingBoard}</strong></span>` : ''}
-      ${report.esgScore ? `<span class="meta-item">ESG Risk: <strong>${report.esgScore}</strong></span>` : ''}
+      <span class="meta-item">Sector: <strong>Energy</strong></span>
+      <span class="meta-item">Sub-Sector: <strong>Oil, Gas & Coal</strong></span>
+      <span class="meta-item">Board: <strong>Main</strong></span>
+      <span class="meta-item">ESG Risk: <strong>54.64</strong></span>
     </div>
 
     <div class="tags-row">
-      ${indicesHtml}
-      ${tagsHtml}
+      <span class="index-pill">LQ45</span><span class="index-pill">KOMPAS100</span><span class="index-pill">FTSE</span>
+      <span class="tag">#90 d high</span><span class="tag">#insider 1 month buy</span><span class="tag">#public float under 25</span><span class="tag">#single entity holding 70</span><span class="tag">#top 30 yoy earning growth</span>
     </div>
 
     <hr class="section-divider" />
 
-    <!-- Key Valuation & Financial Metrics -->
     <div class="section-title">Key Valuation & Financial Profile</div>
     <div class="metric-grid">
       <div class="metric-item">
         <div class="metric-label">Market Capitalisation</div>
-        <div class="metric-val">${report.marketCapFormatted}</div>
-        <div class="metric-sub">${report.marketCapRank ? `Rank #${report.marketCapRank} on IDX` : 'IDX Large Cap'}</div>
+        <div class="metric-val">Rp 106.2 T</div>
+        <div class="metric-sub">Rank #21 on IDX</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Earnings (P/E)</div>
-        <div class="metric-val">${report.peRatio}x</div>
-        <div class="metric-sub">${report.valuation?.forwardPe ? `Forward: ${report.valuation.forwardPe}x` : 'TTM Multiple'}</div>
+        <div class="metric-val">625.79x</div>
+        <div class="metric-sub">TTM Multiple</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Book (P/B)</div>
-        <div class="metric-val">${report.pbvRatio}x</div>
-        <div class="metric-sub">${report.valuation?.intrinsicValue ? `Fair: Rp ${report.valuation.intrinsicValue.toLocaleString()}` : 'Book Multiple'}</div>
+        <div class="metric-val">80.99x</div>
+        <div class="metric-sub">Fair: Rp -1,544</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Dividend Yield (TTM)</div>
-        <div class="metric-val">${report.dividendYield}%</div>
-        <div class="metric-sub">${report.dividendSummary?.payoutRatio ? `Payout: ${(report.dividendSummary.payoutRatio * 100).toFixed(0)}%` : 'Regular Payout'}</div>
+        <div class="metric-val">0.1%</div>
+        <div class="metric-sub">Regular Payout</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Net Profit Margin</div>
-        <div class="metric-val">${report.netProfitMargin || 22.0}%</div>
-        <div class="metric-sub">${report.financialsSummary?.operatingProfitMargin ? `OP Margin: ${report.financialsSummary.operatingProfitMargin.toFixed(1)}%` : 'Operating Margin'}</div>
+        <div class="metric-val">-48%</div>
+        <div class="metric-sub">OP Margin: -25.2%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Return on Equity (ROE)</div>
-        <div class="metric-val">${report.financialsSummary?.roe ? `${(report.financialsSummary.roe * 100).toFixed(1)}%` : '21.5%'}</div>
-        <div class="metric-sub">${report.financialsSummary?.roa ? `ROA: ${(report.financialsSummary.roa * 100).toFixed(1)}%` : 'Return on Assets'}</div>
+        <div class="metric-val">-49.7%</div>
+        <div class="metric-sub">ROA: -23.0%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">52-Week Range</div>
         <div class="metric-val" style="font-size: 15px;">
-          ${report.allTimePrice?.week52Low ? `Rp ${report.allTimePrice.week52Low.toLocaleString()} - ${report.allTimePrice?.week52High?.toLocaleString()}` : 'Rp 8,850 - 10,950'}
+          Rp 464 - 2,890
         </div>
-        <div class="metric-sub">${report.allTimePrice?.allTimeHigh ? `ATH: Rp ${report.allTimePrice.allTimeHigh.toLocaleString()}` : 'Historical High'}</div>
+        <div class="metric-sub">ATH: Rp 2,890</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Revenue Expansion</div>
-        <div class="metric-val">${report.revenueGrowthYoY ? `+${report.revenueGrowthYoY}%` : '+9.8%'}</div>
+        <div class="metric-val">+8.5%</div>
         <div class="metric-sub">YoY Growth</div>
       </div>
     </div>
 
     <hr class="section-divider" />
 
-    <!-- Two Column Breakdown -->
     <div class="two-col">
-      <!-- Analyst Consensus -->
       <div>
         <div class="panel-heading">
           <span>Analyst Consensus</span>
-          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">${buyPct}% Buy Rating</span>
+          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">100% Buy Rating</span>
         </div>
         <div class="analyst-bar-wrapper">
           <div class="bar-buy" title="Buy / Strong Buy"></div>
           <div class="bar-hold" title="Hold / Neutral"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #6B7280;">
-          <span>${analyst?.strongBuy || 21} Strong Buy</span>
-          <span>${analyst?.buy || 4} Buy</span>
-          <span>${analyst?.hold || 2} Hold</span>
-          <span>${analyst?.sell || 0} Sell</span>
+          <span>21 Strong Buy</span>
+          <span>1 Buy</span>
+          <span>2 Hold</span>
+          <span>0 Sell</span>
         </div>
-        ${report.futureForecasts?.revenueGrowth ? `
-          <div style="margin-top: 14px; font-size: 11px; color: #4B5563; line-height: 1.5;">
-            Forecast: Projected EPS growth of <strong>+${(report.futureForecasts.epsGrowth ? report.futureForecasts.epsGrowth * 100 : 9.9).toFixed(1)}%</strong> on <strong>+${(report.futureForecasts.revenueGrowth * 100).toFixed(1)}%</strong> revenue expansion.
-          </div>
-        ` : ''}
+        
       </div>
 
-      <!-- Major Shareholders & Leadership -->
       <div>
         <div class="panel-heading">
           <span>Major Shareholders</span>
           <span style="font-size: 11px; color: #6B7280;">Ownership</span>
         </div>
         <div>
-          ${shareholdersHtml}
+          
+      <div class="list-item">
+        <div class="item-title">Prajogo Pangestu</div>
+        <span class="share-pct">undefined</span>
+      </div>
+    
+      <div class="list-item">
+        <div class="item-title">Public</div>
+        <span class="share-pct">undefined</span>
+      </div>
+    
+      <div class="list-item">
+        <div class="item-title">Treasury Stock</div>
+        <span class="share-pct">undefined</span>
+      </div>
+    
         </div>
-        ${report.ownership?.conglomeratesGroup?.length ? `
+        
           <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">
-            Group / Conglomerate: <strong style="color: #111827;">${report.ownership.conglomeratesGroup.join(', ')}</strong>
+            Group / Conglomerate: <strong style="color: #111827;">Barito Group</strong>
           </div>
-        ` : ''}
+        
       </div>
     </div>
 
     <hr class="section-divider" />
 
-    <!-- Automated Thesis Summary -->
     <div class="thesis-box">
       <div class="thesis-label">Automated Trigger Thesis Summary</div>
       <div class="thesis-text">
-        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>${report.companyName}</strong> (${report.symbol}) trades at <strong>${report.peRatio}x P/E</strong> and <strong>${report.pbvRatio}x P/B</strong> with a <strong>${report.dividendYield}%</strong> dividend yield, supported by <strong>${buyPct}% analyst buy consensus</strong>.
+        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>PT Petrindo Jaya Kreasi Tbk</strong> (CUAN) trades at <strong>625.79x P/E</strong> and <strong>80.99x P/B</strong> with a <strong>0.1%</strong> dividend yield, supported by <strong>100% analyst buy consensus</strong>.
       </div>
     </div>
 
     <hr class="section-divider" />
 
-    <!-- Metric Glossary & Definitions for Non-Finance Users -->
     <div class="section-title">Metric Glossary & Quick Reference</div>
     <div class="glossary-grid">
       <div>
@@ -536,21 +467,10 @@ export async function GET(req: Request) {
       </div>
     </div>
 
-    <!-- Footer -->
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
-      <div>Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} • Scriffle Studio</div>
+      <div>Generated on Sep 12, 2026 • Scriffle Studio</div>
     </div>
   </div>
 </body>
-</html>`;
-
-    return new NextResponse(html, {
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-      },
-    });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
-}
+</html>

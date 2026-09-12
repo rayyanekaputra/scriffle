@@ -6,6 +6,10 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⭐ Correlated Symbol Fundamental Note & Dynamic Fallback Fix (`sectorsApi.ts` & `graphEngine.ts`)**
+  - Added dedicated mock fundamental records for all Top Gainers and Losers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`).
+  - Added `buildDynamicCompanyReport` dynamic fallback generator preventing unknown tickers from inheriting `BBCA` profile.
+  - Threaded `sessionApiKey` through `executeGraphForRadarWatcher`, `executeGraphForEvent`, `exportReportToDisk`, and `/api/export/report`.
 - [x] **⭐ Clean Borderless PDF Report Layout (`/api/export/report`)**
   - Full redesign to a clean institutional document: white canvas, hairline dividers, selective colour highlights (Mint/Coral for price direction, Blue for ratings bar), metric glossary at the bottom, `@media print` CSS. No outer card border, no all-caps, no letter-spacing.
 - [x] **⭐ Auto-Export Reports to Disk (`reportExporter.ts`)**
@@ -14,6 +18,10 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - `FileNode` now shows a green `✓ Saved` pill when `savedLocally: true` or `isDownloaded: true` in `FileConfig`. Eliminates confusion about whether a file exists on disk or is a web-only link.
 - [x] **⭐ Free-Text `Enter` to Commit (`TextNode.tsx`)**
   - `Enter` now commits changes and exits edit mode. `Shift+Enter` creates a new line (with bullet continuation). `Escape` also commits.
+- [x] **🔥 Multi-Symbol PDF Export & Dynamic Peer Watcher Automation (`ActionNode.tsx` & `graphEngine.ts`)**
+  - Updated `fundamental_report` in `executeGraphForRadarWatcher` to generate reports & FileNodes for **all outputted symbols** on the leaderboard.
+  - Implemented dynamic peer watcher spawning in `create_watcher` defaulting to incoming top mover tickers with 300s polling interval without manual ticker entry.
+  - Updated configuration controls in `EditNodeModal.tsx`.
 - [x] **🔥 Top Gainers & Losers Ranking Leaderboard & Query Parameters Upgrade (`/v2/companies/top-changes/`)**
   - Leaderboard card rendering in `WatcherNode.tsx` displaying multi-stock rankings (`#1`, `#2`, `#3`... with ticker, company name, formatted price, and `% move` badges).
   - Supported official Sectors API query parameters (`n_stock`, `periods`, `classifications`, `min_mcap_billion`) in `sectorsApi.ts`.

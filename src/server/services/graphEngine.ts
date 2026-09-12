@@ -96,7 +96,8 @@ export function generateLeaderboardNoteContent(movers: MarketEvent[], mode?: str
  */
 export async function executeGraphForEvent(
   canvasId: string,
-  event: MarketEvent
+  event: MarketEvent,
+  sessionApiKey?: string
 ): Promise<GraphExecutionResult> {
   const triggeredNodes: string[] = [];
   const logs: string[] = [];
@@ -337,8 +338,7 @@ export async function executeGraphForEvent(
         mutationsCount++;
         logs.push(`Added new sticky note on canvas`);
       } else if (nodeConfig.action === 'create_watcher') {
-        // Dynamic Sector Peer Spawning: If BBCA surges, spawn related peer watcher (e.g. BBRI or BMRI)
-        const targetSymbol = nodeConfig.params?.symbol || (curEvent.symbol === 'BBCA' ? 'BBRI' : 'BMRI');
+        const targetSymbol = (nodeConfig.targetSymbol || nodeConfig.params?.symbol || curEvent.symbol).toUpperCase();
         
         // Avoid duplicate watchers on canvas for same symbol
         const alreadyExists = canvas.nodes.some((n) => {
@@ -364,12 +364,13 @@ export async function executeGraphForEvent(
               configJson: JSON.stringify({
                 symbol: targetSymbol,
                 metric: 'price_change',
-                interval: 180,
+                interval: nodeConfig.interval || 300,
               }),
               stateJson: JSON.stringify({
-                status: 'idle',
-                cycleCount: 0,
-                lastValue: { price: targetSymbol === 'BBRI' ? 5100 : 6800, price_change: 0 },
+                status: 'passed',
+                cycleCount: 1,
+                lastValue: curEvent,
+                lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
               }),
             },
           });
@@ -387,12 +388,12 @@ export async function executeGraphForEvent(
         }
       } else if (nodeConfig.action === 'fundamental_report') {
         // Fetch real-time fundamentals via Sectors API v2 /company/report/{symbol}/
-        const report = await getCompanyFundamentalReport(curEvent.symbol);
+        const report = await getCompanyFundamentalReport(curEvent.symbol, sessionApiKey);
 
         // Auto-export standalone HTML document to disk: reports/{project_name}/{symbol}_Fundamental_Brief.html
         let exportedFile: any = null;
         try {
-          exportedFile = await exportReportToDisk(canvas.name || 'default_project', curEvent.symbol);
+          exportedFile = await exportReportToDisk(canvas.name || 'default_project', curEvent.symbol, sessionApiKey);
         } catch (exportErr) {
           console.error('Failed to auto-export report to disk:', exportErr);
         }
@@ -506,7 +507,8 @@ export async function executeGraphForEvent(
 export async function executeGraphForRadarWatcher(
   canvasId: string,
   watcherId: string,
-  movers: MarketEvent[]
+  movers: MarketEvent[],
+  sessionApiKey?: string
 ): Promise<GraphExecutionResult> {
   const triggeredNodes: string[] = [];
   const logs: string[] = [];
@@ -657,54 +659,148 @@ export async function executeGraphForRadarWatcher(
         }
         logs.push(`Spawned ${movers.length} individual sticky notes for Top Movers`);
       } else if (targetCfg.action === 'fundamental_report') {
-        const report = await getCompanyFundamentalReport(top1.symbol);
-        let exportedFile: any = null;
-        try {
-          exportedFile = await exportReportToDisk(canvas.name || 'default_project', top1.symbol);
-        } catch (exportErr) {
-          console.error('Failed to auto-export report:', exportErr);
-        }
-
         const existingSpawned = canvas.edges.filter((e) => e.fromId === targetNode.id);
-        const spawnIdx = existingSpawned.length;
-        const newX = targetNode.positionX + 280;
-        const newY = targetNode.positionY + spawnIdx * 200;
+        const baseSpawnIndex = existingSpawned.length;
 
-        const newFileNode = await prisma.node.create({
-          data: {
-            canvasId,
-            type: 'file',
-            positionX: newX,
-            positionY: newY,
-            configJson: JSON.stringify({
-              fileName: exportedFile?.fileName || `${top1.symbol}_Fundamental_Brief.html`,
-              fileSize: exportedFile?.fileSize || '145 KB',
-              fileType: 'html',
-              category: 'report',
-              fileUrl: `/api/export/report?symbol=${top1.symbol}`,
-              filePath: exportedFile?.filePath || `reports/${top1.symbol}_Fundamental_Brief.html`,
-              savedLocally: !!exportedFile?.savedLocally,
-              isDownloaded: true,
-              downloadedAt: new Date().toLocaleTimeString(),
-              symbol: top1.symbol,
-              title: `${top1.symbol} Fundamental Analysis Report`,
-            }),
-            stateJson: JSON.stringify({
-              status: 'passed',
-              lastTriggeredAt: new Date().toLocaleTimeString(),
-            }),
-          },
-        });
+        for (let i = 0; i < movers.length; i++) {
+          const mover = movers[i];
+          const report = await getCompanyFundamentalReport(mover.symbol, sessionApiKey);
+          let exportedFile: any = null;
+          try {
+            exportedFile = await exportReportToDisk(canvas.name || 'default_project', mover.symbol, sessionApiKey);
+          } catch (exportErr) {
+            console.error('Failed to auto-export report:', exportErr);
+          }
 
-        await prisma.edge.create({
-          data: {
-            canvasId,
-            fromId: targetNode.id,
-            toId: newFileNode.id,
-          },
-        });
-        mutationsCount++;
-        logs.push(`Generated fundamental brief for Top 1 mover (${top1.symbol})`);
+          const spawnIdx = baseSpawnIndex + i;
+          const newX = targetNode.positionX + 280;
+          const newY = targetNode.positionY + spawnIdx * 220 - 40;
+
+          const fundamentalNoteContent = `📊 Fundamental Report: ${report.symbol}\n${report.companyName}\n• Sector: ${report.sector} (${report.subSector})\n• Market Cap: ${report.marketCapFormatted}\n• Valuation: P/E ${report.peRatio}x | P/B ${report.pbvRatio}x\n• Dividend Yield: ${report.dividendYield}%\n• Margin: ${report.netProfitMargin}%\nRank #${mover.rank || i + 1} (${mover.price_change >= 0 ? '+' : ''}${mover.price_change}%)`;
+
+          // 1. Spawn Fundamental Research Note
+          const noteNode = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'note',
+              positionX: newX,
+              positionY: newY,
+              configJson: JSON.stringify({
+                content: fundamentalNoteContent,
+                color: 'blue',
+                width: 320,
+                height: 180,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: targetNode.id,
+              toId: noteNode.id,
+            },
+          });
+
+          // 2. Spawn linked File Node attachment with real executable report URL & saved on disk
+          const reportUrl = `/api/export/report?symbol=${report.symbol}`;
+          const fileNode = await prisma.node.create({
+            data: {
+              canvasId,
+              type: 'file',
+              positionX: newX + 350,
+              positionY: newY + 20,
+              configJson: JSON.stringify({
+                fileName: exportedFile?.fileName || `${report.symbol}_Fundamental_Brief.html`,
+                fileUrl: reportUrl,
+                filePath: exportedFile?.filePath || `reports/${canvas.name || 'default'}/${report.symbol}_Fundamental_Brief.html`,
+                fileSize: exportedFile?.fileSize || '18.5 KB',
+                fileCategory: 'document',
+                savedLocally: true,
+                isDownloaded: true,
+                downloadedAt: new Date().toLocaleTimeString(),
+                caption: `Auto-saved to reports/${canvas.name || 'default'}`,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          await prisma.edge.create({
+            data: {
+              canvasId,
+              fromId: noteNode.id,
+              toId: fileNode.id,
+            },
+          });
+
+          mutationsCount += 2;
+        }
+        logs.push(`Generated fundamental reports & PDF briefs for ${movers.length} top movers`);
+      } else if (targetCfg.action === 'create_watcher') {
+        const existingSpawned = canvas.edges.filter((e) => e.fromId === targetNode.id);
+        const baseSpawnIndex = existingSpawned.length;
+        let spawnedCount = 0;
+
+        for (let i = 0; i < movers.length; i++) {
+          const mover = movers[i];
+          const targetSymbol = (targetCfg.targetSymbol || targetCfg.params?.symbol || mover.symbol).toUpperCase();
+
+          // Avoid duplicate watchers for same symbol on canvas
+          const alreadyExists = canvas.nodes.some((n) => {
+            if (n.type !== 'watcher') return false;
+            try {
+              const cfg = JSON.parse(n.configJson);
+              return cfg.symbol?.toUpperCase() === targetSymbol;
+            } catch {
+              return false;
+            }
+          });
+
+          if (!alreadyExists) {
+            const spawnIdx = baseSpawnIndex + spawnedCount;
+            const newX = targetNode.positionX + 280;
+            const newY = targetNode.positionY + spawnIdx * 170 - 20;
+
+            const newWatcher = await prisma.node.create({
+              data: {
+                canvasId,
+                type: 'watcher',
+                positionX: newX,
+                positionY: newY,
+                configJson: JSON.stringify({
+                  symbol: targetSymbol,
+                  metric: 'price_change',
+                  interval: targetCfg.interval || 300, // default 300s
+                }),
+                stateJson: JSON.stringify({
+                  status: 'passed',
+                  cycleCount: 1,
+                  lastValue: mover,
+                  lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+                }),
+              },
+            });
+
+            await prisma.edge.create({
+              data: {
+                canvasId,
+                fromId: targetNode.id,
+                toId: newWatcher.id,
+              },
+            });
+
+            mutationsCount++;
+            spawnedCount++;
+          }
+        }
+        logs.push(`Auto-spawned ${spawnedCount} dedicated breakout watchers on canvas (300s interval)`);
       }
     } else if (targetNode.type === 'alert') {
       triggeredNodes.push(targetNode.id);

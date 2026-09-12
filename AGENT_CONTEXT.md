@@ -315,6 +315,7 @@ hackathon/
 ## 10. Open Backlog (Prioritized)
 
 ### ✅ Recently Completed (This Session)
+- **Correlated Symbol Fundamental Note & Dynamic Fallback Fix** — Fixed bug where top mover fundamental reports/notes fell back to spreading `BBCA` data; added full mock datasets for all Top Gainers and Losers (`MPRO`, `JECX`, `AGII`, `BREN`, `CUAN`, `BKSL`, `ELPI`, `EMAS`, `PSAB`, `GOTO`), implemented `buildDynamicCompanyReport` for arbitrary tickers, and threaded `sessionApiKey` through `executeGraphForRadarWatcher`, `executeGraphForEvent`, `exportReportToDisk`, and `/api/export/report`.
 - **Top Gainers & Losers Ranking Leaderboard & Dual Note Workflows (`/v2/companies/top-changes/`)** — Upgraded `WatcherNode.tsx` with dedicated ranked Leaderboard card view, implemented full query parameters (`n_stock`, `periods`, `classifications`, `min_mcap_billion`) in `sectorsApi.ts`, added `executeGraphForRadarWatcher` in `graphEngine.ts` to support both Flow 1 (direct connected note receives formatted leaderboard table) and Flow 2 (action node `create_note` spawns separate notes for each mover with non-overlapping layout offsets), and added limit/mcap filter controls in `EditNodeModal.tsx`.
 - **PDF / Fundamental Report Redesign** — Fully redesigned `/api/export/report` to a clean, borderless institutional document: white canvas, subtle hairline dividers, selective colour highlights (Mint for gains, Coral for losses, Blue for ratings bar), metric glossary & quick reference section at the bottom, and `@media print` CSS.
 - **Auto-Export Reports to Disk** — When `ActionNode` fires `fundamental_report`, the report is automatically saved to `reports/{project_name}/{symbol}_Fundamental_Brief.html` via `src/server/services/reportExporter.ts`. No manual download required.
@@ -381,4 +382,5 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `FILE_NODE_PLAN.md` | Universal FileNode architecture |
 | `AUTO_EXPORT_AND_DOWNLOAD_STATUS_PLAN.md` | Auto-export to disk & FileNode download status indicator |
 | `TOP_MOVERS_RANKING_LEADERBOARD_PLAN.md` | Top Gainers & Losers Leaderboard display, official query params & engine fix |
+| `MULTI_SYMBOL_EXPORT_AND_PEER_WATCHER_PLAN.md` | Multi-symbol PDF report export & dynamic peer watcher automation |
 
