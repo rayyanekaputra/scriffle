@@ -217,7 +217,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   </div>
                   <p className={`text-[11px] leading-relaxed ${secondaryColor}`}>
                     {config.mode === 'top_gainers' || config.mode === 'top_losers'
-                      ? 'Calls /v2/companies/top-changes/ to fetch ranked movers. Consumes 10 credits per poll interval.'
+                      ? 'Calls /v2/companies/top-changes/. Costs 1 API credit per requested classification × period combination (default 2 classifications × 5 periods = 10 credits / poll).'
                       : 'Calls /v2/daily/{symbol}/ to poll latest price and volume. Consumes 1 credit per symbol tick.'}
                   </p>
                 </div>

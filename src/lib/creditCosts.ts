@@ -2,7 +2,7 @@
  * Sectors API v2 Credit Cost & Token Pricing Registry
  * 
  * Reference Rates:
- * - GET /v2/companies/top-changes/     => 10 credits / poll
+ * - GET /v2/companies/top-changes/     => 1 credit per classification × period combination (default 2 classifications × 5 periods = 10 credits / poll)
  * - GET /v2/company/report/{symbol}/   => 8 credits / symbol
  * - GET /v2/companies/?q=...           => 3 credits / query
  * - GET /v2/daily/{symbol}/            => 1 credit / tick
@@ -36,7 +36,7 @@ export function getNodeCreditCost(type: string, config: any = {}): CreditCostInf
           badgeText: '10 credits / poll',
           endpoint: '/v2/companies/top-changes/',
           isExpensive: true,
-          burstWarning: 'Consumes 10 API credits on each leaderboard poll interval.',
+          burstWarning: 'Costs 1 credit per classification × period combination (default 2 classifications × 5 periods = 10 credits / poll).',
         };
       }
 

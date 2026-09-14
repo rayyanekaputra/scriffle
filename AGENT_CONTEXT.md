@@ -381,9 +381,13 @@ hackathon/
    - Offline mode clearly displays a `Mock` indicator on Watcher cards.
 
 2. **API Token & Credit Consumption Awareness — ✅ Surfaced in UI**:
-   - Sectors API v2 charges credits per endpoint call: `/v2/company/report/{symbol}/` (**8 credits**), `/v2/companies/top-changes/` (**10 credits**), `/v2/companies/?q=...` (**3 credits**), `/v2/daily/{symbol}/` (**1 credit**).
+   - Sectors API v2 charges credits per endpoint call:
+     - `/v2/companies/top-changes/`: **Costs 1 API credit per requested classification × period combination** (default behavior with 2 classifications × 5 periods consumes **10 credits** per poll).
+     - `/v2/company/report/{symbol}/`: **8 credits** per symbol.
+     - `/v2/companies/?q=...`: **3 credits** per AI query.
+     - `/v2/daily/{symbol}/`: **1 credit** per tick.
    - Automated pipelines triggering multi-symbol fundamental reports (e.g. 5 Top Movers) consume $5 \times 8 = 40\text{ credits}$ per trigger. Rapid multi-poll triggers can consume 380+ credits in minutes.
-   - Credit cost badges and burst warnings are now surfaced on `ActionNode.tsx`, `WatcherNode.tsx`, `ScreenerNode.tsx`, and in `EditNodeModal.tsx`.
+   - Credit cost badges, official classification × period rate formulas, and burst warnings are surfaced on `ActionNode.tsx`, `WatcherNode.tsx`, `ScreenerNode.tsx`, and in `EditNodeModal.tsx`.
 3. **DSL Safety:** Always use `expr-eval` (never `eval()`). The DSL supports `AND`, `OR`, `>`, `<`, `>=`, `<=`, `==`, `!=`, and arithmetic (e.g. `volume > 2 * avg_volume`).
 4. **SWR Polling Smoothness:** Node updates from SWR should NOT disturb user's current zoom/pan viewport.
 5. **API Key Session-Only:** The Sectors API key lives in React state only. Any backend route that needs it must receive it per-request (e.g. in request body or header). Never assume it's available server-side.

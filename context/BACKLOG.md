@@ -129,7 +129,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - **Status**: ✅ Completed
 - **Priority**: High — prevents unexpected API credit exhaustion (e.g. multi-ticker fundamental reports consuming 8 credits per symbol = ~40–380 credits per execution burst)
 - **Implemented Capabilities**:
-  1. **Centralized Pricing Registry (`src/lib/creditCosts.ts`)**: Encapsulates official Sectors API v2 pricing (10 credits/poll for Top Changes, 8 credits/symbol for Company Reports, 3 credits/query for Screener, 1 credit/tick for Daily symbol watcher).
+  1. **Centralized Pricing Registry (`src/lib/creditCosts.ts`)**: Encapsulates official Sectors API v2 pricing (1 credit per classification × period combination for Top Changes — default 2 classifications × 5 periods = 10 credits/poll, 8 credits/symbol for Company Reports, 3 credits/query for Screener, 1 credit/tick for Daily symbol watcher).
   2. **Node UI Credit Cost Badges**:
      - [`ActionNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/ActionNode.tsx): `🪙 8 credits / symbol` with endpoint tag for Fundamental Reports; `⚡ 0 credits (local)` for canvas mutations.
      - [`WatcherNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/WatcherNode.tsx): `🪙 10 credits / poll` for Top Movers Radar; `🪙 1 credit / tick` for Single Ticker Watchers in footer.

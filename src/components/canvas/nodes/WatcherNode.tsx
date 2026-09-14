@@ -385,6 +385,7 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
         }`}
       >
         <span
+          title={isRadarMode ? 'Costs 1 API credit per requested classification × period combination (default 2 classifications × 5 periods = 10 credits / poll)' : 'Consumes 1 credit per symbol daily tick'}
           className={`inline-flex items-center gap-1 font-semibold px-1.5 py-0.5 rounded border ${
             isRadarMode
               ? isDark
