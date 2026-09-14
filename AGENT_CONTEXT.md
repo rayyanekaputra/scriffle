@@ -316,6 +316,10 @@ hackathon/
 ## 10. Open Backlog (Prioritized)
 
 ### ✅ Recently Completed (This Session)
+- **UI Contrast & Typography Cleanup (Esc Badge, Shortcuts Group Titles, FileNode Contrast, Zero All-Caps Enforcement)**:
+  - **Shortcuts Modal Group Titles & Esc Badge Theme Alignment (`ShortcutsModal.tsx`)**: Fixed category group titles and icons to use theme-aware contrast tokens (`isDark ? 'text-slate-200' : isMono ? 'text-[#242321]' : 'text-slate-900'`) matching content text readability in Light and Mono modes; fixed footer `Esc` badge styling.
+  - **FileNode Symbol & Badge Contrast in Light Mode (`FileNode.tsx`)**: Replaced low-contrast pastel badge colors (`bg-*-50` & `text-*-600`) with high-contrast backgrounds (`bg-*-100`), bold vibrant text (`text-*-700`/`800`), and crisp borders (`border-*-300`), removing `tracking-wider` on the extension label.
+  - **Zero All-Caps & Spacing Enforcement (`SimulationBar.tsx`, `NavToolbar.tsx`, `ActivityFeed.tsx`)**: Removed `uppercase` and `tracking-wider` classes from preset template labels, sticker headers, execution breadcrumbs, and simulated mode badges to strictly adhere to sentence/title case design rules.
 - **Canvas UX & Formatting Fixes (Emoji Picker, Viewport Placement & Text Toolbar Stability)**:
   - **Sticker Node & Modal Editor (`EditNodeModal.tsx` & `StickerNode.tsx`)**: Fixed empty modal on double-click sticker; added 32-emoji grid picker, custom emoji input, label field, 7-color badge palette, and live preview. Added inline quick emoji popover on canvas and converted toolbar Sticker button into a split button (direct click drops sticker at viewport center, chevron opens 8 presets with click-outside dismiss).
   - **Viewport-Centered Node Placement (`NavToolbar.tsx` & `src/app/page.tsx`)**: Replaced static top-left coordinate fallback `(300, 200)` with `useReactFlow().screenToFlowPosition` converting viewport center `(window.innerWidth / 2, window.innerHeight / 2)` to flow coordinates with natural scatter jitter. Wrapped `NavToolbar` inside `ReactFlowProvider`.

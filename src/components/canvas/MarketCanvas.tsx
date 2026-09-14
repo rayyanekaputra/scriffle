@@ -1028,13 +1028,6 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         </div>
       )}
 
-      {/* Figma-style Multi-Selection Bounding Box & Group Actions */}
-      <SelectionBoundingBox
-        nodes={nodes}
-        onGroup={handleGroupSelected}
-        onUngroup={handleUngroupSelected}
-      />
-
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -1071,6 +1064,12 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         minZoom={0.2}
         maxZoom={2}
       >
+        {/* Figma-style Multi-Selection Bounding Box & Group Actions */}
+        <SelectionBoundingBox
+          nodes={nodes}
+          onGroup={handleGroupSelected}
+          onUngroup={handleUngroupSelected}
+        />
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color={dotColor} />
         <Controls
           position="top-left"

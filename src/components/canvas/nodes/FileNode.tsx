@@ -39,72 +39,72 @@ function resolveFileMeta(config: FileConfig): {
         category,
         ext: ext || 'PDF',
         icon: 'file_pdf_2_line',
-        badgeBg: 'bg-rose-50 dark:bg-rose-950/40',
-        badgeText: 'text-rose-600 dark:text-rose-400',
-        badgeBorder: 'border-rose-200 dark:border-rose-800/60',
+        badgeBg: 'bg-rose-100 dark:bg-rose-950/50',
+        badgeText: 'text-rose-700 dark:text-rose-300',
+        badgeBorder: 'border-rose-300 dark:border-rose-800/70',
       };
     case 'presentation':
       return {
         category,
         ext: ext || 'SLIDE',
         icon: 'presentation_line',
-        badgeBg: 'bg-amber-50 dark:bg-amber-950/40',
-        badgeText: 'text-amber-600 dark:text-amber-400',
-        badgeBorder: 'border-amber-200 dark:border-amber-800/60',
+        badgeBg: 'bg-amber-100 dark:bg-amber-950/50',
+        badgeText: 'text-amber-800 dark:text-amber-300',
+        badgeBorder: 'border-amber-300 dark:border-amber-800/70',
       };
     case 'document':
       return {
         category,
         ext: ext || 'DOC',
         icon: 'file_word_2_line',
-        badgeBg: 'bg-blue-50 dark:bg-blue-950/40',
-        badgeText: 'text-blue-600 dark:text-blue-400',
-        badgeBorder: 'border-blue-200 dark:border-blue-800/60',
+        badgeBg: 'bg-blue-100 dark:bg-blue-950/50',
+        badgeText: 'text-blue-700 dark:text-blue-300',
+        badgeBorder: 'border-blue-300 dark:border-blue-800/70',
       };
     case 'spreadsheet':
       return {
         category,
         ext: ext || 'XLS',
         icon: 'table_line',
-        badgeBg: 'bg-emerald-50 dark:bg-emerald-950/40',
-        badgeText: 'text-emerald-600 dark:text-emerald-400',
-        badgeBorder: 'border-emerald-200 dark:border-emerald-800/60',
+        badgeBg: 'bg-emerald-100 dark:bg-emerald-950/50',
+        badgeText: 'text-emerald-700 dark:text-emerald-300',
+        badgeBorder: 'border-emerald-300 dark:border-emerald-800/70',
       };
     case 'audio':
       return {
         category,
         ext: ext || 'AUDIO',
         icon: 'music_2_line',
-        badgeBg: 'bg-purple-50 dark:bg-purple-950/40',
-        badgeText: 'text-purple-600 dark:text-purple-400',
-        badgeBorder: 'border-purple-200 dark:border-purple-800/60',
+        badgeBg: 'bg-purple-100 dark:bg-purple-950/50',
+        badgeText: 'text-purple-700 dark:text-purple-300',
+        badgeBorder: 'border-purple-300 dark:border-purple-800/70',
       };
     case 'code':
       return {
         category,
         ext: ext || 'CODE',
         icon: 'code_line',
-        badgeBg: 'bg-indigo-50 dark:bg-indigo-950/40',
-        badgeText: 'text-indigo-600 dark:text-indigo-400',
-        badgeBorder: 'border-indigo-200 dark:border-indigo-800/60',
+        badgeBg: 'bg-indigo-100 dark:bg-indigo-950/50',
+        badgeText: 'text-indigo-700 dark:text-indigo-300',
+        badgeBorder: 'border-indigo-300 dark:border-indigo-800/70',
       };
     case 'archive':
       return {
         category,
         ext: ext || 'ZIP',
         icon: 'folder_download_line',
-        badgeBg: 'bg-slate-100 dark:bg-slate-800/40',
-        badgeText: 'text-slate-700 dark:text-slate-300',
-        badgeBorder: 'border-slate-300 dark:border-slate-700',
+        badgeBg: 'bg-slate-200 dark:bg-slate-800/60',
+        badgeText: 'text-slate-800 dark:text-slate-200',
+        badgeBorder: 'border-slate-400 dark:border-slate-700',
       };
     default:
       return {
         category: 'generic',
         ext: ext || 'FILE',
         icon: 'attachment_line',
-        badgeBg: 'bg-slate-50 dark:bg-slate-900/40',
-        badgeText: 'text-slate-600 dark:text-slate-400',
-        badgeBorder: 'border-slate-200 dark:border-slate-800',
+        badgeBg: 'bg-slate-100 dark:bg-slate-900/60',
+        badgeText: 'text-slate-800 dark:text-slate-200',
+        badgeBorder: 'border-slate-300 dark:border-slate-700',
       };
   }
 }
@@ -192,7 +192,7 @@ export const FileNode = memo(({ data, selected }: NodeProps) => {
           }`}
         >
           <MingIcon name={meta.icon as any} size={20} />
-          <span className="text-[8px] font-black uppercase tracking-wider leading-none mt-0.5 font-mono">
+          <span className="text-[8px] font-black uppercase leading-none mt-0.5 font-mono">
             {meta.ext.slice(0, 4)}
           </span>
         </div>

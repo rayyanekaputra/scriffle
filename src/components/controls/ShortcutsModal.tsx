@@ -157,9 +157,13 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
                 <MingIcon
                   name={cat.icon}
                   size={15}
-                  className={isDark ? 'text-slate-400' : isMono ? 'text-[#78756D]' : 'text-slate-500'}
+                  className={isDark ? 'text-slate-400' : isMono ? 'text-[#242321]' : 'text-slate-700'}
                 />
-                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                <h3
+                  className={`text-xs font-bold ${
+                    isDark ? 'text-slate-200' : isMono ? 'text-[#242321]' : 'text-slate-900'
+                  }`}
+                >
                   {cat.title}
                 </h3>
               </div>
@@ -172,7 +176,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
                   >
                     <span
                       className={`text-[12px] ${
-                        isDark ? 'text-slate-300' : isMono ? 'text-[#3E3C36]' : 'text-slate-700'
+                        isDark ? 'text-slate-300' : isMono ? 'text-[#242321]' : 'text-slate-800'
                       }`}
                     >
                       {item.label}
@@ -214,7 +218,17 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
           <span className="flex items-center gap-1">
             <span>Press</span>
-            <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px]">Esc</kbd>
+            <kbd
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                isDark
+                  ? 'bg-[#22242D] border-[#2E3140] text-slate-200'
+                  : isMono
+                  ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#242321]'
+                  : 'bg-white border-slate-300 text-slate-800 shadow-2xs'
+              }`}
+            >
+              Esc
+            </kbd>
             <span>to close</span>
           </span>
         </div>

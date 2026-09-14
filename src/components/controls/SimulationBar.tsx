@@ -275,7 +275,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
 
             {/* Quick Demo Presets */}
             <div className={`pt-1 border-t ${isDark ? 'border-[#252732]' : isMono ? 'border-[#E2DFD6]' : 'border-indigo-100'}`}>
-              <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${textMuted}`}>
+              <span className={`text-[11px] font-bold block mb-1.5 ${textMuted}`}>
                 Load Preset Template:
               </span>
               <div className="space-y-1.5">
@@ -325,7 +325,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
                 <MingIcon name="refresh_3_line" size={14} className={iconColor} />
                 Market Data Sync
               </span>
-              <span className={`text-[10px] font-mono font-bold uppercase ${textMuted}`}>
+              <span className={`text-[10px] font-mono font-bold ${textMuted}`}>
                 {isLiveMode ? 'Live API' : 'Simulated'}
               </span>
             </div>
@@ -358,7 +358,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
               <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
                 isDark ? 'bg-black/40 text-[#BAC0D0]' : isMono ? 'bg-black/10 text-[#242321]' : 'bg-black/20 text-white'
               }`}>
-                {isLiveMode ? 'LIVE' : 'MOCK'}
+                {isLiveMode ? 'Live' : 'Mock'}
               </span>
             </button>
           </div>
