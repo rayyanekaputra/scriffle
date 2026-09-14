@@ -36,20 +36,30 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';
 
+  const isError = state.status === 'error' || !!state.error;
+  const apiErrorCode = state.error?.code || (isError ? 400 : null);
+  const isLive = state.isLive ?? true;
+
   const cardBorder = isDark
     ? selected
       ? 'border-[#8E95A5] ring-2 ring-[#8E95A5]/20'
+      : isError
+      ? 'border-rose-500/80 ring-1 ring-rose-500/20'
       : isPassed
       ? 'border-[#8E95A5]'
       : 'border-[#282A36] hover:border-[#383B4A]'
     : isMono
     ? selected
       ? 'border-[#242321] ring-2 ring-[#242321]/20'
+      : isError
+      ? 'border-rose-600 ring-1 ring-rose-600/20'
       : isPassed
       ? 'border-[#242321]'
       : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
     : selected
     ? 'border-[#0050FF] ring-2 ring-[#0050FF]/20'
+    : isError
+    ? 'border-rose-500 ring-1 ring-rose-500/20'
     : isPassed
     ? 'border-[#0050FF]'
     : 'border-slate-300 hover:border-slate-400';
@@ -89,9 +99,15 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
           <div
             className={`rounded-xl p-1.5 border ${
               isDark
-                ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
+                ? isError
+                  ? 'bg-rose-950/60 text-rose-400 border-rose-800/60'
+                  : 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
                 : isMono
-                ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                ? isError
+                  ? 'bg-rose-50 text-rose-800 border-rose-300'
+                  : 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                : isError
+                ? 'bg-rose-50 text-rose-700 border-rose-200'
                 : isRadarMode
                 ? isGainers
                   ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
@@ -99,7 +115,18 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
                 : 'bg-blue-50 text-[#0050FF] border-blue-200'
             }`}
           >
-            <MingIcon name={isRadarMode ? (isGainers ? 'trending_up_line' : 'trending_down_line') : 'radar_line'} size={18} />
+            <MingIcon
+              name={
+                isError
+                  ? 'warning_line'
+                  : isRadarMode
+                  ? isGainers
+                    ? 'trending_up_line'
+                    : 'trending_down_line'
+                  : 'radar_line'
+              }
+              size={18}
+            />
           </div>
           <div>
             <span
@@ -123,20 +150,53 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
           </div>
         </div>
 
-        {/* Cycle Counter Badge */}
-        <div
-          className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
-            isDark
-              ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
-              : isMono
-              ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
-              : 'bg-blue-50 text-[#0050FF] border-blue-200'
-          }`}
-        >
-          <MingIcon name="repeat_line" size={12} />
-          <span>{cycleCount} runs</span>
+        {/* Right Badges */}
+        <div className="flex items-center gap-1.5">
+          {isError ? (
+            <div
+              className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-800/60"
+              title={state.error?.message || 'Sectors API request failed'}
+            >
+              <MingIcon name="warning_line" size={11} />
+              <span>API Error {apiErrorCode}</span>
+            </div>
+          ) : !isLive && cycleCount > 0 ? (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${
+                isDark
+                  ? 'bg-[#22242D] text-[#8C90A0] border-[#313442]'
+                  : isMono
+                  ? 'bg-[#EAE7DF] text-[#78756D] border-[#D8D4CA]'
+                  : 'bg-slate-100 text-slate-600 border-slate-200'
+              }`}
+            >
+              Mock
+            </span>
+          ) : null}
+
+          {/* Cycle Counter Badge */}
+          <div
+            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
+              isDark
+                ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
+                : isMono
+                ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                : 'bg-blue-50 text-[#0050FF] border-blue-200'
+            }`}
+          >
+            <MingIcon name="repeat_line" size={12} />
+            <span>{cycleCount} runs</span>
+          </div>
         </div>
       </div>
+
+      {/* Error Callout Banner if present */}
+      {isError && state.error?.message && (
+        <div className="mt-2.5 rounded-xl p-2 text-[10px] leading-relaxed border bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900/50 flex items-start gap-1.5">
+          <MingIcon name="warning_line" size={13} className="shrink-0 mt-0.5 text-rose-600" />
+          <p className="line-clamp-2 flex-1">{state.error.message}</p>
+        </div>
+      )}
 
       {/* Body: Radar Leaderboard vs Single Ticker Snapshot */}
       {isRadarMode ? (

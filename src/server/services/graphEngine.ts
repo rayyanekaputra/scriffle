@@ -759,7 +759,9 @@ export async function executeGraphForRadarWatcher(
   canvasId: string,
   watcherId: string,
   movers: MarketEvent[],
-  sessionApiKey?: string
+  sessionApiKey?: string,
+  isLive: boolean = true,
+  apiError?: { code: number; message: string }
 ): Promise<GraphExecutionResult> {
   const triggeredNodes: string[] = [];
   const logs: string[] = [];
@@ -788,17 +790,21 @@ export async function executeGraphForRadarWatcher(
 
   const newCycleCount = (watcherState.cycleCount || 0) + 1;
   const top1 = movers[0];
+  const hasError = !!apiError && !!sessionApiKey && sessionApiKey.trim().length > 0;
+  const nodeStatus = hasError ? 'error' : 'passed';
 
-  // 1. Update Watcher node state with full movers list
+  // 1. Update Watcher node state with full movers list + error / live metadata
   await prisma.node.update({
     where: { id: watcher.id },
     data: {
       stateJson: JSON.stringify({
-        status: 'passed',
+        status: nodeStatus,
         lastValue: top1,
         movers: movers,
         cycleCount: newCycleCount,
         lastTriggeredAt: new Date().toLocaleTimeString(),
+        isLive: isLive && !hasError,
+        error: hasError ? apiError : undefined,
       }),
     },
   });

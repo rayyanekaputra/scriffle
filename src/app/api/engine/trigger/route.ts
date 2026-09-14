@@ -59,7 +59,7 @@ export async function POST(req: Request) {
           const minMcapBillion = typeof cfg.minMcapBillion === 'number' ? cfg.minMcapBillion : undefined;
           const classifications = cfg.classifications || 'all';
 
-          const { gainers, losers, isLive } = await getTopMarketMovers(apiKey, {
+          const { gainers, losers, isLive, error: apiError } = await getTopMarketMovers(apiKey, {
             nStock: limit,
             periods: period,
             minMcapBillion,
@@ -68,10 +68,33 @@ export async function POST(req: Request) {
 
           if (!isLive) isOverallLive = false;
 
+          // If in live mode (apiKey provided) and API call errored, log to Activity Feed
+          if (apiError && apiKey && apiKey.trim().length > 0) {
+            await prisma.log.create({
+              data: {
+                canvasId: targetCanvas.id,
+                eventSummary: `⚠️ Sectors API Error (${apiError.code}): ${apiError.message}`,
+                triggeredNodes: JSON.stringify([watcher.id]),
+                detailsJson: JSON.stringify({
+                  endpoint: '/v2/companies/top-changes/',
+                  error: apiError,
+                  watcherId: watcher.id,
+                }),
+              },
+            });
+          }
+
           const selectedMovers = isGainers ? gainers : losers;
           if (selectedMovers.length > 0) {
             allEvents.push(...selectedMovers);
-            const radarRes = await executeGraphForRadarWatcher(targetCanvas.id, watcher.id, selectedMovers, apiKey);
+            const radarRes = await executeGraphForRadarWatcher(
+              targetCanvas.id,
+              watcher.id,
+              selectedMovers,
+              apiKey,
+              isLive,
+              apiError
+            );
             results.push({ watcherId: watcher.id, type: isGainers ? 'top_gainers' : 'top_losers', ...radarRes });
           }
         }

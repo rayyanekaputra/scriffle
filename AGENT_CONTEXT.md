@@ -189,12 +189,13 @@ hackathon/
     ├── hooks/
     │   └── useCanvasSync.ts        ← SWR polling hook (2s interval)
     ├── lib/
+    │   ├── creditCosts.ts          ← Centralized pricing registry & burst calculations
     │   ├── prisma.ts               ← Global Prisma client singleton
     │   └── utils.ts
     ├── server/services/
     │   ├── dslEngine.ts            ← Safe expr-eval DSL parser
     │   ├── graphEngine.ts          ← BFS traversal, self-mutations, cycle counting
-    │   └── sectorsApi.ts           ← Live + mock Sectors API client
+    │   └── sectorsApi.ts           ← Live + mock Sectors API client (Top Movers fix, error capture)
     └── types/
         └── canvas.ts               ← MASTER TypeScript interfaces (always reference this)
 ```
@@ -300,6 +301,14 @@ hackathon/
 - Cycle counter badge: `⚡ 12 runs`
 - Modes: Single ticker (daily data) or Top Gainers/Losers (radar mode)
 - Per-watcher configurable polling interval (1s–3600s)
+- Clean initial state: Starts idle with `0 runs` and waiting indicators instead of premature mock data
+- Error transparency: Live API failures display `⚠ API Error {code}` badge with structured callout banner; offline mode displays `Mock` badge
+- Credit cost badge in footer (`🪙 10 credits / poll` for Radar, `🪙 1 credit / tick` for Single)
+
+### API Credit Cost Badges & Safety System (`creditCosts.ts`)
+- Centralized pricing registry for Sectors.app API v2 consumption
+- Visual credit cost pills on `ActionNode` (`🪙 8 credits / symbol` or `⚡ 0 credits (local)`), `WatcherNode`, and `ScreenerNode` (`🪙 3 AI credits / query`)
+- Edit modal callouts with multi-stock burst warnings (e.g. 5-mover fundamental report = 40 credits burst)
 
 ### Theme Switcher (3 modes)
 - **Light** (default): Full multicolor FigJam
@@ -351,37 +360,30 @@ hackathon/
 - **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 109 tests across 7 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, `spatialNavigator`, and `reportRevision`. All pass in ~128ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
 ### 🟡 Open Candidate Integrations & Polish (Prioritized)
-1. **Node UI Token & API Credit Cost Badges / Warning Notice** — Display credit cost pills (`⚡ 8 credits/symbol`, `⚡ 10 credits/poll`, `⚡ 3 credits/screen`) on node cards, edit modals, and multi-symbol action chains to prevent accidental API credit exhaustion (e.g. 5-stock fundamental reports consuming 40–380 credits in rapid succession).
-2. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
-3. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
-4. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
-5. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-6. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-7. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-8. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+1. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+2. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
+3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+4. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+5. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+6. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+7. **Volume Breakout Scanner** — `GET /v2/most-traded/`
 
 ### ⏸️ On-Hold / Deprioritized Candidates
 - **Action-to-Action Chaining** — Chained sequential actions (`[Action] -> [Action]`). *Status: Deprioritized / On-Hold — currently lacking concrete logic-case as single downstream action pipelines (`[Screener/Radar] -> [Action] -> [Pipeline]`) already fulfill target workflows without compounding branching complexity.*
 
 ---
 
-## 11. Known Issues & Things to Keep in Mind
+## 11. Known Issues & Resolved Caveats
 
-> [!CAUTION]
-> **`/v2/companies/top-changes/` is BROKEN and has been returning 400 since Sep 12, 12:25.**
-> The leaderboard appears populated because the app silently falls back to mock data — but live data is NOT flowing. See fix plan in `context/BACKLOG.md`.
+1. **✅ Top Movers API Parameter Bug & Error Transparency — Resolved**:
+   - Fixed `sectorsApi.ts` `getTopMarketMovers()` to omit `classifications` when value is `'all'`, eliminating 400 Bad Request responses.
+   - Structured error information (`{ code, message }`) is captured on failure, recorded in `stateJson`, displayed as a `⚠ API Error {code}` badge with error callout on `WatcherNode.tsx`, and logged to `ActivityFeed.tsx`.
+   - Offline mode clearly displays a `Mock` indicator on Watcher cards.
 
-1. **🔥 CRITICAL — Top Movers API (`/v2/companies/top-changes/`) Always Returns 400:**
-   - **Confirmed broken** from `context/usage-log_2026-09-14T03_37_27.611Z.csv`: 200s at 12:13–12:22 Sep 12, then **every call** since 12:25 returns `400 error, 0 credits`.
-   - **Suspected cause**: `classifications=all` is sent as a hardcoded default in `sectorsApi.ts` `getTopMarketMovers()`. The Sectors API likely does not accept `'all'` as a valid value — valid values are sector-specific slugs or the param should be **omitted entirely** when all sectors are desired.
-   - **The app silently falls back to mock data** — `getTopMarketMovers()` catches the error and returns `{ gainers: mockData, losers: mockData, isLive: false }` without surfacing any error to the user or node UI. This is broken and deceptive.
-   - **Immediate fix**: Remove `classifications` param when value is `'all'`. Also verify `periods` (may need to be `period`) and `n_stock` param naming.
-   - **Error transparency fix**: `isLive: false` on API failure must reach the watcher `stateJson`, be displayed as `⚠ API Error` on `WatcherNode.tsx`, and be logged to the Activity Feed.
-
-2. **API Token & Credit Consumption Awareness:**
+2. **API Token & Credit Consumption Awareness — ✅ Surfaced in UI**:
    - Sectors API v2 charges credits per endpoint call: `/v2/company/report/{symbol}/` (**8 credits**), `/v2/companies/top-changes/` (**10 credits**), `/v2/companies/?q=...` (**3 credits**), `/v2/daily/{symbol}/` (**1 credit**).
    - Automated pipelines triggering multi-symbol fundamental reports (e.g. 5 Top Movers) consume $5 \times 8 = 40\text{ credits}$ per trigger. Rapid multi-poll triggers can consume 380+ credits in minutes.
-   - UI nodes must surface these credit costs clearly with badges/notices before triggering actions.
+   - Credit cost badges and burst warnings are now surfaced on `ActionNode.tsx`, `WatcherNode.tsx`, `ScreenerNode.tsx`, and in `EditNodeModal.tsx`.
 3. **DSL Safety:** Always use `expr-eval` (never `eval()`). The DSL supports `AND`, `OR`, `>`, `<`, `>=`, `<=`, `==`, `!=`, and arithmetic (e.g. `volume > 2 * avg_volume`).
 4. **SWR Polling Smoothness:** Node updates from SWR should NOT disturb user's current zoom/pan viewport.
 5. **API Key Session-Only:** The Sectors API key lives in React state only. Any backend route that needs it must receive it per-request (e.g. in request body or header). Never assume it's available server-side.
@@ -392,6 +394,8 @@ hackathon/
 10. **No WebSockets:** Short-polling via SWR only (2s). Intentional — simpler and robust enough for demo scale.
 11. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
 12. **Mock Poll Randomization:** Mock market polling in `sectorsApi.ts` applies realistic per-call randomized distributions (±0–7% price movements, volume multipliers) so nodes update dynamically during offline demos.
+13. **Turbopack `fs` warnings:** 3 pre-existing warnings about `fs.existsSync`/`fs.statSync`/`path.resolve` in `src/app/api/file/open-location/route.ts` appear in `bun run build` — not actionable, ignore.
+
 
 
 ---
@@ -405,7 +409,7 @@ bun run prisma/seed.ts            # Reset & seed demo canvas
 bun run src/server/test-engine.ts # Smoke test the graph engine directly
 bunx prisma db push               # Push schema changes to dev.db
 bunx prisma studio                # Visual DB browser
-bun test                          # ⚠️ Run ALL unit tests — must stay green (83 tests, ~120ms)
+bun test                          # ⚠️ Run ALL unit tests — must stay green (128 tests across 10 suites, ~140ms)
 bun run test:watch                # Run tests in watch mode during development
 bun run test:coverage             # Run tests with coverage report
 ```
@@ -440,32 +444,38 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `MULTI_SYMBOL_EXPORT_AND_PEER_WATCHER_PLAN.md` | Multi-symbol PDF report export & dynamic peer watcher automation |
 | `NAVIGATION_PLAN.md` | Spotlight Search (Cmd+K/Cmd+F), Keyboard Shortcuts Guide (?), and Zoom Presets (Shift+1) |
 | `SCRIFFLE_AI_SPEC.md` | ⭐ Standalone AI prompt & .scriffle format specification manual for LLMs (ChatGPT, Claude, Gemini, Cursor) |
+| `WATCHER_CLEAN_INITIAL_STATE_PLAN.md` | Watcher node clean initial state implementation (Rank 4 sprint) |
+| `CREDIT_COST_BADGES_PLAN.md` | API credit cost badges & burst warning notices (Rank 3 sprint) |
+| `TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md` | Top Movers `/v2/companies/top-changes/` 400 bug fix & error UI (Rank 1 & 2 sprint) |
 
 
 ---
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 106 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 128 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **111 tests, 0 failures, ~140ms runtime**
+- **128 tests, 0 failures, ~140ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
 ```
 src/__tests__/
 ├── fixtures/
-│   └── marketEvents.ts           ← Shared MarketEvent mocks (BBCA_SURGE, TLKM_DROP, MOCK_GAINERS, MOCK_LOSERS, etc.)
+│   └── marketEvents.ts              ← Shared MarketEvent mocks (BBCA_SURGE, TLKM_DROP, MOCK_GAINERS, MOCK_LOSERS, etc.)
 └── unit/
-    ├── dslEngine.test.ts          ← 30 tests — all DSL operators, AND/OR compounds, camelCase aliases, edge cases
-    ├── interpolateTemplate.test.ts ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
-    ├── leaderboard.test.ts        ← 20 tests — gainers/losers formatting, rank indicators, empty input, mock movers fallback
-    ├── screenerNote.test.ts       ← 15 tests — screener output structure, company rows, fallbacks
-    ├── searchIndexer.test.ts      ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
-    ├── spatialNavigator.test.ts   ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
-    └── reportRevision.test.ts     ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
+    ├── dslEngine.test.ts             ← 30 tests — all DSL operators, AND/OR compounds, camelCase aliases, edge cases
+    ├── interpolateTemplate.test.ts   ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
+    ├── leaderboard.test.ts           ← 20 tests — gainers/losers formatting, rank indicators, empty input, mock movers fallback
+    ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
+    ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
+    ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
+    ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
+    ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
+    ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)
+    └── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`

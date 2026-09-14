@@ -201,6 +201,10 @@ export interface TopMoversResult {
   gainers: MarketEvent[];
   losers: MarketEvent[];
   isLive: boolean;
+  error?: {
+    code: number;
+    message: string;
+  };
 }
 
 export const MOCK_TOP_GAINERS: MarketEvent[] = [
@@ -381,8 +385,11 @@ export async function getTopMarketMovers(
       const params: Record<string, any> = {
         periods: targetPeriod,
         n_stock: targetStockCount,
-        classifications: options?.classifications || 'all',
       };
+
+      if (options?.classifications && options.classifications !== 'all') {
+        params.classifications = options.classifications;
+      }
 
       if (options?.minMcapBillion !== undefined && options.minMcapBillion > 0) {
         params.min_mcap_billion = options.minMcapBillion;
@@ -478,9 +485,28 @@ export async function getTopMarketMovers(
         }
       }
     } catch (err: any) {
+      const statusCode = err.response?.status || 500;
+      const errorMsg =
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to fetch top market movers from Sectors API';
+
       console.warn(
-        `Sectors API v2 /companies/top-changes/ failed (${err.response?.status || err.message}), fallback to mock:`
+        `Sectors API v2 /companies/top-changes/ failed (${statusCode}: ${errorMsg}), fallback to mock:`
       );
+
+      const { gainers, losers } = generateMockTopMovers(targetStockCount);
+      return {
+        gainers,
+        losers,
+        isLive: false,
+        error: {
+          code: statusCode,
+          message: errorMsg,
+        },
+      };
     }
   }
 
