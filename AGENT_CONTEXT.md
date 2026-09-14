@@ -367,20 +367,32 @@ hackathon/
 
 ## 11. Known Issues & Things to Keep in Mind
 
-1. **API Token & Credit Consumption Awareness:**
+> [!CAUTION]
+> **`/v2/companies/top-changes/` is BROKEN and has been returning 400 since Sep 12, 12:25.**
+> The leaderboard appears populated because the app silently falls back to mock data — but live data is NOT flowing. See fix plan in `context/BACKLOG.md`.
+
+1. **🔥 CRITICAL — Top Movers API (`/v2/companies/top-changes/`) Always Returns 400:**
+   - **Confirmed broken** from `context/usage-log_2026-09-14T03_37_27.611Z.csv`: 200s at 12:13–12:22 Sep 12, then **every call** since 12:25 returns `400 error, 0 credits`.
+   - **Suspected cause**: `classifications=all` is sent as a hardcoded default in `sectorsApi.ts` `getTopMarketMovers()`. The Sectors API likely does not accept `'all'` as a valid value — valid values are sector-specific slugs or the param should be **omitted entirely** when all sectors are desired.
+   - **The app silently falls back to mock data** — `getTopMarketMovers()` catches the error and returns `{ gainers: mockData, losers: mockData, isLive: false }` without surfacing any error to the user or node UI. This is broken and deceptive.
+   - **Immediate fix**: Remove `classifications` param when value is `'all'`. Also verify `periods` (may need to be `period`) and `n_stock` param naming.
+   - **Error transparency fix**: `isLive: false` on API failure must reach the watcher `stateJson`, be displayed as `⚠ API Error` on `WatcherNode.tsx`, and be logged to the Activity Feed.
+
+2. **API Token & Credit Consumption Awareness:**
    - Sectors API v2 charges credits per endpoint call: `/v2/company/report/{symbol}/` (**8 credits**), `/v2/companies/top-changes/` (**10 credits**), `/v2/companies/?q=...` (**3 credits**), `/v2/daily/{symbol}/` (**1 credit**).
    - Automated pipelines triggering multi-symbol fundamental reports (e.g. 5 Top Movers) consume $5 \times 8 = 40\text{ credits}$ per trigger. Rapid multi-poll triggers can consume 380+ credits in minutes.
    - UI nodes must surface these credit costs clearly with badges/notices before triggering actions.
-2. **DSL Safety:** Always use `expr-eval` (never `eval()`). The DSL supports `AND`, `OR`, `>`, `<`, `>=`, `<=`, `==`, `!=`, and arithmetic (e.g. `volume > 2 * avg_volume`).
-2. **SWR Polling Smoothness:** Node updates from SWR should NOT disturb user's current zoom/pan viewport.
-3. **API Key Session-Only:** The Sectors API key lives in React state only. Any backend route that needs it must receive it per-request (e.g. in request body or header). Never assume it's available server-side.
-4. **Cycle Counter Reset:** When clearing the Activity Feed, ALL watcher cycle counters reset to 0 in SQLite.
-5. **FileNode OS Reveal:** `POST /api/file/open-location` opens the OS file manager — only works in local dev, not production.
-6. **MingCute Loading:** Icons are loaded via CSS font from `public/mingcute/Mingcute.css`. Import it in `layout.tsx`. Use `<MingIcon name="mgc_xxx_line" />` — check Mingcute.css for valid icon names.
-7. **Multi-canvas isolation:** Each canvas has its own `canvasId`. The engine route (`/api/engine/trigger`) must always scope to the correct canvas ID.
-8. **No WebSockets:** Short-polling via SWR only (2s). Intentional — simpler and robust enough for demo scale.
-9. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
-10. **Mock Poll Randomization:** Mock market polling in `sectorsApi.ts` applies realistic per-call randomized distributions (±0–7% price movements, volume multipliers) so nodes update dynamically during offline demos.
+3. **DSL Safety:** Always use `expr-eval` (never `eval()`). The DSL supports `AND`, `OR`, `>`, `<`, `>=`, `<=`, `==`, `!=`, and arithmetic (e.g. `volume > 2 * avg_volume`).
+4. **SWR Polling Smoothness:** Node updates from SWR should NOT disturb user's current zoom/pan viewport.
+5. **API Key Session-Only:** The Sectors API key lives in React state only. Any backend route that needs it must receive it per-request (e.g. in request body or header). Never assume it's available server-side.
+6. **Cycle Counter Reset:** When clearing the Activity Feed, ALL watcher cycle counters reset to 0 in SQLite.
+7. **FileNode OS Reveal:** `POST /api/file/open-location` opens the OS file manager — only works in local dev, not production.
+8. **MingCute Loading:** Icons are loaded via CSS font from `public/mingcute/Mingcute.css`. Import it in `layout.tsx`. Use `<MingIcon name="mgc_xxx_line" />` — check Mingcute.css for valid icon names.
+9. **Multi-canvas isolation:** Each canvas has its own `canvasId`. The engine route (`/api/engine/trigger`) must always scope to the correct canvas ID.
+10. **No WebSockets:** Short-polling via SWR only (2s). Intentional — simpler and robust enough for demo scale.
+11. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
+12. **Mock Poll Randomization:** Mock market polling in `sectorsApi.ts` applies realistic per-call randomized distributions (±0–7% price movements, volume multipliers) so nodes update dynamically during offline demos.
+
 
 ---
 

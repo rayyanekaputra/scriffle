@@ -77,6 +77,48 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 📌 Open Candidate Endpoints & Features
 
+### 🔥 BUG: `/v2/companies/top-changes/` Always Returns 400 — Silent Mock Fallback Hides the Error
+- **Status**: ❌ Open — Critical Priority
+- **Audit Evidence** (`context/usage-log_2026-09-14T03_37_27.611Z.csv`):
+  - **Sep 12, 12:13–12:22**: `/v2/companies/top-changes/` returned `200 success, 10 credits` ✅
+  - **Sep 12, 12:25 onwards**: **Every single call** to `/v2/companies/top-changes/` returned `400 error, 0 credits` — across all sessions on Sep 12 AND Sep 14.
+  - `/v2/daily/{symbol}/` and `/v2/company/report/{symbol}/` continue to succeed — this is **not** a global auth/key issue.
+
+#### 🔍 Suspected Root Cause: Invalid `classifications=all` Parameter
+The request in [`sectorsApi.ts`](file:///home/abzolute/Projects/hackathon/src/server/services/sectorsApi.ts#L381-L395) always sends:
+```
+GET /v2/companies/top-changes/?periods=1d&n_stock=5&classifications=all
+```
+The `classifications=all` value was almost certainly added **after** the first working calls (the 200s at 12:13–12:22 predate when `classifications` was hardcoded as a default param). The Sectors API `ENDPOINTS.md` doc does not define `'all'` as a valid `classifications` value — valid values are likely specific sector slugs from `/v2/subsectors/`, and the param should simply be **omitted** when targeting all sectors.
+
+**Also investigate**: whether `periods` should be singular `period`, and whether `n_stock` is the correct param name.
+
+#### 📋 Fix Plan (in priority order)
+1. **[`src/server/services/sectorsApi.ts`](file:///home/abzolute/Projects/hackathon/src/server/services/sectorsApi.ts)** — Fix bad request params:
+   - **Do not send `classifications`** when the value is `'all'` — omit the param entirely (default on API side is all).
+   - Verify `periods` vs `period` and `n_stock` vs `n` against actual API spec.
+   - Log the full error response body on failure (not just status code) so the actual 400 message is visible.
+2. **[`src/app/api/engine/trigger/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/engine/trigger/route.ts)** — Surface errors, stop silent fallthrough:
+   - Return structured error metadata `{ error: true, errorCode, errorMessage }` from `getTopMarketMovers()` on API failure.
+   - Log errors to the canvas Activity Feed with `status: 'api_error'`.
+3. **[`src/server/services/graphEngine.ts`](file:///home/abzolute/Projects/hackathon/src/server/services/graphEngine.ts)** — Propagate error into watcher state:
+   - On API failure, write `{ status: 'error', errorCode: 400, errorMessage: '...', isLive: false }` into the watcher node's `stateJson`.
+4. **[`src/components/canvas/nodes/WatcherNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/WatcherNode.tsx)** — Show error state on node UI:
+   - When `state.status === 'error'`, render a red `⚠ API Error 400` badge on the node card instead of mock data.
+   - Clicking the badge expands or tooltips the raw error message.
+5. **[`src/components/controls/EditNodeModal.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/EditNodeModal.tsx)** — Show last error in modal when in error state.
+
+---
+
+### 🐛 BUG: Radar Watcher Silently Falls Back to Mock Data When Live API Fails (No User Notice)
+- **Status**: ❌ Open — Critical Priority (paired with above)
+- **Description**: When `/v2/companies/top-changes/` returns a 400, `getTopMarketMovers()` in [`sectorsApi.ts`](file:///home/abzolute/Projects/hackathon/src/server/services/sectorsApi.ts#L480-L492) silently catches the error and returns mock data with `isLive: false`. The watcher node shows a fully populated leaderboard and the user has **no idea the live API is completely broken** — this is actively deceptive.
+- **Required Behavior**:
+  - **Live Mode (API key set) + API failure** → show error state on node, log to Activity Feed, do NOT silently show mock data.
+  - **Mock Mode (no API key)** → show mock data but clearly label it `Mock` with a visible badge. Already partially done via `isLive: false` but not surfaced in the node UI.
+  - The `isLive` flag from `getTopMarketMovers()` must be threaded all the way to `WatcherNode.tsx` via `stateJson`.
+- **Files**: `sectorsApi.ts`, `graphEngine.ts`, `WatcherNode.tsx`, `ActivityFeed.tsx`.
+
 ### 🐛 BUG: Radar Watcher Leaderboard Brief Overwritten by Single-Stock Polls
 - **Status**: ✅ Completed
 - **Priority**: High — prevents 5-item Top Gainers / Losers Leaderboards and research briefs from collapsing into 1-stock notes on subsequent poll cycles
