@@ -70,6 +70,9 @@ export interface AlertConfig {
 export interface ActionConfig {
   action: 'create_note' | 'create_watcher' | 'fundamental_report' | 'export_canvas';
   params?: Record<string, any>;
+  targetSymbol?: string;
+  template?: string;
+  interval?: number;
 }
 
 export type TextFontSize = 'title' | 'header' | 'body' | 'caption' | 'small' | 'medium' | 'large';

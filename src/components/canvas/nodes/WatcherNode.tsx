@@ -63,6 +63,19 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
     <div
       className={`relative ${cardWidth} rounded-2xl border-2 p-4 transition-all duration-150 ${cardBg} ${cardBorder}`}
     >
+      {/* Target / Input Handle */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        className={`!h-3.5 !w-3.5 !rounded-full !border-2 ${
+          isDark
+            ? '!border-[#181920] !bg-[#8E95A5]'
+            : isMono
+            ? '!border-[#FCFBF9] !bg-[#5A5852]'
+            : '!border-white !bg-[#0050FF]'
+        }`}
+      />
+
       {/* Top Header */}
       <div
         className={`flex items-center justify-between pb-3 border-b ${

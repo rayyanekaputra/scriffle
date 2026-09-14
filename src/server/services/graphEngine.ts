@@ -526,6 +526,32 @@ export async function executeGraphForEvent(
         mutationsCount += 2;
         logs.push(`Generated Fundamental Report (${report.symbol}) & auto-saved to /reports`);
       }
+    } else if (node.type === 'watcher') {
+      triggeredNodes.push(node.id);
+      let currentState: any = {};
+      try {
+        if (node.stateJson) currentState = JSON.parse(node.stateJson);
+      } catch {}
+      const newCycleCount = (currentState.cycleCount || 0) + 1;
+
+      const updatedConfig = {
+        ...nodeConfig,
+        symbol: nodeConfig.symbol || curEvent.symbol,
+      };
+
+      await prisma.node.update({
+        where: { id: node.id },
+        data: {
+          configJson: JSON.stringify(updatedConfig),
+          stateJson: JSON.stringify({
+            status: 'passed',
+            lastValue: curEvent,
+            cycleCount: newCycleCount,
+            lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+      logs.push(`Watcher ${updatedConfig.symbol} triggered by upstream node`);
     }
 
     // If branch continues, enqueue downstream children
@@ -944,6 +970,34 @@ export async function executeGraphForRadarWatcher(
       // Evaluate condition for each mover and propagate
       for (const mover of movers) {
         await executeGraphForEvent(canvasId, mover);
+      }
+    } else if (targetNode.type === 'watcher') {
+      triggeredNodes.push(targetNode.id);
+      if (movers.length > 0) {
+        const topSymbol = movers[0].symbol.toUpperCase();
+        let currentState: any = {};
+        try {
+          if (targetNode.stateJson) currentState = JSON.parse(targetNode.stateJson);
+        } catch {}
+        const newCycleCount = (currentState.cycleCount || 0) + 1;
+
+        await prisma.node.update({
+          where: { id: targetNode.id },
+          data: {
+            configJson: JSON.stringify({
+              ...targetCfg,
+              symbol: targetCfg.symbol || topSymbol,
+            }),
+            stateJson: JSON.stringify({
+              status: 'passed',
+              cycleCount: newCycleCount,
+              lastValue: movers[0],
+              lastTriggeredAt: movers[0].timestamp || new Date().toLocaleTimeString(),
+            }),
+          },
+        });
+        mutationsCount++;
+        logs.push(`Watcher ${targetCfg.symbol || topSymbol} adopted Top Mover ${topSymbol}`);
       }
     }
   }
@@ -1410,6 +1464,33 @@ export async function executeGraphForScreener(
         },
       });
       logs.push(`Notification fired: ${alertMsg}`);
+    } else if (targetNode.type === 'watcher') {
+      triggeredNodes.push(targetNode.id);
+      if (results.length > 0) {
+        const topSymbol = results[0].symbol.toUpperCase();
+        let currentState: any = {};
+        try {
+          if (targetNode.stateJson) currentState = JSON.parse(targetNode.stateJson);
+        } catch {}
+        const newCycleCount = (currentState.cycleCount || 0) + 1;
+
+        await prisma.node.update({
+          where: { id: targetNode.id },
+          data: {
+            configJson: JSON.stringify({
+              ...targetCfg,
+              symbol: targetCfg.symbol || topSymbol,
+            }),
+            stateJson: JSON.stringify({
+              status: 'passed',
+              cycleCount: newCycleCount,
+              lastTriggeredAt: new Date().toLocaleTimeString(),
+            }),
+          },
+        });
+        mutationsCount++;
+        logs.push(`Watcher node adopted top screened symbol: ${topSymbol}`);
+      }
     }
   }
 

@@ -112,23 +112,36 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
      - **In-Place Emoji Picker**: Clicking the sticker icon opens a lightweight emoji / icon quick-picker dropdown directly on the canvas (e.g. 🚀, 🎯, ⭐, 🔥, 💎, ⚠️, 🐻, 🐂, 📈, 📉, 🍜, ⚡, 🏆).
      - **In-Place Editable Label**: Double-clicking or clicking the label allows inline typing directly on the canvas card (e.g. *"Accumulation Zone"*, *"High Conviction"*, *"Earnings Catalyst"*) with `Enter` / `Esc` to commit.
      - **Color Swatch / Pill Selector**: Option to customize badge background accent tint (Mint, Rose, Amber, Indigo, Teal, Warm Slate).
-2. **🖼️ Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)**
+2. **📊 Dynamic PDF Export & Fundamental Brief In-Place Updates with Revision Counter (`reportExporter.ts`, `FileNode.tsx`, `NoteNode.tsx`, `graphEngine.ts`)**
+   - **Problem:** Currently, repeated trigger executions or polling cycles can generate redundant canvas objects or new files instead of dynamically refreshing existing documents.
+   - **Proposed Solution & Experience:**
+     - **In-Place Dynamic Refresh:** When `ActionNode` (`fundamental_report`) or downstream automation fires on subsequent cycles, dynamically update the existing attached `FileNode` (PDF/HTML export on disk) and connected `NoteNode` (Fundamental Brief) instead of spawning duplicate nodes.
+     - **Revision & Update Counter Badge:** Display an update counter (e.g. `🔄 Rev 3` or `⚡ 4 updates`) on both the FileNode card and the Note card header, indicating how many times the document and brief have been refreshed with live market data.
+     - **Timestamp & Version History in Brief:** Auto-append the latest update timestamp and revision index in the brief note and exported report.
+
+- [x] **⚡ Dynamic Watcher Target Handle & Upstream Input Reception (`WatcherNode.tsx` & `graphEngine.ts`)**
+  - Added target handle (`Position.Left`) to `WatcherNode.tsx` allowing direct visual drag-to-connect from Screener and Action nodes without React Flow connection warnings.
+  - Enabled dynamic symbol adoption across `executeGraphForEvent`, `executeGraphForRadarWatcher`, and `executeGraphForScreener`.
+- [x] **🐛 Dynamic Peer Watcher Action Label Fallback (`ActionNode.tsx` & `types/canvas.ts`)**
+  - Updated `ActionNode.tsx` to dynamically render `Spawn Peer Watcher (Dynamic)` or configured symbol override instead of hardcoded `"BBRI"`. Added `targetSymbol`, `template`, and `interval` properties to `ActionConfig`.
+
+3. **🖼️ Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)**
    - **Problem:** Current `ImageNode` only supports resize handles (`NodeResizer`). Users cannot edit image URLs, swap/replace image files in-place, inline-edit the caption, toggle transparency/borders, or configure images via `EditNodeModal` (which currently lacks an `image` node tab).
    - **Proposed Solution & Experience:**
      - **In-Place Image Replace / Upload**: Hover action bar or double-click to swap the image URL or upload a new image from disk directly.
      - **Inline Caption Editing**: Click/double-click caption text on canvas to type directly with `Enter`/`Escape` commit.
      - **Transparency & Card Border Toggle**: Quick toggle between transparent sticker mode (`isTransparent: true`) and bordered card mode (`rounded-2xl border-2 border-slate-300 bg-white p-2`).
      - **Edit Modal Integration**: Add dedicated `image` configuration tab in `EditNodeModal.tsx` (URL input, upload dropzone, caption text, aspect ratio reset, dimensions).
-3. ~~**🐛 Fix Free-Form Text Node (`TextNode.tsx`) — Edit Mode Closes Itself on Click**~~ ✅ **Fixed**
-   - **Root Cause:** `useEffect` watching `selected` prop called `setIsEditing(false)` during React Flow's pointer-down momentary de-select race.
-   - **Fix applied in [`TextNode.tsx`](src/components/canvas/nodes/TextNode.tsx):**
-     - Replaced the immediate `setIsEditing(false)` with a **200ms debounce** (`deselectedTimerRef`) that cancels if the node is re-selected in time.
-     - Added **single-click-to-edit** when the node was already selected (`wasSelectedRef`) — matches FigJam/Notion UX.
-     - Double-click still always enters edit mode unconditionally.
 
+4. **🔗 Action-to-Action Chaining & Multi-Step Workflows (`ActionNode.tsx` & `graphEngine.ts`)**
+   - **Problem:** Currently, Action nodes are terminal leaf nodes in the visual flow. Users cannot chain sequential actions together (e.g., first create a watcher, then automatically generate a fundamental brief, then trigger an alert or canvas export).
+   - **Proposed Solution & Experience:**
+     - **Action Output Handles:** Add output connection handles to `ActionNode.tsx` allowing direct visual drag-to-connect from one action to another (`Action` → `Action`).
+     - **Graph Engine Chained Execution:** Extend `graphEngine.ts` BFS traversal to execute chained downstream actions sequentially, passing forward the current context/symbol payload.
+     - **Multi-Step Pipelines:** Support advanced multi-action automation (e.g., `[Screener]` → `[Action: create_watcher]` → `[Action: fundamental_report]` → `[Action: export_canvas]`).
 
-4. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
-5. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+5. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
+6. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
 
 ---
 
@@ -148,6 +161,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - Quick transparency vs bordered card toggle.
 
 #### 2. ⚡ Automation & Flow Building (n8n-inspired)
+- [ ] **Action-to-Action Chaining (`ActionNode.tsx` & `graphEngine.ts`)**: Connect actions sequentially (`[Action] -> [Action]`) with output handles and multi-step pipeline execution in `graphEngine.ts`.
 - [ ] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
 - [ ] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on surge"`, `"export"`) to make automation pathways self-documenting.
 - [ ] **Live Signal Flow Pulses**: Visual pulsing packet animating along connecting edges when a watcher or condition triggers downstream nodes.

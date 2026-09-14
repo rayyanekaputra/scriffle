@@ -119,7 +119,9 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
             {config.action === 'fundamental_report'
               ? 'Fundamental Brief & PDF'
               : config.action === 'create_watcher'
-              ? `Spawn Peer Watcher (${config.params?.symbol || 'BBRI'})`
+              ? (config.params?.symbol || config.targetSymbol)
+                ? `Spawn Peer Watcher (${config.params?.symbol || config.targetSymbol})`
+                : 'Spawn Peer Watcher (Dynamic)'
               : 'Auto-Spawn New Note'}
           </span>
         </div>

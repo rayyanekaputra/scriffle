@@ -315,7 +315,8 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
-### ✅ Recently Completed (This Session)
+- **Dynamic Watcher Target Handle & Upstream Input Reception (`WatcherNode.tsx` & `graphEngine.ts`)**: Added left-side target handle (`<Handle type="target" position={Position.Left} />`) to `WatcherNode.tsx`, resolving the React Flow edge creation error when connecting Action or Screener nodes to Watcher nodes. Updated `graphEngine.ts` across BFS event processing, Top Movers radar processing, and AI Screener flows to support dynamic symbol adoption when upstream nodes feed tickers into Watcher nodes.
+- **Dynamic Peer Watcher Action Label Fallback (`ActionNode.tsx` & `types/canvas.ts`)**: Fixed hardcoded `"BBRI"` default in `ActionNode.tsx` label to dynamically render `(Dynamic)` or configured symbol override (`config.targetSymbol` / `config.params.symbol`), and added `targetSymbol`, `template`, and `interval` properties to `ActionConfig`.
 - **UI Contrast & Typography Cleanup (Esc Badge, Shortcuts Group Titles, FileNode Contrast, Zero All-Caps Enforcement)**:
   - **Shortcuts Modal Group Titles & Esc Badge Theme Alignment (`ShortcutsModal.tsx`)**: Fixed category group titles and icons to use theme-aware contrast tokens (`isDark ? 'text-slate-200' : isMono ? 'text-[#242321]' : 'text-slate-900'`) matching content text readability in Light and Mono modes; fixed footer `Esc` badge styling.
   - **FileNode Symbol & Badge Contrast in Light Mode (`FileNode.tsx`)**: Replaced low-contrast pastel badge colors (`bg-*-50` & `text-*-600`) with high-contrast backgrounds (`bg-*-100`), bold vibrant text (`text-*-700`/`800`), and crisp borders (`border-*-300`), removing `tracking-wider` on the extension label.
@@ -340,11 +341,14 @@ hackathon/
 
 - **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 106 tests across 6 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, and `spatialNavigator`. All pass in ~115ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
-### 🟡 Open Candidate Integrations (Planned Sectors API)
-1. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-2. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-3. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-4. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+### 🟡 Open Candidate Integrations & Polish (Planned)
+1. **Dynamic PDF & Brief In-Place Refresh** — Dynamically update existing attached `FileNode` PDF/HTML and connected `NoteNode` brief on repeat triggers/polls instead of creating duplicate nodes; add update/revision counters (`🔄 Rev 3` / `⚡ 4 updates`).
+2. **Action-to-Action Chaining** — Add output handles to `ActionNode.tsx` and enable sequential multi-action automation pipelines in `graphEngine.ts` (`[Action] -> [Action]`).
+3. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+4. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+5. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+6. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+7. **Volume Breakout Scanner** — `GET /v2/most-traded/`
 
 ---
 
