@@ -318,14 +318,35 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
         </div>
       )}
 
-      {/* Footer Timestamp */}
+      {/* Footer Timestamp & Credit Cost */}
       <div
-        className={`mt-3 flex items-center justify-between text-[11px] ${
-          isDark ? 'text-[#686B7C]' : isMono ? 'text-[#8C8980]' : 'text-slate-400'
+        className={`mt-3 pt-2.5 border-t flex items-center justify-between text-[10px] ${
+          isDark ? 'border-[#262833] text-[#787C8D]' : isMono ? 'border-[#EAE7DF] text-[#8C8980]' : 'border-slate-100 text-slate-400'
         }`}
       >
-        <span>Poll: {config.interval || 300}s</span>
-        <span>{state.lastTriggeredAt ? `Updated ${state.lastTriggeredAt}` : 'Idle'}</span>
+        <span
+          className={`inline-flex items-center gap-1 font-semibold px-1.5 py-0.5 rounded border ${
+            isRadarMode
+              ? isDark
+                ? 'bg-[#20222B] text-amber-400 border-amber-400/20'
+                : isMono
+                ? 'bg-[#ECE8DE] text-amber-700 border-amber-600/20'
+                : 'bg-amber-50 text-amber-700 border-amber-200'
+              : isDark
+              ? 'bg-[#20222B] text-[#BAC0D0] border-[#2F3240]'
+              : isMono
+              ? 'bg-[#ECE8DE] text-[#5A5852] border-[#D6D0C2]'
+              : 'bg-slate-100 text-slate-600 border-slate-200'
+          }`}
+        >
+          <MingIcon name="coin_line" size={11} />
+          {isRadarMode ? '10 credits / poll' : '1 credit / tick'}
+        </span>
+        <div className="flex items-center gap-1.5 text-[10px]">
+          <span>Poll: {config.interval || 300}s</span>
+          <span>•</span>
+          <span>{state.lastTriggeredAt ? `Updated ${state.lastTriggeredAt}` : 'Idle'}</span>
+        </div>
       </div>
 
       {/* Output Handle */}

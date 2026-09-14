@@ -198,6 +198,29 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                 }`}>
                   💡 <strong>Per-Node Cadence:</strong> When Auto-Polling is started, this Watcher will poll every <strong>{config.interval || 300}s</strong> independently using the live Sectors API.
                 </div>
+
+                <div className={`mt-2 rounded-xl p-3 border space-y-1 ${
+                  isDark ? 'bg-[#191A22] border-[#252732]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6]' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[11px] text-[#0050FF] flex items-center gap-1">
+                      <MingIcon name="coin_line" size={13} />
+                      Sectors API Credit Rate
+                    </span>
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                      config.mode === 'top_gainers' || config.mode === 'top_losers'
+                        ? isDark ? 'bg-[#20222B] text-amber-400 border-amber-400/20' : isMono ? 'bg-[#ECE8DE] text-amber-700 border-amber-600/20' : 'bg-amber-50 text-amber-700 border-amber-200'
+                        : isDark ? 'bg-[#20222B] text-[#BAC0D0] border-[#2F3240]' : isMono ? 'bg-[#ECE8DE] text-[#5A5852] border-[#D6D0C2]' : 'bg-slate-100 text-slate-600 border-slate-200'
+                    }`}>
+                      {config.mode === 'top_gainers' || config.mode === 'top_losers' ? '10 credits / poll' : '1 credit / tick'}
+                    </span>
+                  </div>
+                  <p className={`text-[11px] leading-relaxed ${secondaryColor}`}>
+                    {config.mode === 'top_gainers' || config.mode === 'top_losers'
+                      ? 'Calls /v2/companies/top-changes/ to fetch ranked movers. Consumes 10 credits per poll interval.'
+                      : 'Calls /v2/daily/{symbol}/ to poll latest price and volume. Consumes 1 credit per symbol tick.'}
+                  </p>
+                </div>
               </div>
             </>
           )}
@@ -597,14 +620,37 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   </div>
                 </div>
               ) : config.action === 'fundamental_report' ? (
-                <div className={`rounded-xl p-3 text-xs leading-relaxed border ${
-                  isDark
-                    ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]'
-                    : isMono
-                    ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
-                    : 'bg-blue-50 border-blue-200 text-blue-900'
-                }`}>
-                  📊 <strong>Multi-Symbol Automated Sectors Brief:</strong> When triggered by Top Gainers/Losers or single breakout events, Scriffle fetches fundamentals from <code>/v2/company/report/{'${symbol}'}/</code> for <strong>each outputted ticker</strong>, generating structured research notes and auto-saved PDF briefs.
+                <div className="space-y-2">
+                  <div className={`rounded-xl p-3 text-xs leading-relaxed border ${
+                    isDark
+                      ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]'
+                      : isMono
+                      ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
+                      : 'bg-blue-50 border-blue-200 text-blue-900'
+                  }`}>
+                    📊 <strong>Multi-Symbol Automated Sectors Brief:</strong> When triggered by Top Gainers/Losers or single breakout events, Scriffle fetches fundamentals from <code>/v2/company/report/{'${symbol}'}/</code> for <strong>each outputted ticker</strong>, generating structured research notes and auto-saved PDF briefs.
+                  </div>
+
+                  <div className={`rounded-xl p-3 border space-y-1.5 ${
+                    isDark
+                      ? 'bg-[#201F18] border-amber-500/30 text-amber-200'
+                      : isMono
+                      ? 'bg-[#FDF8EE] border-amber-500/40 text-amber-900'
+                      : 'bg-amber-50/80 border-amber-200 text-amber-900'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs flex items-center gap-1.5">
+                        <MingIcon name="warning_line" size={14} className="text-amber-600" />
+                        API Credit Notice & Burst Warning
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-500/30 bg-amber-500/10">
+                        8 credits / symbol
+                      </span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed">
+                      Each fundamental report consumes <strong>8 credits</strong>. When connected to a 5-stock Top Movers Radar or Screener, triggering this action will consume <strong>40 credits per execution burst</strong>.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div>

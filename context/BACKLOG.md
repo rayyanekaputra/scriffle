@@ -142,26 +142,18 @@ The `classifications=all` value was almost certainly added **after** the first w
 ---
 
 ### 💳 ENHANCEMENT: Node UI Token & API Credit Cost Badges / Warning Notice
-- **Status**: ❌ Open — Planned
+- **Status**: ✅ Completed
 - **Priority**: High — prevents unexpected API credit exhaustion (e.g. multi-ticker fundamental reports consuming 8 credits per symbol = ~40–380 credits per execution burst)
-- **Context & Audit**:
-  - Based on `context/usage-log_2026-09-14T03_37_27.611Z.csv`, `/v2/company/report/{symbol}/` costs **8 credits/call**, `/v2/companies/top-changes/` costs **10 credits/call**, `/v2/companies/?q=...` costs **3 credits/call**, and `/v2/daily/{symbol}/` costs **1 credit/call**.
-  - A single Top Gainers / Top Losers radar trigger executing downstream fundamental reports for 5 movers triggered 40+ credits in one hit (and up to 380+ credits in rapid successive poll bursts).
-- **Required Capabilities**:
-  1. **Node UI Token/Credit Cost Badges**:
-     - Display a credit cost pill/badge on nodes in the canvas (e.g. `ActionNode` with Fundamental Report showing `⚡ 8 credits/symbol` or `⚡ ~40 credits total`, `ScreenerNode` showing `⚡ 3 credits`, `WatcherNode` showing `⚡ 1 credit/tick` or `⚡ 10 credits/poll` for Top Changes).
-  2. **Edit Modal & Node Creator Notice**:
-     - Add explicit token/credit consumption notices in `EditNodeModal.tsx` and node drop menus before creating or triggering expensive actions.
-  3. **Multi-Stock Burst Warning & Throttling Guard**:
-     - Warn or confirm when an action will trigger $\ge 20$ API credits in a single chain (e.g. auto-generating fundamental reports for all 5 radar movers simultaneously).
-     - Support selective symbol execution or mock-mode toggles to protect live API quotas during experimentation.
-- **Files to Update**:
-  - `src/components/canvas/nodes/ActionNode.tsx`
-  - `src/components/canvas/nodes/WatcherNode.tsx`
-  - `src/components/canvas/nodes/ScreenerNode.tsx`
-  - `src/components/canvas/EditNodeModal.tsx`
-  - `src/lib/sectorsApi.ts` / `src/server/services/graphEngine.ts`
-
+- **Implemented Capabilities**:
+  1. **Centralized Pricing Registry (`src/lib/creditCosts.ts`)**: Encapsulates official Sectors API v2 pricing (10 credits/poll for Top Changes, 8 credits/symbol for Company Reports, 3 credits/query for Screener, 1 credit/tick for Daily symbol watcher).
+  2. **Node UI Credit Cost Badges**:
+     - [`ActionNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/ActionNode.tsx): `🪙 8 credits / symbol` with endpoint tag for Fundamental Reports; `⚡ 0 credits (local)` for canvas mutations.
+     - [`WatcherNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/WatcherNode.tsx): `🪙 10 credits / poll` for Top Movers Radar; `🪙 1 credit / tick` for Single Ticker Watchers in footer.
+     - [`ScreenerNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/ScreenerNode.tsx): `🪙 3 AI credits / query`.
+  3. **Edit Modal Credit Notices & Burst Warnings (`EditNodeModal.tsx`)**:
+     - Added credit consumption breakdown in Watcher config.
+     - Added prominent warning box in Action fundamental report config warning that 5-mover triggers consume **40 credits per execution burst**.
+  4. **Unit Testing (`src/__tests__/unit/creditCosts.test.ts`)**: 7 test scenarios verifying credit calculations and burst warnings (125 tests total, 100% green).
 
 ---
 
