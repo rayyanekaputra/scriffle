@@ -351,13 +351,14 @@ hackathon/
 - **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 109 tests across 7 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, `spatialNavigator`, and `reportRevision`. All pass in ~128ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
 ### 🟡 Open Candidate Integrations & Polish (Prioritized)
-1. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
-2. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
-3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
-4. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-5. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-6. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-7. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+1. **Node UI Token & API Credit Cost Badges / Warning Notice** — Display credit cost pills (`⚡ 8 credits/symbol`, `⚡ 10 credits/poll`, `⚡ 3 credits/screen`) on node cards, edit modals, and multi-symbol action chains to prevent accidental API credit exhaustion (e.g. 5-stock fundamental reports consuming 40–380 credits in rapid succession).
+2. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+3. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
+4. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+5. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+6. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+7. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+8. **Volume Breakout Scanner** — `GET /v2/most-traded/`
 
 ### ⏸️ On-Hold / Deprioritized Candidates
 - **Action-to-Action Chaining** — Chained sequential actions (`[Action] -> [Action]`). *Status: Deprioritized / On-Hold — currently lacking concrete logic-case as single downstream action pipelines (`[Screener/Radar] -> [Action] -> [Pipeline]`) already fulfill target workflows without compounding branching complexity.*
@@ -366,7 +367,11 @@ hackathon/
 
 ## 11. Known Issues & Things to Keep in Mind
 
-1. **DSL Safety:** Always use `expr-eval` (never `eval()`). The DSL supports `AND`, `OR`, `>`, `<`, `>=`, `<=`, `==`, `!=`, and arithmetic (e.g. `volume > 2 * avg_volume`).
+1. **API Token & Credit Consumption Awareness:**
+   - Sectors API v2 charges credits per endpoint call: `/v2/company/report/{symbol}/` (**8 credits**), `/v2/companies/top-changes/` (**10 credits**), `/v2/companies/?q=...` (**3 credits**), `/v2/daily/{symbol}/` (**1 credit**).
+   - Automated pipelines triggering multi-symbol fundamental reports (e.g. 5 Top Movers) consume $5 \times 8 = 40\text{ credits}$ per trigger. Rapid multi-poll triggers can consume 380+ credits in minutes.
+   - UI nodes must surface these credit costs clearly with badges/notices before triggering actions.
+2. **DSL Safety:** Always use `expr-eval` (never `eval()`). The DSL supports `AND`, `OR`, `>`, `<`, `>=`, `<=`, `==`, `!=`, and arithmetic (e.g. `volume > 2 * avg_volume`).
 2. **SWR Polling Smoothness:** Node updates from SWR should NOT disturb user's current zoom/pan viewport.
 3. **API Key Session-Only:** The Sectors API key lives in React state only. Any backend route that needs it must receive it per-request (e.g. in request body or header). Never assume it's available server-side.
 4. **Cycle Counter Reset:** When clearing the Activity Feed, ALL watcher cycle counters reset to 0 in SQLite.

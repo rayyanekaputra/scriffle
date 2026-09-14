@@ -96,6 +96,29 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   2. [`src/app/api/canvas/nodes/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/canvas/nodes/route.ts): Start newly created nodes with clean empty initial state (`{ status: 'idle', cycleCount: 0 }`).
   3. [`src/app/api/canvas/restore/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/canvas/restore/route.ts): Do not inject mock fallback arrays into newly imported/restored nodes if unpopulated.
 
+---
+
+### 💳 ENHANCEMENT: Node UI Token & API Credit Cost Badges / Warning Notice
+- **Status**: ❌ Open — Planned
+- **Priority**: High — prevents unexpected API credit exhaustion (e.g. multi-ticker fundamental reports consuming 8 credits per symbol = ~40–380 credits per execution burst)
+- **Context & Audit**:
+  - Based on `context/usage-log_2026-09-14T03_37_27.611Z.csv`, `/v2/company/report/{symbol}/` costs **8 credits/call**, `/v2/companies/top-changes/` costs **10 credits/call**, `/v2/companies/?q=...` costs **3 credits/call**, and `/v2/daily/{symbol}/` costs **1 credit/call**.
+  - A single Top Gainers / Top Losers radar trigger executing downstream fundamental reports for 5 movers triggered 40+ credits in one hit (and up to 380+ credits in rapid successive poll bursts).
+- **Required Capabilities**:
+  1. **Node UI Token/Credit Cost Badges**:
+     - Display a credit cost pill/badge on nodes in the canvas (e.g. `ActionNode` with Fundamental Report showing `⚡ 8 credits/symbol` or `⚡ ~40 credits total`, `ScreenerNode` showing `⚡ 3 credits`, `WatcherNode` showing `⚡ 1 credit/tick` or `⚡ 10 credits/poll` for Top Changes).
+  2. **Edit Modal & Node Creator Notice**:
+     - Add explicit token/credit consumption notices in `EditNodeModal.tsx` and node drop menus before creating or triggering expensive actions.
+  3. **Multi-Stock Burst Warning & Throttling Guard**:
+     - Warn or confirm when an action will trigger $\ge 20$ API credits in a single chain (e.g. auto-generating fundamental reports for all 5 radar movers simultaneously).
+     - Support selective symbol execution or mock-mode toggles to protect live API quotas during experimentation.
+- **Files to Update**:
+  - `src/components/canvas/nodes/ActionNode.tsx`
+  - `src/components/canvas/nodes/WatcherNode.tsx`
+  - `src/components/canvas/nodes/ScreenerNode.tsx`
+  - `src/components/canvas/EditNodeModal.tsx`
+  - `src/lib/sectorsApi.ts` / `src/server/services/graphEngine.ts`
+
 
 ---
 
