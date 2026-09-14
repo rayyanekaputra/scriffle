@@ -4,17 +4,79 @@ import { prisma } from '@/lib/prisma';
 
 const SECTORS_V2_BASE_URL = 'https://api.sectors.app/v2';
 
-// Mock IDX market dataset for demo / offline mode
-const MOCK_MARKET_DATA: Record<string, Partial<MarketEvent>> = {
-  BBCA: { price: 10450, prevPrice: 10000, price_change: 4.5, volume: 14500000, avg_volume: 10000000, rank: 1 },
-  BBRI: { price: 5200, prevPrice: 5100, price_change: 1.96, volume: 22000000, avg_volume: 18000000, rank: 2 },
-  BMRI: { price: 6800, prevPrice: 6500, price_change: 4.62, volume: 18000000, avg_volume: 12000000, rank: 3 },
-  TLKM: { price: 3100, prevPrice: 3150, price_change: -1.58, volume: 8500000, avg_volume: 9500000, rank: 4 },
-  ASII: { price: 5050, prevPrice: 4950, price_change: 2.02, volume: 6200000, avg_volume: 5800000, rank: 5 },
-  BBNI: { price: 5500, prevPrice: 5400, price_change: 1.85, volume: 9500000, avg_volume: 8500000, rank: 6 },
-  UNTR: { price: 27100, prevPrice: 26800, price_change: 1.12, volume: 3200000, avg_volume: 3000000, rank: 7 },
-  ICBP: { price: 11800, prevPrice: 11900, price_change: -0.84, volume: 4100000, avg_volume: 4500000, rank: 8 },
+// Base profiles and company names for realistic mock generation
+const MOCK_BASE_PROFILES: Record<string, { price: number; avg_volume: number; rank: number }> = {
+  BBCA: { price: 10450, avg_volume: 10_000_000, rank: 1 },
+  BBRI: { price: 5200,  avg_volume: 18_000_000, rank: 2 },
+  BMRI: { price: 6800,  avg_volume: 12_000_000, rank: 3 },
+  TLKM: { price: 3100,  avg_volume:  9_500_000, rank: 4 },
+  ASII: { price: 5050,  avg_volume:  5_800_000, rank: 5 },
+  BBNI: { price: 5500,  avg_volume:  8_500_000, rank: 6 },
+  UNTR: { price: 27100, avg_volume:  3_000_000, rank: 7 },
+  ICBP: { price: 11800, avg_volume:  4_500_000, rank: 8 },
 };
+
+const MOCK_COMPANY_NAMES: Record<string, string> = {
+  JECX: 'PT Nitrasanata Dharma Tbk',
+  AGII: 'PT Samator Indo Gas Tbk',
+  MPRO: 'PT Maha Properti Indonesia Tbk',
+  BREN: 'PT Barito Renewables Tbk',
+  CUAN: 'PT Petrindo Jaya Kreasi Tbk',
+  BKSL: 'Sentul City Tbk',
+  ELPI: 'PT Pelayaran Nasional Ekalya Tbk',
+  EMAS: 'PT Merdeka Gold Resources Tbk',
+  PSAB: 'J Resources Asia Pasifik Tbk',
+  GOTO: 'PT GoTo Gojek Tokopedia Tbk',
+  BBCA: 'PT Bank Central Asia Tbk.',
+  TLKM: 'PT Telkom Indonesia Tbk.',
+  ICBP: 'PT Indofood CBP Sukses Makmur Tbk.',
+  BMRI: 'PT Bank Mandiri (Persero) Tbk.',
+  BBRI: 'PT Bank Rakyat Indonesia (Persero) Tbk.',
+  BBNI: 'PT Bank Negara Indonesia (Persero) Tbk.',
+  ASII: 'PT Astra International Tbk.',
+  UNTR: 'PT United Tractors Tbk.',
+};
+
+function rand(min: number, max: number): number {
+  return min + Math.random() * (max - min);
+}
+
+function generateMockMarketEvent(symbol: string): MarketEvent {
+  const base = MOCK_BASE_PROFILES[symbol] ?? { price: 5000, avg_volume: 5_000_000, rank: 10 };
+
+  // Realistic IDX tick distribution:
+  // 20% mild drop  (-5% to -1.5%)
+  // 20% slight down (-1.5% to -0.3%)
+  // 20% flat/drift  (-0.3% to +0.3%)
+  // 20% slight up   (+0.3% to +2%)
+  // 20% surge       (+2% to +7%)
+  const roll = Math.random();
+  let price_change: number;
+  if      (roll < 0.20) price_change = rand(-5.0, -1.5);
+  else if (roll < 0.40) price_change = rand(-1.5, -0.3);
+  else if (roll < 0.60) price_change = rand(-0.3,  0.3);
+  else if (roll < 0.80) price_change = rand( 0.3,  2.0);
+  else                  price_change = rand( 2.0,  7.0);
+
+  price_change = parseFloat(price_change.toFixed(2));
+
+  const prevPrice = base.price;
+  const price = Math.round(prevPrice * (1 + price_change / 100));
+  const volumeMultiplier = rand(0.6, 2.5); // 60%–250% of avg
+  const volume = Math.round(base.avg_volume * volumeMultiplier);
+
+  return {
+    symbol,
+    name: MOCK_COMPANY_NAMES[symbol] || `PT ${symbol} Indonesia Tbk.`,
+    price,
+    prevPrice,
+    price_change,
+    volume,
+    avg_volume: base.avg_volume,
+    rank: base.rank,
+    timestamp: new Date().toLocaleTimeString(),
+  };
+}
 
 /**
  * Fetches market data for a symbol (Live Sectors API v2 or Mock fallback)
@@ -88,32 +150,9 @@ export async function getMarketDataForSymbol(
     }
   }
 
-  // Fallback to mock data with a small randomized jitter
-  const base = MOCK_MARKET_DATA[upperSymbol] || {
-    price: 5000,
-    prevPrice: 4900,
-    price_change: 2.04,
-    volume: 5000000,
-    avg_volume: 5000000,
-    rank: 10,
-  };
-
-  const jitter = (Math.random() - 0.5) * 0.4;
-  const currentPriceChange = parseFloat(
-    ((base.price_change || 0) + jitter).toFixed(2)
-  );
-
+  // Mock fallback — fully randomised per call
   return {
-    event: {
-      symbol: upperSymbol,
-      price: base.price || 5000,
-      prevPrice: base.prevPrice || 4900,
-      price_change: currentPriceChange,
-      volume: base.volume || 5000000,
-      avg_volume: base.avg_volume || 5000000,
-      rank: base.rank || 1,
-      timestamp: new Date().toLocaleTimeString(),
-    },
+    event: generateMockMarketEvent(upperSymbol),
     isLive: false,
   };
 }
@@ -162,9 +201,13 @@ export interface TopMoversResult {
   gainers: MarketEvent[];
   losers: MarketEvent[];
   isLive: boolean;
+  error?: {
+    code: number;
+    message: string;
+  };
 }
 
-const MOCK_TOP_GAINERS: MarketEvent[] = [
+export const MOCK_TOP_GAINERS: MarketEvent[] = [
   {
     symbol: 'JECX',
     name: 'PT Nitrasanata Dharma Tbk',
@@ -222,7 +265,7 @@ const MOCK_TOP_GAINERS: MarketEvent[] = [
   },
 ];
 
-const MOCK_TOP_LOSERS: MarketEvent[] = [
+export const MOCK_TOP_LOSERS: MarketEvent[] = [
   {
     symbol: 'BKSL',
     name: 'Sentul City Tbk',
@@ -280,6 +323,47 @@ const MOCK_TOP_LOSERS: MarketEvent[] = [
   },
 ];
 
+function generateMockTopMovers(n: number): { gainers: MarketEvent[]; losers: MarketEvent[] } {
+  const gainerPool = ['JECX', 'AGII', 'MPRO', 'BREN', 'CUAN', 'BBCA', 'BMRI'];
+  const loserPool  = ['BKSL', 'ELPI', 'EMAS', 'PSAB', 'GOTO', 'TLKM', 'ICBP'];
+
+  const shuffle = (arr: string[]) => [...arr].sort(() => Math.random() - 0.5);
+
+  const gainers = shuffle(gainerPool).slice(0, n).map((sym, i) => {
+    const change = parseFloat(rand(1.5, 25.0).toFixed(2));
+    const base = MOCK_BASE_PROFILES[sym] ?? { price: 2000, avg_volume: 10_000_000, rank: i + 1 };
+    return {
+      symbol: sym,
+      name: MOCK_COMPANY_NAMES[sym] ?? sym,
+      price: Math.round(base.price * (1 + change / 100)),
+      prevPrice: base.price,
+      price_change: change,
+      volume: Math.round(base.avg_volume * rand(1.5, 4.0)),
+      avg_volume: base.avg_volume,
+      rank: i + 1,
+      timestamp: new Date().toLocaleTimeString(),
+    } satisfies MarketEvent;
+  });
+
+  const losers = shuffle(loserPool).slice(0, n).map((sym, i) => {
+    const change = parseFloat((-rand(1.5, 25.0)).toFixed(2));
+    const base = MOCK_BASE_PROFILES[sym] ?? { price: 500, avg_volume: 5_000_000, rank: i + 1 };
+    return {
+      symbol: sym,
+      name: MOCK_COMPANY_NAMES[sym] ?? sym,
+      price: Math.round(base.price * (1 + change / 100)),
+      prevPrice: base.price,
+      price_change: change,
+      volume: Math.round(base.avg_volume * rand(1.2, 3.5)),
+      avg_volume: base.avg_volume,
+      rank: i + 1,
+      timestamp: new Date().toLocaleTimeString(),
+    } satisfies MarketEvent;
+  });
+
+  return { gainers, losers };
+}
+
 /**
  * Fetches top market movers / gainers / losers from Sectors API v2 (/v2/companies/top-changes/)
  */
@@ -301,8 +385,11 @@ export async function getTopMarketMovers(
       const params: Record<string, any> = {
         periods: targetPeriod,
         n_stock: targetStockCount,
-        classifications: options?.classifications || 'all',
       };
+
+      if (options?.classifications && options.classifications !== 'all') {
+        params.classifications = options.classifications;
+      }
 
       if (options?.minMcapBillion !== undefined && options.minMcapBillion > 0) {
         params.min_mcap_billion = options.minMcapBillion;
@@ -389,23 +476,44 @@ export async function getTopMarketMovers(
         const losers = rawLosers.slice(0, targetStockCount).map((l: any, i: number) => mapMover(l, i));
 
         if (gainers.length > 0 || losers.length > 0) {
+          const mockFallback = generateMockTopMovers(targetStockCount);
           return {
-            gainers: gainers.length > 0 ? gainers : MOCK_TOP_GAINERS.slice(0, targetStockCount),
-            losers: losers.length > 0 ? losers : MOCK_TOP_LOSERS.slice(0, targetStockCount),
+            gainers: gainers.length > 0 ? gainers : mockFallback.gainers,
+            losers: losers.length > 0 ? losers : mockFallback.losers,
             isLive: true,
           };
         }
       }
     } catch (err: any) {
+      const statusCode = err.response?.status || 500;
+      const errorMsg =
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to fetch top market movers from Sectors API';
+
       console.warn(
-        `Sectors API v2 /companies/top-changes/ failed (${err.response?.status || err.message}), fallback to mock:`
+        `Sectors API v2 /companies/top-changes/ failed (${statusCode}: ${errorMsg}), fallback to mock:`
       );
+
+      const { gainers, losers } = generateMockTopMovers(targetStockCount);
+      return {
+        gainers,
+        losers,
+        isLive: false,
+        error: {
+          code: statusCode,
+          message: errorMsg,
+        },
+      };
     }
   }
 
+  const { gainers, losers } = generateMockTopMovers(targetStockCount);
   return {
-    gainers: MOCK_TOP_GAINERS.slice(0, targetStockCount),
-    losers: MOCK_TOP_LOSERS.slice(0, targetStockCount),
+    gainers,
+    losers,
     isLive: false,
   };
 }
@@ -1590,16 +1698,35 @@ const MOCK_FUNDAMENTAL_DATA: Record<string, Partial<CompanyFundamentalReport>> =
   },
 };
 
+function formatMarketCap(cap: number): string {
+  if (cap >= 1_000_000_000_000_000) {
+    return `Rp ${(cap / 1_000_000_000_000_000).toFixed(2)} Q`;
+  }
+  if (cap >= 1_000_000_000_000) {
+    return `Rp ${(cap / 1_000_000_000_000).toFixed(1)} T`;
+  }
+  if (cap >= 1_000_000_000) {
+    return `Rp ${(cap / 1_000_000_000).toFixed(1)} B`;
+  }
+  return `Rp ${cap.toLocaleString()}`;
+}
+
 /**
  * Builds a realistic synthetic fundamental report for tickers not explicitly in the mock database
  */
-function buildDynamicCompanyReport(upperSymbol: string): CompanyFundamentalReport {
-  const knownMover = [...MOCK_TOP_GAINERS, ...MOCK_TOP_LOSERS].find(
+function buildDynamicCompanyReport(upperSymbol: string, marketEvent?: MarketEvent): CompanyFundamentalReport {
+  const knownMover = marketEvent || [...MOCK_TOP_GAINERS, ...MOCK_TOP_LOSERS].find(
     (m) => m.symbol.toUpperCase() === upperSymbol
   );
-  const companyName = knownMover?.name || `PT ${upperSymbol} Indonesia Tbk.`;
-  const price = knownMover?.price || 2500;
-  const priceChange = knownMover ? (knownMover.price_change || 0) / 100 : 0.02;
+  const companyName = knownMover?.name || MOCK_COMPANY_NAMES[upperSymbol] || `PT ${upperSymbol} Indonesia Tbk.`;
+  const priceChange = knownMover?.price_change !== undefined ? knownMover.price_change : 0;
+  const basePrice = knownMover?.prevPrice || knownMover?.price || 2500;
+  const price = knownMover?.price || Math.round(basePrice * (1 + priceChange / 100));
+
+  const baseMarketCap = 12_500_000_000_000;
+  const dynamicMarketCap = Math.round(baseMarketCap * (1 + priceChange / 100));
+  const dynamicPe = parseFloat((16.5 * (1 + priceChange / 100)).toFixed(2));
+  const dynamicPbv = parseFloat((1.75 * (1 + priceChange / 100)).toFixed(2));
 
   return {
     symbol: upperSymbol,
@@ -1610,12 +1737,12 @@ function buildDynamicCompanyReport(upperSymbol: string): CompanyFundamentalRepor
     subIndustry: 'General Trading & Services',
     listingBoard: 'Main',
     listingDate: '2019-05-20',
-    marketCap: 12500000000000,
-    marketCapFormatted: 'Rp 12.5 T',
+    marketCap: dynamicMarketCap,
+    marketCapFormatted: formatMarketCap(dynamicMarketCap),
     marketCapRank: 65,
     employeeNum: 1200,
     lastClosePrice: price,
-    dailyCloseChange: priceChange,
+    dailyCloseChange: parseFloat((priceChange / 100).toFixed(4)),
     esgScore: 23.8,
     tags: ['idx-listed', 'active-market-mover', 'high-liquidity'],
     indices: ['KOMPAS100', 'IDX80'],
@@ -1629,9 +1756,9 @@ function buildDynamicCompanyReport(upperSymbol: string): CompanyFundamentalRepor
       allTimeHigh: Math.round(price * 1.6),
     },
     valuation: {
-      peRatio: 16.5,
-      pbvRatio: 1.75,
-      forwardPe: 14.2,
+      peRatio: dynamicPe,
+      pbvRatio: dynamicPbv,
+      forwardPe: parseFloat((14.2 * (1 + priceChange / 100)).toFixed(2)),
       intrinsicValue: Math.round(price * 1.1),
     },
     futureForecasts: {
@@ -1678,8 +1805,8 @@ function buildDynamicCompanyReport(upperSymbol: string): CompanyFundamentalRepor
       whaleInvestors: ['Domestic Institutional Investors'],
       conglomeratesGroup: ['Listed Group'],
     },
-    peRatio: 16.5,
-    pbvRatio: 1.75,
+    peRatio: dynamicPe,
+    pbvRatio: dynamicPbv,
     dividendYield: 2.5,
     revenueGrowthYoY: 14.0,
     netProfitMargin: 15.4,
@@ -1692,7 +1819,8 @@ function buildDynamicCompanyReport(upperSymbol: string): CompanyFundamentalRepor
  */
 export async function getCompanyFundamentalReport(
   symbol: string,
-  sessionApiKey?: string
+  sessionApiKey?: string,
+  marketEvent?: MarketEvent
 ): Promise<CompanyFundamentalReport> {
   const apiKey = sessionApiKey || process.env.SECTORS_API_KEY;
   const upperSymbol = symbol.toUpperCase().replace('.JK', '');
@@ -1717,11 +1845,7 @@ export async function getCompanyFundamentalReport(
         const own = data.ownership || {};
 
         const mc = ov.market_cap || data.market_cap || 100000000000000;
-        const mcFormatted = mc >= 1e12
-          ? `Rp ${(mc / 1e12).toFixed(1)} T`
-          : mc >= 1e9
-          ? `Rp ${(mc / 1e9).toFixed(1)} B`
-          : `Rp ${mc.toLocaleString()}`;
+        const mcFormatted = formatMarketCap(mc);
 
         const pe = val.pe || val.historical_valuation?.[0]?.pe || 15.0;
         const pbv = val.pb || val.historical_valuation?.[0]?.pb || 1.8;
@@ -1824,24 +1948,48 @@ export async function getCompanyFundamentalReport(
 
   const explicitMock = MOCK_FUNDAMENTAL_DATA[upperSymbol];
   if (explicitMock) {
+    const priceChange = marketEvent?.price_change !== undefined ? marketEvent.price_change : (explicitMock.dailyCloseChange ? explicitMock.dailyCloseChange * 100 : 0);
+    const baseMarketCap = explicitMock.marketCap || 15_000_000_000_000;
+    const dynamicMarketCap = Math.round(baseMarketCap * (1 + priceChange / 100));
+    const basePe = explicitMock.peRatio || 15.0;
+    const dynamicPe = parseFloat((basePe * (1 + priceChange / 100)).toFixed(2));
+    const basePbv = explicitMock.pbvRatio || 1.5;
+    const dynamicPbv = parseFloat((basePbv * (1 + priceChange / 100)).toFixed(2));
+    const price = marketEvent?.price || (explicitMock.lastClosePrice ? Math.round(explicitMock.lastClosePrice * (1 + priceChange / 100)) : 5000);
+
     return {
       ...explicitMock,
       symbol: upperSymbol,
-      companyName: explicitMock.companyName || `PT ${upperSymbol} Tbk.`,
+      companyName: explicitMock.companyName || MOCK_COMPANY_NAMES[upperSymbol] || `PT ${upperSymbol} Tbk.`,
       sector: explicitMock.sector || 'Financials',
       subSector: explicitMock.subSector || 'General',
-      marketCap: explicitMock.marketCap || 15000000000000,
-      marketCapFormatted: explicitMock.marketCapFormatted || 'Rp 15.0 T',
-      peRatio: explicitMock.peRatio || 15.0,
-      pbvRatio: explicitMock.pbvRatio || 1.5,
+      marketCap: dynamicMarketCap,
+      marketCapFormatted: formatMarketCap(dynamicMarketCap),
+      lastClosePrice: price,
+      dailyCloseChange: parseFloat((priceChange / 100).toFixed(4)),
+      peRatio: dynamicPe,
+      pbvRatio: dynamicPbv,
       dividendYield: explicitMock.dividendYield ?? 3.5,
       revenueGrowthYoY: explicitMock.revenueGrowthYoY || 8.0,
       netProfitMargin: explicitMock.netProfitMargin || 20.0,
+      allTimePrice: explicitMock.allTimePrice ? {
+        ...explicitMock.allTimePrice,
+        ytdLow: Math.round(price * 0.75),
+        ytdHigh: Math.round(price * 1.35),
+        week52Low: Math.round(price * 0.7),
+        week52High: Math.round(price * 1.4),
+      } : undefined,
+      valuation: explicitMock.valuation ? {
+        ...explicitMock.valuation,
+        peRatio: dynamicPe,
+        pbvRatio: dynamicPbv,
+        intrinsicValue: Math.round(price * 1.1),
+      } : undefined,
       isLive: false,
     } as CompanyFundamentalReport;
   }
 
-  return buildDynamicCompanyReport(upperSymbol);
+  return buildDynamicCompanyReport(upperSymbol, marketEvent);
 }
 
 export interface ScreenerFetchOptions {

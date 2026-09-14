@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BBRI - Institutional Equity Research Brief</title>
+  <title>TCPI - Institutional Equity Research Brief</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
@@ -41,6 +41,20 @@
       font-size: 12px;
       color: #6B7280;
       font-weight: 500;
+    }
+    .revision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0050FF;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 8px;
     }
     .print-btn {
       background: #111827;
@@ -96,8 +110,8 @@
       padding: 2px 8px;
       border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
-      background: #ECFDF5;
-      color: #059669;
+      background: #FEF2F2;
+      color: #DC2626;
     }
 
     .meta-details {
@@ -227,8 +241,8 @@
       display: flex;
       margin: 10px 0 8px 0;
     }
-    .bar-buy { background: #0050FF; height: 100%; width: 89%; }
-    .bar-hold { background: #9CA3AF; height: 100%; width: 11%; }
+    .bar-buy { background: #0050FF; height: 100%; width: 85%; }
+    .bar-hold { background: #9CA3AF; height: 100%; width: 15%; }
 
     .thesis-box {
       background: #FAFAFA;
@@ -289,9 +303,10 @@
 <body>
   <div class="document">
     <div class="top-bar">
-      <div>
+      <div style="display: flex; align-items: center;">
         <span class="brand-title">Scriffle Research Brief</span>
         <span class="brand-meta">&nbsp;•&nbsp; Sectors API v2</span>
+        
       </div>
       <button class="print-btn" onclick="window.print()">
         Print / Save PDF
@@ -300,25 +315,25 @@
 
     <div class="header-profile">
       <div>
-        <h1 class="symbol-title">BBRI</h1>
-        <div class="company-name">PT Bank Rakyat Indonesia (Persero) Tbk.</div>
+        <h1 class="symbol-title">TCPI</h1>
+        <div class="company-name">PT Transcoal Pacific Tbk</div>
       </div>
       <div class="price-box">
-        <div class="current-price">Rp 5,200</div>
-        <div class="price-change">+1.96% Today</div>
+        <div class="current-price">Rp 1,980</div>
+        <div class="price-change">-6.16% Today</div>
       </div>
     </div>
 
     <div class="meta-details">
-      <span class="meta-item">Sector: <strong>Financials</strong></span>
-      <span class="meta-item">Sub-Sector: <strong>Banks</strong></span>
-      <span class="meta-item">Board: <strong>Main</strong></span>
-      <span class="meta-item">ESG Risk: <strong>19.8</strong></span>
+      <span class="meta-item">Sector: <strong>Energy</strong></span>
+      <span class="meta-item">Sub-Sector: <strong>Oil, Gas & Coal</strong></span>
+      <span class="meta-item">Board: <strong>Development</strong></span>
+      <span class="meta-item">ESG Risk: <strong>29.61</strong></span>
     </div>
 
     <div class="tags-row">
-      <span class="index-pill">LQ45</span><span class="index-pill">IDX30</span><span class="index-pill">KOMPAS100</span><span class="index-pill">IDXHIDIV20</span>
-      <span class="tag">#dividend yield ttm above 5 percent</span><span class="tag">#soeas state owned</span><span class="tag">#top 90d transaction value</span>
+      <span class="index-pill">JII70</span>
+      <span class="tag">#52 w low</span><span class="tag">#90 d low</span><span class="tag">#public float under 25</span><span class="tag">#top ten 1m laggards</span><span class="tag">#ytd low</span>
     </div>
 
     <hr class="section-divider" />
@@ -327,51 +342,51 @@
     <div class="metric-grid">
       <div class="metric-item">
         <div class="metric-label">Market Capitalisation</div>
-        <div class="metric-val">Rp 785.0 T</div>
-        <div class="metric-sub">Rank #2 on IDX</div>
+        <div class="metric-val">Rp 9.9 T</div>
+        <div class="metric-sub">Rank #166 on IDX</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Earnings (P/E)</div>
-        <div class="metric-val">12.8x</div>
-        <div class="metric-sub">Forward: 10.9x</div>
+        <div class="metric-val">365.93x</div>
+        <div class="metric-sub">TTM Multiple</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Book (P/B)</div>
-        <div class="metric-val">2.15x</div>
-        <div class="metric-sub">Fair: Rp 6,500</div>
+        <div class="metric-val">24.12x</div>
+        <div class="metric-sub">Fair: Rp -418</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Dividend Yield (TTM)</div>
-        <div class="metric-val">6.45%</div>
-        <div class="metric-sub">Payout: 82%</div>
+        <div class="metric-val">0.33%</div>
+        <div class="metric-sub">Payout: 23%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Net Profit Margin</div>
-        <div class="metric-val">38.2%</div>
-        <div class="metric-sub">OP Margin: 44.5%</div>
+        <div class="metric-val">11.5%</div>
+        <div class="metric-sub">OP Margin: 17.7%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Return on Equity (ROE)</div>
-        <div class="metric-val">18.5%</div>
-        <div class="metric-sub">ROA: 3.0%</div>
+        <div class="metric-val">18.3%</div>
+        <div class="metric-sub">ROA: 8.6%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">52-Week Range</div>
         <div class="metric-val" style="font-size: 15px;">
-          Rp 4,350 - 6,350
+          Rp 1,965 - 13,725
         </div>
-        <div class="metric-sub">ATH: Rp 6,350</div>
+        <div class="metric-sub">ATH: Rp 13,725</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Revenue Expansion</div>
-        <div class="metric-val">+11.5%</div>
+        <div class="metric-val">+8.5%</div>
         <div class="metric-sub">YoY Growth</div>
       </div>
     </div>
@@ -382,22 +397,18 @@
       <div>
         <div class="panel-heading">
           <span>Analyst Consensus</span>
-          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">89% Buy Rating</span>
+          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">85% Buy Rating</span>
         </div>
         <div class="analyst-bar-wrapper">
           <div class="bar-buy" title="Buy / Strong Buy"></div>
           <div class="bar-hold" title="Hold / Neutral"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #6B7280;">
-          <span>19 Strong Buy</span>
-          <span>6 Buy</span>
-          <span>3 Hold</span>
+          <span>21 Strong Buy</span>
+          <span>4 Buy</span>
+          <span>2 Hold</span>
           <span>0 Sell</span>
         </div>
-        
-          <div style="margin-top: 14px; font-size: 11px; color: #4B5563; line-height: 1.5;">
-            Forecast: Projected EPS growth of <strong>+11.5%</strong> on <strong>+11.2%</strong> revenue expansion.
-          </div>
         
       </div>
 
@@ -409,20 +420,21 @@
         <div>
           
       <div class="list-item">
-        <div class="item-title">Government of Republic of Indonesia (SOE)</div>
-        <span class="share-pct">53.19%</span>
+        <div class="item-title">PT Sari Nusantara Gemilang</div>
+        <span class="share-pct">undefined</span>
       </div>
     
       <div class="list-item">
-        <div class="item-title">Public Shareholders</div>
-        <span class="share-pct">46.81%</span>
+        <div class="item-title">PT Karya Permata Insani</div>
+        <span class="share-pct">undefined</span>
+      </div>
+    
+      <div class="list-item">
+        <div class="item-title">Public</div>
+        <span class="share-pct">undefined</span>
       </div>
     
         </div>
-        
-          <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">
-            Group / Conglomerate: <strong style="color: #111827;">State-Owned Enterprise</strong>
-          </div>
         
       </div>
     </div>
@@ -432,7 +444,7 @@
     <div class="thesis-box">
       <div class="thesis-label">Automated Trigger Thesis Summary</div>
       <div class="thesis-text">
-        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>PT Bank Rakyat Indonesia (Persero) Tbk.</strong> (BBRI) trades at <strong>12.8x P/E</strong> and <strong>2.15x P/B</strong> with a <strong>6.45%</strong> dividend yield, supported by <strong>89% analyst buy consensus</strong>.
+        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>PT Transcoal Pacific Tbk</strong> (TCPI) trades at <strong>365.93x P/E</strong> and <strong>24.12x P/B</strong> with a <strong>0.33%</strong> dividend yield, supported by <strong>85% analyst buy consensus</strong>.
       </div>
     </div>
 
@@ -468,7 +480,7 @@
 
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
-      <div>Generated on Sep 12, 2026 • Scriffle Studio</div>
+      <div>Generated on Sep 14, 2026  • Scriffle Studio</div>
     </div>
   </div>
 </body>

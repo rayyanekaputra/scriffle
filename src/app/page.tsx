@@ -253,42 +253,6 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     }
   };
 
-  const handleSimulateCustom = async (eventPayload: any, suppressInfoToast = false) => {
-    try {
-      const res = await fetch('/api/engine/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event: eventPayload }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        mutate();
-        mutateLogs();
-
-        const alertLogs = data.result?.logs?.filter((l: string) => l.startsWith('Notification fired:')) || [];
-        if (alertLogs.length > 0) {
-          const isRising = (eventPayload.price_change || 0) >= 0;
-          for (const msg of alertLogs) {
-            showToast(
-              `Market Alert: ${eventPayload.symbol}`,
-              msg.replace('Notification fired: ', ''),
-              isRising ? 'rising' : 'crashing'
-            );
-          }
-        } else if (!suppressInfoToast) {
-          const isRising = (eventPayload.price_change || 0) >= 0;
-          showToast(
-            `${eventPayload.symbol} ${isRising ? 'Surge' : 'Drop'} Tick`,
-            `Change: ${isRising ? '+' : ''}${eventPayload.price_change}%, Volume: ${eventPayload.volume?.toLocaleString()}`,
-            isRising ? 'rising' : 'crashing'
-          );
-        }
-      }
-    } catch (err) {
-      console.error('Failed to run custom simulation:', err);
-    }
-  };
-
   // Per-Watcher Node Auto-Polling Engine
   const nodeTimersRef = useRef<{ [nodeId: string]: NodeJS.Timeout }>({});
 
@@ -846,8 +810,6 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         <SimulationBar
           isOpen={isControlsOpen}
           onClose={() => setIsControlsOpen(false)}
-          onSimulateSuccess={handleRefresh}
-          onSimulateCustom={handleSimulateCustom}
           autoTickActive={autoTickActive}
           onToggleAutoTick={handleToggleAutoTick}
           onExportScriffle={handleExportScriffle}

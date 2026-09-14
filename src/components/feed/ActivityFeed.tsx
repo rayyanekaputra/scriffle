@@ -312,7 +312,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               {/* Execution Flow Breadcrumb */}
               {log.triggeredNodes.length > 0 && (
                 <div className="mt-2.5 space-y-1">
-                  <div className={`text-[10px] font-bold uppercase tracking-wider ${textMuted}`}>
+                  <div className={`text-[11px] font-semibold ${textMuted}`}>
                     Execution Chain:
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5">

@@ -17,14 +17,17 @@ export async function POST(req: Request) {
       }
     }
 
+    const cfg = config || {};
+    const initialState: any = { status: 'idle', cycleCount: 0 };
+
     const node = await prisma.node.create({
       data: {
         canvasId: targetCanvasId,
         type,
         positionX: position?.x || 100,
         positionY: position?.y || 100,
-        configJson: JSON.stringify(config || {}),
-        stateJson: JSON.stringify({ status: 'idle' }),
+        configJson: JSON.stringify(cfg),
+        stateJson: JSON.stringify(initialState),
       },
     });
 
@@ -33,8 +36,8 @@ export async function POST(req: Request) {
       canvasId: node.canvasId,
       type: node.type,
       position: { x: node.positionX, y: node.positionY },
-      config: config || {},
-      state: { status: 'idle' },
+      config: cfg,
+      state: initialState,
     });
   } catch (error: any) {
     console.error('Error creating node:', error);

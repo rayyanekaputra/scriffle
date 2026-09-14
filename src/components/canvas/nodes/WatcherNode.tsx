@@ -5,7 +5,6 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { WatcherConfig, MarketEvent } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
-
 export const WatcherNode = memo(({ data, selected }: NodeProps) => {
   const { theme } = useTheme();
   const config = (data.config || {}) as WatcherConfig;
@@ -24,29 +23,43 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
     config.symbol === 'TOP_LOSERS';
 
   const isGainers = config.mode === 'top_gainers' || config.symbol === 'Top Gainers' || config.symbol === 'TOP_GAINERS';
-  const movers: MarketEvent[] = Array.isArray(state.movers) && state.movers.length > 0
-    ? state.movers
-    : lastVal.symbol && lastVal.symbol !== 'TOP_GAINERS' && lastVal.symbol !== 'TOP_LOSERS'
-    ? [lastVal]
-    : [];
+  const limit = typeof config.limit === 'number' && config.limit > 0 ? config.limit : 5;
+
+  const movers: MarketEvent[] = isRadarMode
+    ? (Array.isArray(state.movers) && state.movers.length > 0 ? state.movers : [])
+    : (Array.isArray(state.movers) && state.movers.length > 0
+        ? state.movers
+        : lastVal.symbol && lastVal.symbol !== 'TOP_GAINERS' && lastVal.symbol !== 'TOP_LOSERS'
+        ? [lastVal]
+        : []);
 
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';
 
+  const isError = state.status === 'error' || !!state.error;
+  const apiErrorCode = state.error?.code || (isError ? 400 : null);
+  const isLive = state.isLive ?? true;
+
   const cardBorder = isDark
     ? selected
       ? 'border-[#8E95A5] ring-2 ring-[#8E95A5]/20'
+      : isError
+      ? 'border-rose-500/80 ring-1 ring-rose-500/20'
       : isPassed
       ? 'border-[#8E95A5]'
       : 'border-[#282A36] hover:border-[#383B4A]'
     : isMono
     ? selected
       ? 'border-[#242321] ring-2 ring-[#242321]/20'
+      : isError
+      ? 'border-rose-600 ring-1 ring-rose-600/20'
       : isPassed
       ? 'border-[#242321]'
       : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
     : selected
     ? 'border-[#0050FF] ring-2 ring-[#0050FF]/20'
+    : isError
+    ? 'border-rose-500 ring-1 ring-rose-500/20'
     : isPassed
     ? 'border-[#0050FF]'
     : 'border-slate-300 hover:border-slate-400';
@@ -63,6 +76,19 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
     <div
       className={`relative ${cardWidth} rounded-2xl border-2 p-4 transition-all duration-150 ${cardBg} ${cardBorder}`}
     >
+      {/* Target / Input Handle */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        className={`!h-3.5 !w-3.5 !rounded-full !border-2 ${
+          isDark
+            ? '!border-[#181920] !bg-[#8E95A5]'
+            : isMono
+            ? '!border-[#FCFBF9] !bg-[#5A5852]'
+            : '!border-white !bg-[#0050FF]'
+        }`}
+      />
+
       {/* Top Header */}
       <div
         className={`flex items-center justify-between pb-3 border-b ${
@@ -73,9 +99,15 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
           <div
             className={`rounded-xl p-1.5 border ${
               isDark
-                ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
+                ? isError
+                  ? 'bg-rose-950/60 text-rose-400 border-rose-800/60'
+                  : 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
                 : isMono
-                ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                ? isError
+                  ? 'bg-rose-50 text-rose-800 border-rose-300'
+                  : 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                : isError
+                ? 'bg-rose-50 text-rose-700 border-rose-200'
                 : isRadarMode
                 ? isGainers
                   ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
@@ -83,7 +115,18 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
                 : 'bg-blue-50 text-[#0050FF] border-blue-200'
             }`}
           >
-            <MingIcon name={isRadarMode ? (isGainers ? 'trending_up_line' : 'trending_down_line') : 'radar_line'} size={18} />
+            <MingIcon
+              name={
+                isError
+                  ? 'warning_line'
+                  : isRadarMode
+                  ? isGainers
+                    ? 'trending_up_line'
+                    : 'trending_down_line'
+                  : 'radar_line'
+              }
+              size={18}
+            />
           </div>
           <div>
             <span
@@ -107,20 +150,53 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
           </div>
         </div>
 
-        {/* Cycle Counter Badge */}
-        <div
-          className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
-            isDark
-              ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
-              : isMono
-              ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
-              : 'bg-blue-50 text-[#0050FF] border-blue-200'
-          }`}
-        >
-          <MingIcon name="repeat_line" size={12} />
-          <span>{cycleCount} runs</span>
+        {/* Right Badges */}
+        <div className="flex items-center gap-1.5">
+          {isError ? (
+            <div
+              className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-800/60"
+              title={state.error?.message || 'Sectors API request failed'}
+            >
+              <MingIcon name="warning_line" size={11} />
+              <span>API Error {apiErrorCode}</span>
+            </div>
+          ) : !isLive && cycleCount > 0 ? (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${
+                isDark
+                  ? 'bg-[#22242D] text-[#8C90A0] border-[#313442]'
+                  : isMono
+                  ? 'bg-[#EAE7DF] text-[#78756D] border-[#D8D4CA]'
+                  : 'bg-slate-100 text-slate-600 border-slate-200'
+              }`}
+            >
+              Mock
+            </span>
+          ) : null}
+
+          {/* Cycle Counter Badge */}
+          <div
+            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
+              isDark
+                ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
+                : isMono
+                ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                : 'bg-blue-50 text-[#0050FF] border-blue-200'
+            }`}
+          >
+            <MingIcon name="repeat_line" size={12} />
+            <span>{cycleCount} runs</span>
+          </div>
         </div>
       </div>
+
+      {/* Error Callout Banner if present */}
+      {isError && state.error?.message && (
+        <div className="mt-2.5 rounded-xl p-2 text-[10px] leading-relaxed border bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900/50 flex items-start gap-1.5">
+          <MingIcon name="warning_line" size={13} className="shrink-0 mt-0.5 text-rose-600" />
+          <p className="line-clamp-2 flex-1">{state.error.message}</p>
+        </div>
+      )}
 
       {/* Body: Radar Leaderboard vs Single Ticker Snapshot */}
       {isRadarMode ? (
@@ -302,14 +378,36 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
         </div>
       )}
 
-      {/* Footer Timestamp */}
+      {/* Footer Timestamp & Credit Cost */}
       <div
-        className={`mt-3 flex items-center justify-between text-[11px] ${
-          isDark ? 'text-[#686B7C]' : isMono ? 'text-[#8C8980]' : 'text-slate-400'
+        className={`mt-3 pt-2.5 border-t flex items-center justify-between text-[10px] ${
+          isDark ? 'border-[#262833] text-[#787C8D]' : isMono ? 'border-[#EAE7DF] text-[#8C8980]' : 'border-slate-100 text-slate-400'
         }`}
       >
-        <span>Poll: {config.interval || 300}s</span>
-        <span>{state.lastTriggeredAt ? `Updated ${state.lastTriggeredAt}` : 'Idle'}</span>
+        <span
+          title={isRadarMode ? 'Costs 1 API credit per requested classification × period combination (default 2 classifications × 5 periods = 10 credits / poll)' : 'Consumes 1 credit per symbol daily tick'}
+          className={`inline-flex items-center gap-1 font-semibold px-1.5 py-0.5 rounded border ${
+            isRadarMode
+              ? isDark
+                ? 'bg-[#20222B] text-amber-400 border-amber-400/20'
+                : isMono
+                ? 'bg-[#ECE8DE] text-amber-700 border-amber-600/20'
+                : 'bg-amber-50 text-amber-700 border-amber-200'
+              : isDark
+              ? 'bg-[#20222B] text-[#BAC0D0] border-[#2F3240]'
+              : isMono
+              ? 'bg-[#ECE8DE] text-[#5A5852] border-[#D6D0C2]'
+              : 'bg-slate-100 text-slate-600 border-slate-200'
+          }`}
+        >
+          <MingIcon name="coin_line" size={11} />
+          {isRadarMode ? '10 credits / poll' : '1 credit / tick'}
+        </span>
+        <div className="flex items-center gap-1.5 text-[10px]">
+          <span>Poll: {config.interval || 300}s</span>
+          <span>•</span>
+          <span>{state.lastTriggeredAt ? `Updated ${state.lastTriggeredAt}` : 'Idle'}</span>
+        </div>
       </div>
 
       {/* Output Handle */}

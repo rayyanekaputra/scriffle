@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Node, useReactFlow } from '@xyflow/react';
+import { Node, useViewport } from '@xyflow/react';
 import { useTheme } from '@/context/ThemeContext';
 import { MingIcon } from '@/components/ui/MingIcon';
 
@@ -17,7 +17,7 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
   onUngroup,
 }) => {
   const { theme } = useTheme();
-  const { getViewport } = useReactFlow();
+  const { x: vx, y: vy, zoom } = useViewport();
 
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';
@@ -57,8 +57,6 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
   }, [selectedNodes]);
 
   if (!bounds || selectedNodes.length < 2) return null;
-
-  const { x: vx, y: vy, zoom } = getViewport();
 
   // Convert canvas bounds to screen viewport coordinates for pixel-crisp Figma bounding box
   const screenLeft = bounds.x * zoom + vx;

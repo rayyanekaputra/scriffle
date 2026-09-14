@@ -106,3 +106,49 @@ describe('generateLeaderboardNoteContent — empty input', () => {
     expect(result).toContain('No movers data available');
   });
 });
+
+describe('mock movers fallback constants', () => {
+  it('exports valid 5-item MOCK_TOP_GAINERS list with price and change fields', async () => {
+    const { MOCK_TOP_GAINERS } = await import('@/lib/mockData');
+    expect(MOCK_TOP_GAINERS).toHaveLength(5);
+    expect(MOCK_TOP_GAINERS[0].symbol).toBe('JECX');
+    expect(MOCK_TOP_GAINERS[0].price_change).toBeGreaterThan(0);
+    expect(MOCK_TOP_GAINERS[0].rank).toBe(1);
+  });
+
+  it('exports valid 5-item MOCK_TOP_LOSERS list with price and change fields', async () => {
+    const { MOCK_TOP_LOSERS } = await import('@/lib/mockData');
+    expect(MOCK_TOP_LOSERS).toHaveLength(5);
+    expect(MOCK_TOP_LOSERS[0].symbol).toBe('BKSL');
+    expect(MOCK_TOP_LOSERS[0].price_change).toBeLessThan(0);
+    expect(MOCK_TOP_LOSERS[0].rank).toBe(1);
+  });
+});
+
+describe('radar watcher filtering isolation', () => {
+  it('correctly distinguishes radar watcher configs from single-symbol watchers', () => {
+    const isRadarWatcher = (configJson: string) => {
+      try {
+        const cfg = JSON.parse(configJson);
+        const sym = cfg.symbol?.toUpperCase();
+        const mode = cfg.mode;
+        return (
+          mode === 'top_gainers' ||
+          mode === 'top_losers' ||
+          sym === 'TOP_GAINERS' ||
+          sym === 'TOP_LOSERS' ||
+          sym === 'TOP GAINERS' ||
+          sym === 'TOP LOSERS'
+        );
+      } catch {
+        return false;
+      }
+    };
+
+    expect(isRadarWatcher(JSON.stringify({ mode: 'top_gainers', limit: 5 }))).toBe(true);
+    expect(isRadarWatcher(JSON.stringify({ mode: 'top_losers', limit: 5 }))).toBe(true);
+    expect(isRadarWatcher(JSON.stringify({ symbol: 'TOP_GAINERS' }))).toBe(true);
+    expect(isRadarWatcher(JSON.stringify({ symbol: 'BBCA', interval: '1m' }))).toBe(false);
+    expect(isRadarWatcher(JSON.stringify({ symbol: 'GOTO', threshold: 5 }))).toBe(false);
+  });
+});

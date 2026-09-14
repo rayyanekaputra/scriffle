@@ -219,17 +219,31 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
             </div>
           )}
 
-          {isPassed && (
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold border flex items-center gap-1 ${
-              isDark
-                ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
-                : isMono
-                ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
-                : 'bg-white/90 text-black border-black/10'
-            }`}>
-              <MingIcon name="sparkles_line" size={12} /> Live
-            </span>
-          )}
+          <div className="flex items-center gap-1.5">
+            {((config.revisionCount && config.revisionCount > 1) || (state.revisionCount && state.revisionCount > 1)) && (
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold border flex items-center gap-1 ${
+                isDark
+                  ? 'bg-[#1E2230] text-[#93C5FD] border-[#2E374D]'
+                  : isMono
+                  ? 'bg-[#EAE7DF] text-[#242321] border-[#D8D4CA]'
+                  : 'bg-blue-50 text-[#0050FF] border-blue-200'
+              }`}>
+                <MingIcon name="refresh_line" size={11} /> Rev {config.revisionCount || state.revisionCount}
+              </span>
+            )}
+
+            {isPassed && (
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold border flex items-center gap-1 ${
+                isDark
+                  ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
+                  : isMono
+                  ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                  : 'bg-white/90 text-black border-black/10'
+              }`}>
+                <MingIcon name="sparkles_line" size={12} /> Live
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Freeform Direct Editable Textarea with Cropping/Scroll on Focus */}

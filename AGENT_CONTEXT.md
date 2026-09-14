@@ -86,7 +86,7 @@
 [Sectors API / Mock Data]
          │
          ▼
-POST /api/engine/trigger (live poll) OR POST /api/engine/simulate (mock inject)
+POST /api/engine/trigger (Live Sectors API poll or realistic randomized Mock)
          │
          ▼
 graphEngine.ts → BFS traversal from Watcher → Condition → Note/Alert/Action
@@ -189,12 +189,13 @@ hackathon/
     ├── hooks/
     │   └── useCanvasSync.ts        ← SWR polling hook (2s interval)
     ├── lib/
+    │   ├── creditCosts.ts          ← Centralized pricing registry & burst calculations
     │   ├── prisma.ts               ← Global Prisma client singleton
     │   └── utils.ts
     ├── server/services/
     │   ├── dslEngine.ts            ← Safe expr-eval DSL parser
     │   ├── graphEngine.ts          ← BFS traversal, self-mutations, cycle counting
-    │   └── sectorsApi.ts           ← Live + mock Sectors API client
+    │   └── sectorsApi.ts           ← Live + mock Sectors API client (Top Movers fix, error capture)
     └── types/
         └── canvas.ts               ← MASTER TypeScript interfaces (always reference this)
 ```
@@ -215,12 +216,11 @@ hackathon/
 | `GET` | `/api/canvas/list` | All saved canvases with metadata |
 | `POST` | `/api/canvas/restore` | Atomic replace canvas from .scriffle file |
 
-### Engine & Simulation
+### Engine & Live Poll
 | Method | Route | Description |
 |---|---|---|
 | `GET` | `/api/logs` | Recent execution logs |
-| `POST` | `/api/engine/trigger` | Live Sectors API poll + graph execution |
-| `POST` | `/api/engine/simulate` | Inject mock `MarketEvent` (symbol, price_change, volume, price) |
+| `POST` | `/api/engine/trigger` | Live Sectors API poll + graph execution (with randomized mock fallback) |
 
 ### Export & Files
 | Method | Route | Description |
@@ -301,6 +301,14 @@ hackathon/
 - Cycle counter badge: `⚡ 12 runs`
 - Modes: Single ticker (daily data) or Top Gainers/Losers (radar mode)
 - Per-watcher configurable polling interval (1s–3600s)
+- Clean initial state: Starts idle with `0 runs` and waiting indicators instead of premature mock data
+- Error transparency: Live API failures display `⚠ API Error {code}` badge with structured callout banner; offline mode displays `Mock` badge
+- Credit cost badge in footer (`🪙 10 credits / poll` for Radar, `🪙 1 credit / tick` for Single)
+
+### API Credit Cost Badges & Safety System (`creditCosts.ts`)
+- Centralized pricing registry for Sectors.app API v2 consumption
+- Visual credit cost pills on `ActionNode` (`🪙 8 credits / symbol` or `⚡ 0 credits (local)`), `WatcherNode`, and `ScreenerNode` (`🪙 3 AI credits / query`)
+- Edit modal callouts with multi-stock burst warnings (e.g. 5-mover fundamental report = 40 credits burst)
 
 ### Theme Switcher (3 modes)
 - **Light** (default): Full multicolor FigJam
@@ -315,12 +323,27 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
-### ✅ Recently Completed (This Session)
+- **Dynamic Mock Fundamental Report & Valuation Metric Updates (`sectorsApi.ts`, `graphEngine.ts`, `reportExporter.ts`, `reportRevision.test.ts`)**:
+  - Dynamically recalculates Market Cap ($\text{Market Cap}_{\text{base}} \times (1 + \frac{\Delta\%}{100})$), P/E, P/B, `lastClosePrice`, and `dailyCloseChange` on every mock poll tick and report revision instead of displaying static constants.
+  - Formats dynamic market cap strings with `formatMarketCap` (`T`, `B`, `Q`).
+  - Threaded `marketEvent` through `handleFundamentalReportMutation`, `getCompanyFundamentalReport`, and `exportReportToDisk`.
+  - Added unit test suite verification in `reportRevision.test.ts` (112 passing unit tests).
+- **Dynamic PDF & Fundamental Brief In-Place Refresh with Revision Counters (`reportExporter.ts`, `FileNode.tsx`, `NoteNode.tsx`, `graphEngine.ts`)**:
+  - Implemented `handleFundamentalReportMutation` in `graphEngine.ts` across single-event triggers, Top Movers Radar, and AI Screener pipelines.
+  - When subsequent market ticks trigger research for an already researched symbol, the engine dynamically refreshes the existing attached `FileNode` on disk and updates the connected `NoteNode` brief in-place, eliminating duplicate node clutter.
+  - Added revision counter tracking (`revisionCount: rev + 1`) and timestamps rendered as `🔄 Rev X` pills on both `FileNode.tsx` and `NoteNode.tsx` headers, as well as institutional `Rev X` badge pills and footer records inside the exported HTML/PDF brief.
+  - Added unit test suite `reportRevision.test.ts` (112 passing unit tests).
+- **Dynamic Watcher Target Handle & Upstream Input Reception (`WatcherNode.tsx` & `graphEngine.ts`)**: Added left-side target handle (`<Handle type="target" position={Position.Left} />`) to `WatcherNode.tsx`, resolving the React Flow edge creation error when connecting Action or Screener nodes to Watcher nodes. Updated `graphEngine.ts` across BFS event processing, Top Movers radar processing, and AI Screener flows to support dynamic symbol adoption when upstream nodes feed tickers into Watcher nodes.
+- **Dynamic Peer Watcher Action Label Fallback (`ActionNode.tsx` & `types/canvas.ts`)**: Fixed hardcoded `"BBRI"` default in `ActionNode.tsx` label to dynamically render `(Dynamic)` or configured symbol override (`config.targetSymbol` / `config.params.symbol`), and added `targetSymbol`, `template`, and `interval` properties to `ActionConfig`.
+- **UI Contrast & Typography Cleanup (Esc Badge, Shortcuts Group Titles, FileNode Contrast, Zero All-Caps Enforcement)**:
+  - **Shortcuts Modal Group Titles & Esc Badge Theme Alignment (`ShortcutsModal.tsx`)**: Fixed category group titles and icons to use theme-aware contrast tokens (`isDark ? 'text-slate-200' : isMono ? 'text-[#242321]' : 'text-slate-900'`) matching content text readability in Light and Mono modes; fixed footer `Esc` badge styling.
+  - **FileNode Symbol & Badge Contrast in Light Mode (`FileNode.tsx`)**: Replaced low-contrast pastel badge colors (`bg-*-50` & `text-*-600`) with high-contrast backgrounds (`bg-*-100`), bold vibrant text (`text-*-700`/`800`), and crisp borders (`border-*-300`), removing `tracking-wider` on the extension label.
+  - **Zero All-Caps & Spacing Enforcement (`SimulationBar.tsx`, `NavToolbar.tsx`, `ActivityFeed.tsx`)**: Removed `uppercase` and `tracking-wider` classes from preset template labels, sticker headers, execution breadcrumbs, and simulated mode badges to strictly adhere to sentence/title case design rules.
 - **Canvas UX & Formatting Fixes (Emoji Picker, Viewport Placement & Text Toolbar Stability)**:
   - **Sticker Node & Modal Editor (`EditNodeModal.tsx` & `StickerNode.tsx`)**: Fixed empty modal on double-click sticker; added 32-emoji grid picker, custom emoji input, label field, 7-color badge palette, and live preview. Added inline quick emoji popover on canvas and converted toolbar Sticker button into a split button (direct click drops sticker at viewport center, chevron opens 8 presets with click-outside dismiss).
   - **Viewport-Centered Node Placement (`NavToolbar.tsx` & `src/app/page.tsx`)**: Replaced static top-left coordinate fallback `(300, 200)` with `useReactFlow().screenToFlowPosition` converting viewport center `(window.innerWidth / 2, window.innerHeight / 2)` to flow coordinates with natural scatter jitter. Wrapped `NavToolbar` inside `ReactFlowProvider`.
   - **Free-Text Formatting Toolbar Stability (`TextNode.tsx` & `TextFormatToolbar.tsx`)**: Added `onMouseDown` preventDefault in `TextFormatToolbar` to stop focus theft from `<textarea>`, and updated `showToolbar` to `(selected || isEditing) && selectedCount === 1` so formatting controls remain active and accessible.
-  - **Search Indexer & Testing**: Updated `searchIndexer.ts` with custom emoji and label search tokens; increased unit tests to 106 passing tests.
+  - **Search Indexer & Testing**: Updated `searchIndexer.ts` with custom emoji and label search tokens; increased unit tests to 109 passing tests.
 - **Navigation & Productivity Suite (`SpotlightSearchModal.tsx`, `ShortcutsModal.tsx`, `ZoomControls.tsx`)** — Implemented Figma/FigJam-inspired spatial navigation: Spotlight Search (`Cmd+K`/`Cmd+F`) with real-time fuzzy indexer (`searchIndexer.ts`) across all tickers, prompts, rules, notes, and files with smooth camera pan & zoom (`setCenter`); visual Keyboard Shortcuts Guide modal (`?` / `Shift+/`); and interactive bottom-left Zoom Controls with live percentage pill, preset dropdown (`50%`, `100%`, `150%`, `200%`, `Fit All`), and viewport hotkeys (`Shift+1` fit to screen, `Shift+0`/`Cmd+0` 100% reset).
 - **AI Natural Language Company Screener (`/v2/companies/?q=...`)** — Added dedicated `ScreenerNode` (`ScreenerNode.tsx`) on the canvas supporting natural language queries (e.g. *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies by revenue"*). Integrated `fetchCompaniesScreener` with dynamic `query_values` unpacking, full Sectors API field coverage, smart metric stat capsule formatting, 3 AI credits notice, and downstream automation (`[Screener] -> [Note / Action / Watcher]`).
 - **Auto-Spawned Watcher Complete Automation Pipeline (`create_watcher`)** — When an Action node triggers `create_watcher` (from Top Gainers/Losers Radar or single breakout events), it now automatically spawns a complete, connected downstream automation pipeline: `[New Watcher] -> [Condition (price_change > 0)] -> [Sticky Note]`. This ensures newly discovered breakout stocks immediately execute live tracking on subsequent polling ticks without manual wiring.
@@ -334,27 +357,50 @@ hackathon/
 - **Free-Form Text Node Edit-Mode Race Fix (`TextNode.tsx`)** — Fixed bug where clicking a Text card caused edit mode to immediately close itself. Root cause: `useEffect` watching React Flow's `selected` prop fired `setIsEditing(false)` during the brief pointer-down de-select. Fix: replaced with a **200ms debounced timer** (`deselectedTimerRef`) that cancels on re-select; added **single-click-to-edit** when node was already selected (`wasSelectedRef`) matching FigJam/Notion UX; double-click always enters edit mode unconditionally.
 - **In-Place Customizable Emoji Stickers (`StickerNode.tsx`)** — Replaced the rigid 7-preset `stickerType` enum with a free-form `{ emoji, label, color }` schema. `StickerNode` fully rewritten: double-click emoji to change it (inline input), double-click label to rename it, color palette (7 colors) appears on hover/select. Fully backward-compatible with old `.scriffle` files via a `LEGACY_MAP`. NavToolbar and ContextMenu updated to seed stickers with new format; bullish/bearish presets replaced with 📈/📉 emoji stickers.
 
-- **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 106 tests across 6 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, and `spatialNavigator`. All pass in ~115ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
+- **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 109 tests across 7 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, `spatialNavigator`, and `reportRevision`. All pass in ~128ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
-### 🟡 Open Candidate Integrations (Planned Sectors API)
-1. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-2. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-3. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-4. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+### 🟡 Open Candidate Integrations & Polish (Prioritized)
+1. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+2. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
+3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+4. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+5. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+6. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+7. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+
+### ⏸️ On-Hold / Deprioritized Candidates
+- **Action-to-Action Chaining** — Chained sequential actions (`[Action] -> [Action]`). *Status: Deprioritized / On-Hold — currently lacking concrete logic-case as single downstream action pipelines (`[Screener/Radar] -> [Action] -> [Pipeline]`) already fulfill target workflows without compounding branching complexity.*
 
 ---
 
-## 11. Known Issues & Things to Keep in Mind
+## 11. Known Issues & Resolved Caveats
 
-1. **DSL Safety:** Always use `expr-eval` (never `eval()`). The DSL supports `AND`, `OR`, `>`, `<`, `>=`, `<=`, `==`, `!=`, and arithmetic (e.g. `volume > 2 * avg_volume`).
-2. **SWR Polling Smoothness:** Node updates from SWR should NOT disturb user's current zoom/pan viewport.
-3. **API Key Session-Only:** The Sectors API key lives in React state only. Any backend route that needs it must receive it per-request (e.g. in request body or header). Never assume it's available server-side.
-4. **Cycle Counter Reset:** When clearing the Activity Feed, ALL watcher cycle counters reset to 0 in SQLite.
-5. **FileNode OS Reveal:** `POST /api/file/open-location` opens the OS file manager — only works in local dev, not production.
-6. **MingCute Loading:** Icons are loaded via CSS font from `public/mingcute/Mingcute.css`. Import it in `layout.tsx`. Use `<MingIcon name="mgc_xxx_line" />` — check Mingcute.css for valid icon names.
-7. **Multi-canvas isolation:** Each canvas has its own `canvasId`. The engine routes (`/api/engine/trigger`, `/api/engine/simulate`) must always scope to the correct canvas ID.
-8. **No WebSockets:** Short-polling via SWR only (2s). Intentional — simpler and robust enough for demo scale.
-9. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
+1. **✅ Top Movers API Parameter Bug & Error Transparency — Resolved**:
+   - Fixed `sectorsApi.ts` `getTopMarketMovers()` to omit `classifications` when value is `'all'`, eliminating 400 Bad Request responses.
+   - Structured error information (`{ code, message }`) is captured on failure, recorded in `stateJson`, displayed as a `⚠ API Error {code}` badge with error callout on `WatcherNode.tsx`, and logged to `ActivityFeed.tsx`.
+   - Offline mode clearly displays a `Mock` indicator on Watcher cards.
+
+2. **API Token & Credit Consumption Awareness — ✅ Surfaced in UI**:
+   - Sectors API v2 charges credits per endpoint call:
+     - `/v2/companies/top-changes/`: **Costs 1 API credit per requested classification × period combination** (default behavior with 2 classifications × 5 periods consumes **10 credits** per poll).
+     - `/v2/company/report/{symbol}/`: **8 credits** per symbol.
+     - `/v2/companies/?q=...`: **3 credits** per AI query.
+     - `/v2/daily/{symbol}/`: **1 credit** per tick.
+   - Automated pipelines triggering multi-symbol fundamental reports (e.g. 5 Top Movers) consume $5 \times 8 = 40\text{ credits}$ per trigger. Rapid multi-poll triggers can consume 380+ credits in minutes.
+   - Credit cost badges, official classification × period rate formulas, and burst warnings are surfaced on `ActionNode.tsx`, `WatcherNode.tsx`, `ScreenerNode.tsx`, and in `EditNodeModal.tsx`.
+3. **DSL Safety:** Always use `expr-eval` (never `eval()`). The DSL supports `AND`, `OR`, `>`, `<`, `>=`, `<=`, `==`, `!=`, and arithmetic (e.g. `volume > 2 * avg_volume`).
+4. **SWR Polling Smoothness:** Node updates from SWR should NOT disturb user's current zoom/pan viewport.
+5. **API Key Session-Only:** The Sectors API key lives in React state only. Any backend route that needs it must receive it per-request (e.g. in request body or header). Never assume it's available server-side.
+6. **Cycle Counter Reset:** When clearing the Activity Feed, ALL watcher cycle counters reset to 0 in SQLite.
+7. **FileNode OS Reveal:** `POST /api/file/open-location` opens the OS file manager — only works in local dev, not production.
+8. **MingCute Loading:** Icons are loaded via CSS font from `public/mingcute/Mingcute.css`. Import it in `layout.tsx`. Use `<MingIcon name="mgc_xxx_line" />` — check Mingcute.css for valid icon names.
+9. **Multi-canvas isolation:** Each canvas has its own `canvasId`. The engine route (`/api/engine/trigger`) must always scope to the correct canvas ID.
+10. **No WebSockets:** Short-polling via SWR only (2s). Intentional — simpler and robust enough for demo scale.
+11. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
+12. **Mock Poll Randomization:** Mock market polling in `sectorsApi.ts` applies realistic per-call randomized distributions (±0–7% price movements, volume multipliers) so nodes update dynamically during offline demos.
+13. **Turbopack `fs` warnings:** 3 pre-existing warnings about `fs.existsSync`/`fs.statSync`/`path.resolve` in `src/app/api/file/open-location/route.ts` appear in `bun run build` — not actionable, ignore.
+
+
 
 ---
 
@@ -367,7 +413,7 @@ bun run prisma/seed.ts            # Reset & seed demo canvas
 bun run src/server/test-engine.ts # Smoke test the graph engine directly
 bunx prisma db push               # Push schema changes to dev.db
 bunx prisma studio                # Visual DB browser
-bun test                          # ⚠️ Run ALL unit tests — must stay green (83 tests, ~120ms)
+bun test                          # ⚠️ Run ALL unit tests — must stay green (128 tests across 10 suites, ~140ms)
 bun run test:watch                # Run tests in watch mode during development
 bun run test:coverage             # Run tests with coverage report
 ```
@@ -402,31 +448,38 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `MULTI_SYMBOL_EXPORT_AND_PEER_WATCHER_PLAN.md` | Multi-symbol PDF report export & dynamic peer watcher automation |
 | `NAVIGATION_PLAN.md` | Spotlight Search (Cmd+K/Cmd+F), Keyboard Shortcuts Guide (?), and Zoom Presets (Shift+1) |
 | `SCRIFFLE_AI_SPEC.md` | ⭐ Standalone AI prompt & .scriffle format specification manual for LLMs (ChatGPT, Claude, Gemini, Cursor) |
+| `WATCHER_CLEAN_INITIAL_STATE_PLAN.md` | Watcher node clean initial state implementation (Rank 4 sprint) |
+| `CREDIT_COST_BADGES_PLAN.md` | API credit cost badges & burst warning notices (Rank 3 sprint) |
+| `TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md` | Top Movers `/v2/companies/top-changes/` 400 bug fix & error UI (Rank 1 & 2 sprint) |
 
 
 ---
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 106 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 128 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **106 tests, 0 failures, ~115ms runtime**
+- **128 tests, 0 failures, ~140ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
 ```
 src/__tests__/
 ├── fixtures/
-│   └── marketEvents.ts           ← Shared MarketEvent mocks (BBCA_SURGE, TLKM_DROP, MOCK_GAINERS, MOCK_LOSERS, etc.)
+│   └── marketEvents.ts              ← Shared MarketEvent mocks (BBCA_SURGE, TLKM_DROP, MOCK_GAINERS, MOCK_LOSERS, etc.)
 └── unit/
-    ├── dslEngine.test.ts          ← 30 tests — all DSL operators, AND/OR compounds, camelCase aliases, edge cases
-    ├── interpolateTemplate.test.ts ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
-    ├── leaderboard.test.ts        ← 18 tests — gainers/losers formatting, rank indicators, empty input
-    ├── screenerNote.test.ts       ← 15 tests — screener output structure, company rows, fallbacks
-    ├── searchIndexer.test.ts      ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
-    └── spatialNavigator.test.ts   ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
+    ├── dslEngine.test.ts             ← 30 tests — all DSL operators, AND/OR compounds, camelCase aliases, edge cases
+    ├── interpolateTemplate.test.ts   ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
+    ├── leaderboard.test.ts           ← 20 tests — gainers/losers formatting, rank indicators, empty input, mock movers fallback
+    ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
+    ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
+    ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
+    ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
+    ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
+    ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)
+    └── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`

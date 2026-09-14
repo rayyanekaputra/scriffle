@@ -263,7 +263,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
             <div className={`absolute bottom-full left-0 mb-2.5 z-50 w-48 rounded-2xl border-2 p-1.5 shadow-xl ${
               isDark ? 'bg-[#181920] border-[#282A36]' : isMono ? 'bg-[#FCFBF9] border-[#D8D4CA]' : 'bg-white border-slate-200'
             }`}>
-              <p className={`px-2 py-1 text-[10px] font-bold uppercase tracking-widest mb-0.5 ${isDark ? 'text-[#5A5D6E]' : isMono ? 'text-[#9C9891]' : 'text-slate-400'}`}>
+              <p className={`px-2 py-1 text-xs font-semibold mb-0.5 ${isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500'}`}>
                 Stickers
               </p>
               {[

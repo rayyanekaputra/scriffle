@@ -1,10 +1,40 @@
-# 📋 Session Changelog — 2026-09-12
+# 📋 Session Changelog — 2026-09-14
+ 
+ > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
+ 
+ ---
+ 
+## 0. Radar Watcher Leaderboard Multi-Stock Brief Isolation & Dynamic In-Place Fundamental Reports
 
-> **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
+**Key Issues Resolved:**
+1. **Radar Watcher Leaderboard Collapse on Subsequent Polling Cycles (`graphEngine.ts`)**:
+   - **Root Cause**: `executeGraphForEvent()` in `src/server/services/graphEngine.ts` evaluated `isRadar` modes and matched radar watchers when standard single tickers (e.g. `BBCA`, `BMRI`) registered price moves. This queued a single-ticker BFS traversal down radar watcher outgoing edges, calling `generateDefaultNoteContent()` and replacing multi-stock (5-item) leaderboards with a 1-stock note on the 2nd/3rd poll cycles.
+   - **Fix**: Updated `matchingWatchers` in `executeGraphForEvent()` to strictly exclude radar watchers (`isRadar: return false`). Radar watchers are now exclusively executed via `executeGraphForRadarWatcher()`, preserving multi-mover arrays and formatted leaderboards indefinitely.
+2. **Dynamic In-Place Multi-Property Fundamental Report Updates (`sectorsApi.ts`, `reportExporter.ts`, `graphEngine.ts`)**:
+   - Dynamic mock generator updates market cap, enterprise value, valuation multiples (P/E, P/B), and context rank dynamically based on real-time price changes across repeated polling cycles.
+   - In-place file overwrites preserve existing file paths while dynamically incrementing revision numbers (`Rev 1`, `Rev 2`, `Rev 3`...).
+3. **Unit Tests & Build Verification**:
+   - Added radar watcher filtering isolation test in `src/__tests__/unit/leaderboard.test.ts`.
+   - All 113 unit tests passing (`bun test`), 0 build errors (`bun run build`).
+
+ 
+## 1. UI Contrast & Typography Cleanup (Esc Badge, Shortcuts Group Titles, FileNode Contrast, Zero All-Caps Enforcement)
+
+**Key Issues Resolved:**
+1. **Shortcuts Modal Group Titles & Esc Badge Theme Fix (`ShortcutsModal.tsx`)**:
+   - Updated category group titles (`cat.title`) and section icons to use theme-aware colors (`isDark ? 'text-slate-200' : isMono ? 'text-[#242321]' : 'text-slate-900'`) matching content text readability across Light, Mono, and Dark modes.
+   - Replaced hardcoded `bg-slate-200 dark:bg-slate-800` on the footer `Esc` badge with theme-aware tokens (`isDark`, `isMono`, Light).
+2. **FileNode Symbol & Badge Contrast in Light Mode (`FileNode.tsx`)**:
+   - Upgraded file category badges from faint pastels (`bg-*-50` and `text-*-600`) to high-contrast styling (`bg-*-100`, `text-*-700`/`800`, `border-*-300`).
+   - Removed `tracking-wider` on the file extension symbol so the text and category icons remain crisp and readable on a white card background.
+3. **Eliminated All-Caps and Letter-Spacing in Demo Controls Panel (`SimulationBar.tsx`, `NavToolbar.tsx`, `ActivityFeed.tsx`)**:
+   - Removed `uppercase` and `tracking-wider` from `"Load Preset Template:"`, `"Execution Chain:"`, and `"Stickers"`.
+   - Removed `uppercase` transform that was converting `"Simulated"` into `"SIMULATED"`.
+   - Formatted mode badges to Title Case (`"Live"` / `"Mock"`).
 
 ---
 
-## 1. Canvas UX & Formatting Fixes (Emoji Picker, Viewport Placement & Text Toolbar Stability)
+## 2. Canvas UX & Formatting Fixes (Emoji Picker, Viewport Placement & Text Toolbar Stability)
 
 **Key Issues Resolved:**
 1. **Sticker Node Editing & Emoji Picker (`EditNodeModal.tsx` & `StickerNode.tsx`)**:

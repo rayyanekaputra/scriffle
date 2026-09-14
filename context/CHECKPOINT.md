@@ -11,6 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
+* **Master Unit Test Suite:** **128 unit tests across 10 test suites (100% green).**
 
 ---
 
@@ -20,6 +21,10 @@
 * **`watcher` (Radar sticker & Leaderboard):**
   * **Single Stock Mode:** Monitors individual Indonesian stock tickers (`BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`) with current price, % move, and cycle counter (`⚡ 12 runs`).
   * **Top Gainers / Losers Leaderboard Mode:** Full multi-mover ranking table (`#1`, `#2`, `#3`... with ticker, company name, last close price, and Mint/Coral % badges) querying `GET /v2/companies/top-changes/` with `n_stock`, `periods`, `classifications`, and `min_mcap_billion` parameters.
+  * **Clean Initial State & Lifecycle:** Watchers start in a clean idle state (`0 runs`, `"Waiting for tick"` / `"Waiting for live leaderboard poll..."`) without premature mock data injection.
+  * **API Error Transparency & Offline Mock Indicator:** Structured error capture (`{ code, message }`) displays a `⚠ API Error {code}` badge and detailed callout banner on live API failures. Offline mode displays a crisp `Mock` badge.
+  * **Credit Rate Badge & Tooltip:** Shows `🪙 10 credits / poll` (with tooltip explaining the 1 credit per classification × period formula) or `🪙 1 credit / tick` in the card footer.
+  * **Upstream Input Target Handle:** Equipped with a left-side Target Handle allowing upstream Screener or Action nodes to pipe dynamic ticker payloads directly into Watchers.
   * **Dual Downstream Workflows:** Direct connected sticky notes (`NoteNode`) auto-format the full ranked summary table; connected action nodes (`create_note`) spawn separate individual sticky notes for each ranked mover with non-overlapping spatial offsets.
 * **`screener` (AI Natural Language Company Screener):**
   * **Natural Language Queries:** Users query Indonesian stocks in plain English (e.g., *"top 5 banks by market cap"*, *"mining companies with high dividend"*, *"tech companies by revenue"*).
@@ -30,7 +35,9 @@
 * **`condition` (Rule capsule):** Evaluates boolean rules safely using `expr-eval` (e.g. `price_change > 5 AND volume > 1000000`). Zero insecure `eval()`.
 * **`note` (FigJam Sticky Note):** **Direct inline editable on canvas** without popups. Supports pastel color themes (`yellow`, `mint`, `pink`, `blue`, `purple`) and template interpolation (e.g. `${symbol} surged ${price_change}%`).
 * **`alert` (Notification sticker):** Emits UI notifications and logs them to the activity feed.
-* **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes, watchers, or generating institutional Fundamental Briefs (`fundamental_report` action auto-saved to disk + linked `FileNode` + research `NoteNode` populated with accurate ticker-specific metrics).
+* **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes, watchers, or generating institutional Fundamental Briefs (`fundamental_report` action auto-saved to disk + linked `FileNode` + research `NoteNode` with dynamic in-place `Rev 2+` incrementing on repeated runs).
+  * **Credit Badges & Burst Warnings:** Badged with `🪙 8 credits / symbol` and prominent burst warnings in `EditNodeModal.tsx` for multi-stock pipelines (e.g. 5-mover fundamental report = 40 credits burst).
+  * **Dynamic Peer Watcher Labeling:** Displays contextual peer symbols (e.g. `⚡ Auto-Spawn Peer Watcher (BBRI)`) or dynamic fallback (`⚡ Auto-Spawn Peer Watcher (Incoming Ticker)`) when no hardcoded ticker is set.
 * **`text` (FigJam × Miro Rich Freeform Text):**
   * **Direct inline editable on canvas** with auto-growing textarea and zero awkward scrollbars.
   * **Floating Contextual Formatting Toolbar (`TextFormatToolbar`):** Docks above active card with 4-level typography scale (`H1 Title`, `H2 Header`, `Body`, `Note/Caption`), styling toggles (`Bold`, `Italic`, `Underline`, `Strikethrough`), text alignment (`Left`, `Center`, `Right`), pastel highlighter markers (`Yellow`, `Mint`, `Coral`, `Purple`), and container styles (`Plain`, `Callout Banner`, `Card Box`).
@@ -43,63 +50,46 @@
   * **Clipboard Copy & Paste:** Press `Ctrl+V` / `Cmd+V` to paste images directly from OS clipboard onto the canvas at current cursor coordinates.
   * **Transparency:** Full support for transparent `.png` files with zero white background boxes.
   * **Interactive Resizing:** Click an image to drag corner `<NodeResizer />` handles (aspect-ratio locked & persisted to SQLite).
+* **`file` (Universal File Node & PDF Brief):** Universal visual file attachments with category icons, browser preview, copy link, direct OS folder reveal (`/api/file/open-location`), and green `✓ Saved` status indicators.
+
+---
 
 ### 2.2 Whiteboard Interactions, Project Files & Shortcuts
 * **Project Save & Open (`.scriffle` Format):**
   * **Save / Export:** 1-click **Save** button in top navbar creates and downloads `<canvas_name>.scriffle` (UTF-8 JSON formatted).
   * **Open / Import:** **Open** button with native file picker (`.scriffle`, `.json`) + Drag & Drop `.scriffle` file directly onto the canvas to restore full graph.
-  * **Starter Presets:** Quick template dropdown in Demo Controls to load `"Rotation Engine"` (complex multi-branching pipeline), `"Momentum Breakout Loop"`, or `"Banking Sector Trio"`.
+  * **Starter Presets:** Quick template dropdown in Demo Controls to load `"Rotation Engine"`, `"Momentum Breakout Loop"`, or `"Banking Sector Trio"`.
   * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0; equipped with automatic `idMap` allocation preventing cross-tab `UNIQUE constraint` collisions and preserving 100% of graph edge connections.
 * **Group & Ungroup System (`Cmd+G` / `Cmd+Shift+G`):**
-  * **Cohesive Selection & Dragging:** Multi-select nodes and press `Cmd+G` to group them into a single cohesive unit. Clicking any member node selects and drags the whole group synchronously.
-  * **Group-Aware Copy & Paste (`Cmd+C` / `Cmd+V` / `Cmd+D`):** Copies group members, their relative spatial offsets, and internal connecting edges. Pasting assigns a fresh `groupId` and recreates the internal connections at the cursor position.
-  * **Double-Click Isolation Focus Mode:** Double-clicking an element in a group isolates the canvas into that group with a top status banner, allowing individual element editing and `Shift+Click` sub-selections. Press `Escape` or click the empty canvas to exit.
-  * **Ungroup (`Cmd+Shift+G`):** Dissolves groups back into standalone elements.
+  * **Cohesive Selection & Dragging:** Multi-select nodes and press `Cmd+G` to group them into a single cohesive unit.
+  * **Group-Aware Copy & Paste (`Cmd+C` / `Cmd+V` / `Cmd+D`):** Copies group members, their relative spatial offsets, and internal connecting edges.
+  * **Double-Click Isolation Focus Mode:** Double-clicking isolates group into focus mode for sub-element editing.
 * **Multi-Selection, Box Select & Figma Bounding Box Handles:**
   * `Shift + Click` or `Ctrl/Cmd + Click` to toggle select multiple elements concurrently.
   * `Shift + Drag` marquee box selection to group-select cards and connectors.
-  * **Figma-Style Selection Bounding Box (`SelectionBoundingBox`):** Automatically frames multi-selected elements with 8 tactile square corner & midpoint handles, a dashed boundary outline, and floating interactive quick `Group` / `Ungroup` action pills.
-  * `Delete` / `Backspace` removes all selected elements in bulk.
+  * **Figma-Style Selection Bounding Box (`SelectionBoundingBox`):** Automatically frames multi-selected elements with 8 tactile square corner & midpoint handles, dashed boundary outline, and quick `Group` / `Ungroup` action pills.
 * **Keyboard Shortcuts & Spatial Navigation:**
-  * **`Tab` / `Shift + Tab` Spatial & Graph Traversal:** Smart non-oscillating keyboard navigation that follows outgoing/incoming automation connections or hops to the closest candidate node ahead ($\Delta x > +15\text{px}$ or downwards in a subsequent row) with automatic canvas wrap-around and smooth camera pan (`setCenter`).
+  * **`Tab` / `Shift + Tab` Spatial & Graph Traversal:** Smart non-oscillating keyboard navigation that follows outgoing/incoming automation connections or hops to the closest candidate node ahead with automatic canvas wrap-around and smooth camera pan (`setCenter`).
   * **`Cmd+K` / `Cmd+F` (Spotlight Quick Search):** Real-time fuzzy indexer searching stock tickers (`BBCA`, `TLKM`), AI screener prompts, note texts, rules, and files with keyboard navigation (`↑`/`↓`/`↵`) and 1-click smooth camera pan.
   * **`?` (Shortcuts Cheat Sheet):** Categorized visual reference covering Tools, Card Actions, Grouping, and Navigation.
   * **`Shift + 1`:** Fit all nodes to screen.
   * **`Shift + 0` / `Cmd + 0`:** Reset zoom to 100%.
   * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
-  * **`Ctrl+C` / `Cmd+C`:** Copy selected card.
-  * **`Ctrl+V` / `Cmd+V`:** Paste copied card at cursor position on canvas.
-  * **`Ctrl+D` / `Cmd+D`:** Quick duplicate adjacent to active card.
-  * **`Escape`:** Deselect nodes & close context menus.
-* **Right-Click on Canvas:** Context menu to drop Sticky Notes, Watchers, Conditions, Free Text, Image upload, Stickers, Alerts, or Actions at the exact mouse coordinates (`screenToFlowPosition`).
-* **Right-Click on Elements & Connectors:** Context menu to Edit, Change Sticky Color, or Delete element/connector.
-* **Sticky Notes Resizing & Edit Modal:**
-  * Interactive `<NodeResizer />` handles on canvas with overflow cropping.
-  * Right-click -> "Edit element" opens full detail modal with char/word counter, dynamic variable insertion, color picker, and dimension reset.
-* **Presenter Simulation Bar:** Floating bottom dock with quick demo triggers and continuous live ticker streaming.
-* **Activity Feed & Backtracking:**
-  * **Human-readable node chips** with MingCute icons (`Watcher (BBCA) → Rule → Toast`).
-  * **1-click smooth camera pan & zoom** to fly directly to any card.
-  * **Hover execution chain glow** illuminating active paths across the canvas.
-  * **Drag-to-resize sidebar width** (280px to 750px) with quick reset.
-  * **Clear Activity Feed button** with confirmation modal that pauses streaming and resets all card run counters to `0`.
+  * **`Ctrl+C` / `Cmd+C` / `Ctrl+V` / `Cmd+V` / `Ctrl+D`:** Copy, paste, duplicate cards.
 * **Sectors API Key & Live Watcher Polling:**
   * **Session-Only Storage:** Managed in temporary React client state. Automatically wiped on tab close or refresh. Never saved to SQLite and excluded from `.scriffle` exports.
-  * **Masked Input & Reveal Toggle:** Password-style masked input with eye reveal toggle (`eye_line` / `eye_close_line`) and clear button.
-  * **Privacy Guarantee Banner:** User-facing shield notice assuring keys stay private and local to the browser session.
-  * **Live Mode vs. Mock Mode:** Mode pill dynamically switches between `🟢 Live API v2` and `⚪ Offline Mock`.
-  * **1-Click Live Poll Button:** Clicking **"Poll Live Sectors API"** sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV from `https://api.sectors.app/v2/daily/{symbol}/` for all active canvas Watchers (`BBCA`, `BBRI`, `TLKM`, etc.) and executing downstream conditions.
-* **Toast Notifications:** Located at bottom-left with reverse stacking and slide-in animations.
+  * **1-Click Live Poll Button:** Sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV and Top Movers from Sectors API v2.
+
+---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md): Top Movers 400 bug fix, structured error capture, and Watcher error UI.
+* [`CREDIT_COST_BADGES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/CREDIT_COST_BADGES_PLAN.md): Centralized pricing registry (`creditCosts.ts`), node badges, and burst warning notices.
+* [`WATCHER_CLEAN_INITIAL_STATE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/WATCHER_CLEAN_INITIAL_STATE_PLAN.md): Watcher clean idle initial states and restore cleanliness.
 * [`NAVIGATION_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/NAVIGATION_PLAN.md): Spotlight search (`Cmd+K`), Shortcuts guide (`?`), Viewport zoom presets (`Shift+1`/`Shift+0`), and spatial `Tab` traversal.
-* [`FREE_TEXT_EXPERIENCE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/FREE_TEXT_EXPERIENCE_PLAN.md): FigJam × Miro rich free-text whiteboard tooling, floating formatting toolbar, typography hierarchy, highlighter pens, and container styles.
-* [`GROUP_UNGROUP_IMPLEMENTATION_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/GROUP_UNGROUP_IMPLEMENTATION_PLAN.md): Group & ungroup architecture, group-aware copy/paste with internal connectors, and double-click group isolation focus.
-* [`SECTORS_API_KEY_LIVE_POLL_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SECTORS_API_KEY_LIVE_POLL_PLAN.md): Details on masked API key session management, live polling, and mode toggling.
-* [`SAVE_OPEN_SCRIFFLE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SAVE_OPEN_SCRIFFLE_PLAN.md): Details on `.scriffle` file schema, backend restore endpoint, and starter presets.
-* [`ACTIVITY_FEED_BACKTRACKING_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/ACTIVITY_FEED_BACKTRACKING_PLAN.md): Details on human-readable labels, camera panning, and chain glow.
-* [`KEYBOARD_SHORTCUTS_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/KEYBOARD_SHORTCUTS_PLAN.md): Details on keyboard shortcuts, clipboard buffers, and input safety guards.
-* [`TESTING_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TESTING_PLAN.md): Full 3-tier testing strategy and unit test suite documentation (105 tests).
+* [`FREE_TEXT_EXPERIENCE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/FREE_TEXT_EXPERIENCE_PLAN.md): FigJam × Miro rich free-text whiteboard tooling, formatting toolbar, highlighter pens.
+* [`GROUP_UNGROUP_IMPLEMENTATION_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/GROUP_UNGROUP_IMPLEMENTATION_PLAN.md): Group & ungroup architecture and double-click isolation focus.
+* [`TESTING_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TESTING_PLAN.md): Full 3-tier testing strategy and unit test suite documentation.
 * [`ENDPOINTS.md`](file:///home/abzolute/Projects/hackathon/context/ENDPOINTS.md): Complete index of all 32 Indonesia v2 Sectors API endpoints.
 
 ---
@@ -119,6 +109,7 @@
 
 ```txt
 hackathon/
+├── context/                           # All plan docs & specifications
 ├── prisma/
 │   ├── schema.prisma                  # SQLite models (Canvas, Node, Edge, Log, MarketSnapshot)
 │   └── seed.ts                        # FigJam demo canvas seed script
@@ -136,7 +127,6 @@ hackathon/
 │   │   │   │       ├── route.ts       # POST connect edge
 │   │   │   │       └── [id]/route.ts  # DELETE edge
 │   │   │   ├── engine/
-│   │   │   │   ├── simulate/route.ts  # Inject mock market event
 │   │   │   │   └── trigger/route.ts   # Trigger live Sectors poll & graph execution
 │   │   │   └── logs/route.ts          # Activity logs feed
 │   │   ├── globals.css                # Stack Sans Text font & flat outline zero-shadow styles
@@ -148,11 +138,11 @@ hackathon/
 │   │   │   ├── ContextMenu.tsx        # Right-click context menus for canvas and nodes
 │   │   │   ├── SelectionBoundingBox.tsx # Figma-style 8-point bounding box handles & group pills
 │   │   │   └── nodes/
-│   │   │       ├── WatcherNode.tsx    # Watcher sticker + cycle counter
+│   │   │       ├── WatcherNode.tsx    # Watcher sticker + cycle counter + credit cost badge + error UI
 │   │   │       ├── ConditionNode.tsx  # Condition rule capsule
 │   │   │       ├── NoteNode.tsx       # Direct inline editable FigJam sticky note
 │   │   │       ├── AlertNode.tsx      # Alert sticker
-│   │   │       ├── ActionNode.tsx     # Mutation automation sticker
+│   │   │       ├── ActionNode.tsx     # Mutation automation sticker + credit cost badge
 │   │   │       ├── TextNode.tsx       # Direct inline editable free text with markdown triggers
 │   │   │       ├── StickerNode.tsx    # Transparent badge stickers
 │   │   │       ├── ImageNode.tsx      # Resizable transparent Image node with NodeResizer
@@ -162,7 +152,7 @@ hackathon/
 │   │   ├── controls/
 │   │   │   ├── TopNav.tsx             # Floating whiteboard toolbar & sticker/image picker
 │   │   │   ├── SimulationBar.tsx      # Presenter demo dock (BBCA surge, volume spike)
-│   │   │   └── EditNodeModal.tsx      # Modal editor for structured nodes
+│   │   │   └── EditNodeModal.tsx      # Modal editor for structured nodes with credit notices & burst warnings
 │   │   ├── feed/
 │   │   │   └── ActivityFeed.tsx       # Live activity stream
 │   │   └── ui/
@@ -170,14 +160,16 @@ hackathon/
 │   ├── hooks/
 │   │   └── useCanvasSync.ts           # SWR polling hook (2s interval)
 │   ├── lib/
+│   │   ├── creditCosts.ts             # Centralized Sectors API credit pricing registry & burst warnings
+│   │   ├── mockData.ts                # Realistic market mocks
 │   │   ├── prisma.ts                  # Global Prisma client singleton
 │   │   └── utils.ts
 │   ├── server/
-│   │   ├── services/
-│   │   │   ├── dslEngine.ts           # Safe expr-eval parser
-│   │   │   ├── graphEngine.ts         # BFS graph traversal, self-mutations & cycle counting
-│   │   │   └── sectorsApi.ts          # Live & mock Sectors API data fetcher
-│   │   └── test-engine.ts             # Direct engine smoke test runner
+│   │   └── services/
+│   │       ├── dslEngine.ts           # Safe expr-eval parser
+│   │       ├── graphEngine.ts         # BFS graph traversal, self-mutations & cycle counting
+│   │       ├── reportExporter.ts      # HTML & PDF brief generation with in-place revision tracking
+│   │       └── sectorsApi.ts          # Live & mock Sectors API data fetcher
 │   └── types/
 │       └── canvas.ts                  # Master TypeScript contracts
 ```
@@ -187,7 +179,7 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
-* **Run Unit Tests:** `bun test` (106 tests across 6 files, ~115ms)
+* **Run Unit Tests:** `bun test` (**128 tests across 10 suites, 100% green, ~140ms**)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
 * **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`

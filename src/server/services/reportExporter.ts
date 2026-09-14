@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getCompanyFundamentalReport } from '@/server/services/sectorsApi';
+import { MarketEvent } from '@/types/canvas';
 
 export interface ExportedReportResult {
   fileName: string;
@@ -27,7 +28,9 @@ function sanitizeProjectSlug(name: string): string {
 export async function exportReportToDisk(
   projectName: string,
   symbol: string,
-  sessionApiKey?: string
+  sessionApiKey?: string,
+  revisionCount: number = 1,
+  marketEvent?: MarketEvent
 ): Promise<ExportedReportResult> {
   const cleanSymbol = symbol.toUpperCase();
   const projectSlug = sanitizeProjectSlug(projectName);
@@ -38,7 +41,7 @@ export async function exportReportToDisk(
     fs.mkdirSync(reportsDir, { recursive: true });
   }
 
-  const report = await getCompanyFundamentalReport(cleanSymbol, sessionApiKey);
+  const report = await getCompanyFundamentalReport(cleanSymbol, sessionApiKey, marketEvent);
 
   const price = report.lastClosePrice ? `Rp ${report.lastClosePrice.toLocaleString()}` : 'N/A';
   const priceChange = report.dailyCloseChange !== undefined
@@ -117,6 +120,20 @@ export async function exportReportToDisk(
       font-size: 12px;
       color: #6B7280;
       font-weight: 500;
+    }
+    .revision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0050FF;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 8px;
     }
     .print-btn {
       background: #111827;
@@ -365,9 +382,10 @@ export async function exportReportToDisk(
 <body>
   <div class="document">
     <div class="top-bar">
-      <div>
+      <div style="display: flex; align-items: center;">
         <span class="brand-title">Scriffle Research Brief</span>
         <span class="brand-meta">&nbsp;•&nbsp; Sectors API v2</span>
+        ${revisionCount > 1 ? `<span class="revision-badge">Rev ${revisionCount}</span>` : ''}
       </div>
       <button class="print-btn" onclick="window.print()">
         Print / Save PDF
@@ -534,7 +552,7 @@ export async function exportReportToDisk(
 
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
-      <div>Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} • Scriffle Studio</div>
+      <div>Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} ${revisionCount > 1 ? `(Revision ${revisionCount})` : ''} • Scriffle Studio</div>
     </div>
   </div>
 </body>

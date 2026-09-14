@@ -119,7 +119,9 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
             {config.action === 'fundamental_report'
               ? 'Fundamental Brief & PDF'
               : config.action === 'create_watcher'
-              ? `Spawn Peer Watcher (${config.params?.symbol || 'BBRI'})`
+              ? (config.params?.symbol || config.targetSymbol)
+                ? `Spawn Peer Watcher (${config.params?.symbol || config.targetSymbol})`
+                : 'Spawn Peer Watcher (Dynamic)'
               : 'Auto-Spawn New Note'}
           </span>
         </div>
@@ -132,6 +134,37 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
             : config.action === 'create_watcher'
             ? 'Dynamically generates a new related stock watcher node on canvas.'
             : 'Creates a brand new sticky note on canvas every time this action fires.'}
+        </div>
+
+        {/* Credit Cost Badge */}
+        <div className="flex items-center justify-between pt-1 text-[10px]">
+          <span
+            className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded-md border ${
+              config.action === 'fundamental_report'
+                ? isDark
+                  ? 'bg-[#20222B] text-amber-400 border-amber-400/20'
+                  : isMono
+                  ? 'bg-[#ECE8DE] text-amber-700 border-amber-600/20'
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
+                : isDark
+                ? 'bg-[#20222B] text-[#8C90A0] border-[#2C2E3A]'
+                : isMono
+                ? 'bg-[#ECE8DE] text-[#78756D] border-[#D8D4CA]'
+                : 'bg-slate-100 text-slate-600 border-slate-200'
+            }`}
+          >
+            <MingIcon name={config.action === 'fundamental_report' ? 'coin_line' : 'flash_line'} size={12} />
+            {config.action === 'fundamental_report' ? '8 credits / symbol' : '0 credits (local)'}
+          </span>
+          {config.action === 'fundamental_report' && (
+            <span
+              className={`font-mono text-[9px] ${
+                isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-400'
+              }`}
+            >
+              /v2/report/
+            </span>
+          )}
         </div>
       </div>
 

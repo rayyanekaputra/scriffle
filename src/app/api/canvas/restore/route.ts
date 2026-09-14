@@ -94,11 +94,14 @@ export async function POST(req: Request) {
 
         const positionX = node.position?.x ?? node.positionX ?? 100;
         const positionY = node.position?.y ?? node.positionY ?? 100;
+        const parsedConfig = typeof node.config === 'object' ? node.config : JSON.parse(node.configJson || '{}');
         const configJson = typeof node.config === 'object' ? JSON.stringify(node.config) : (node.configJson || '{}');
         
         // Reset execution run counter in state if present
         let cleanState: any = node.state || {};
+        if (cleanState.cycleCount !== undefined) cleanState.cycleCount = 0;
         if (cleanState.runCount !== undefined) cleanState.runCount = 0;
+
         const stateJson = JSON.stringify(cleanState);
 
         await tx.node.create({
