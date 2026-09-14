@@ -127,16 +127,17 @@ The `classifications=all` value was almost certainly added **after** the first w
 
 ---
 
-### ⏳ ENHANCEMENT: Watcher Initial State Should Start Clean & Empty (Waiting for Poll / Trigger)
-- **Status**: ❌ Open — Planned
+### ⏳ ENHANCEMENT: Watcher Initial State Starts Clean & Empty (Waiting for Poll / Trigger)
+- **Status**: ✅ Completed
 - **Priority**: Medium — visual clarity and expected lifecycle progression
-- **Description**: Watcher nodes (both single tickers like `BBCA` and Top Gainers / Losers Radar watchers) currently instantiate with pre-filled mock mover lists or last values in their initial state (`WatcherNode.tsx`, `api/canvas/nodes/route.ts`, and `api/canvas/restore/route.ts`). Instead, fresh watchers should start in a clean initial state:
-  - **Radar Watchers (`Top Gainers` / `Top Losers`)**: Display `"Waiting for live leaderboard poll..."` until the first poll cycle or trigger executes.
-  - **Single Tickers (`BBCA`, `GOTO`, etc.)**: Display `"Waiting for tick"` for Last Price and empty Price Change with `0 runs` until the first market event fires.
-- **Files to Update**:
-  1. [`src/components/canvas/nodes/WatcherNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/WatcherNode.tsx): Remove automatic fallback assignment of `MOCK_TOP_GAINERS`/`MOCK_TOP_LOSERS` when `state.movers` is unpopulated.
-  2. [`src/app/api/canvas/nodes/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/canvas/nodes/route.ts): Start newly created nodes with clean empty initial state (`{ status: 'idle', cycleCount: 0 }`).
-  3. [`src/app/api/canvas/restore/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/canvas/restore/route.ts): Do not inject mock fallback arrays into newly imported/restored nodes if unpopulated.
+- **Description**: Watcher nodes (both single tickers like `BBCA` and Top Gainers / Losers Radar watchers) start in a clean initial state:
+  - **Radar Watchers (`Top Gainers` / `Top Losers`)**: Cleanly renders `"Waiting for live leaderboard poll..."` with `0 runs` and `Idle` timestamp until the first poll cycle or trigger executes.
+  - **Single Tickers (`BBCA`, `GOTO`, etc.)**: Renders `"Waiting for tick"` for Last Price without premature price change badge and with `0 runs` until the first market event fires.
+- **Files Updated**:
+  1. [`src/components/canvas/nodes/WatcherNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/WatcherNode.tsx): Removed eager fallback assignment of `MOCK_TOP_GAINERS`/`MOCK_TOP_LOSERS` when `state.movers` is empty.
+  2. [`src/app/api/canvas/nodes/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/canvas/nodes/route.ts): Starts newly created nodes with clean initial state `{ status: 'idle', cycleCount: 0 }`.
+  3. [`src/app/api/canvas/restore/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/canvas/restore/route.ts): Does not inject mock fallback arrays into unpopulated nodes during `.scriffle` restore.
+  4. [`src/__tests__/unit/watcherInitialState.test.ts`](file:///home/abzolute/Projects/hackathon/src/__tests__/unit/watcherInitialState.test.ts): Unit test coverage (118 passing tests across 8 test suites).
 
 ---
 

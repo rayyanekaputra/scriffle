@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CanvasNodeData, CanvasEdgeData } from '@/types/canvas';
-import { MOCK_TOP_GAINERS, MOCK_TOP_LOSERS } from '@/lib/mockData';
 
 export async function POST(req: Request) {
   try {
@@ -100,17 +99,8 @@ export async function POST(req: Request) {
         
         // Reset execution run counter in state if present
         let cleanState: any = node.state || {};
+        if (cleanState.cycleCount !== undefined) cleanState.cycleCount = 0;
         if (cleanState.runCount !== undefined) cleanState.runCount = 0;
-
-        if (node.type === 'watcher') {
-          const isGainers = parsedConfig.mode === 'top_gainers' || parsedConfig.symbol === 'Top Gainers' || parsedConfig.symbol === 'TOP_GAINERS';
-          const isLosers = parsedConfig.mode === 'top_losers' || parsedConfig.symbol === 'Top Losers' || parsedConfig.symbol === 'TOP_LOSERS';
-          const limit = typeof parsedConfig.limit === 'number' && parsedConfig.limit > 0 ? parsedConfig.limit : 5;
-          if ((isGainers || isLosers) && (!cleanState.movers || cleanState.movers.length === 0)) {
-            cleanState.movers = isGainers ? MOCK_TOP_GAINERS.slice(0, limit) : MOCK_TOP_LOSERS.slice(0, limit);
-            if (!cleanState.lastValue) cleanState.lastValue = cleanState.movers[0];
-          }
-        }
 
         const stateJson = JSON.stringify(cleanState);
 

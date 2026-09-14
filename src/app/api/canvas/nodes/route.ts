@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { MOCK_TOP_GAINERS, MOCK_TOP_LOSERS } from '@/lib/mockData';
 
 export async function POST(req: Request) {
   try {
@@ -19,18 +18,7 @@ export async function POST(req: Request) {
     }
 
     const cfg = config || {};
-    const isGainers = cfg.mode === 'top_gainers' || cfg.symbol === 'Top Gainers' || cfg.symbol === 'TOP_GAINERS';
-    const isLosers = cfg.mode === 'top_losers' || cfg.symbol === 'Top Losers' || cfg.symbol === 'TOP_LOSERS';
-    const limit = typeof cfg.limit === 'number' && cfg.limit > 0 ? cfg.limit : 5;
-
-    let initialState: any = { status: 'idle' };
-    if (isGainers) {
-      initialState.movers = MOCK_TOP_GAINERS.slice(0, limit);
-      initialState.lastValue = MOCK_TOP_GAINERS[0];
-    } else if (isLosers) {
-      initialState.movers = MOCK_TOP_LOSERS.slice(0, limit);
-      initialState.lastValue = MOCK_TOP_LOSERS[0];
-    }
+    const initialState: any = { status: 'idle', cycleCount: 0 };
 
     const node = await prisma.node.create({
       data: {
