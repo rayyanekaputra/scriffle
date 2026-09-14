@@ -42,6 +42,20 @@
       color: #6B7280;
       font-weight: 500;
     }
+    .revision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0050FF;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 8px;
+    }
     .print-btn {
       background: #111827;
       color: #FFFFFF;
@@ -289,9 +303,10 @@
 <body>
   <div class="document">
     <div class="top-bar">
-      <div>
+      <div style="display: flex; align-items: center;">
         <span class="brand-title">Scriffle Research Brief</span>
         <span class="brand-meta">&nbsp;•&nbsp; Sectors API v2</span>
+        <span class="revision-badge">Rev 2</span>
       </div>
       <button class="print-btn" onclick="window.print()">
         Print / Save PDF
@@ -465,7 +480,7 @@
 
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
-      <div>Generated on Sep 12, 2026 • Scriffle Studio</div>
+      <div>Generated on Sep 14, 2026 (Revision 2) • Scriffle Studio</div>
     </div>
   </div>
 </body>

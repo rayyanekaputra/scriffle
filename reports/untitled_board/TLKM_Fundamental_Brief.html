@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BMRI - Institutional Equity Research Brief</title>
+  <title>TLKM - Institutional Equity Research Brief</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
@@ -41,6 +41,20 @@
       font-size: 12px;
       color: #6B7280;
       font-weight: 500;
+    }
+    .revision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0050FF;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 8px;
     }
     .print-btn {
       background: #111827;
@@ -96,8 +110,8 @@
       padding: 2px 8px;
       border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
-      background: #ECFDF5;
-      color: #059669;
+      background: #FEF2F2;
+      color: #DC2626;
     }
 
     .meta-details {
@@ -227,8 +241,8 @@
       display: flex;
       margin: 10px 0 8px 0;
     }
-    .bar-buy { background: #0050FF; height: 100%; width: 83%; }
-    .bar-hold { background: #9CA3AF; height: 100%; width: 17%; }
+    .bar-buy { background: #0050FF; height: 100%; width: 88%; }
+    .bar-hold { background: #9CA3AF; height: 100%; width: 12%; }
 
     .thesis-box {
       background: #FAFAFA;
@@ -289,9 +303,10 @@
 <body>
   <div class="document">
     <div class="top-bar">
-      <div>
+      <div style="display: flex; align-items: center;">
         <span class="brand-title">Scriffle Research Brief</span>
         <span class="brand-meta">&nbsp;•&nbsp; Sectors API v2</span>
+        
       </div>
       <button class="print-btn" onclick="window.print()">
         Print / Save PDF
@@ -300,25 +315,25 @@
 
     <div class="header-profile">
       <div>
-        <h1 class="symbol-title">BMRI</h1>
-        <div class="company-name">PT BMRI Indonesia Tbk.</div>
+        <h1 class="symbol-title">TLKM</h1>
+        <div class="company-name">PT Telkom Indonesia (Persero) Tbk</div>
       </div>
       <div class="price-box">
-        <div class="current-price">Rp 2,500</div>
-        <div class="price-change">+2.00% Today</div>
+        <div class="current-price">Rp 2,600</div>
+        <div class="price-change">-1.14% Today</div>
       </div>
     </div>
 
     <div class="meta-details">
-      <span class="meta-item">Sector: <strong>Industrials / Diversified</strong></span>
-      <span class="meta-item">Sub-Sector: <strong>Diversified Operations</strong></span>
+      <span class="meta-item">Sector: <strong>Infrastructures</strong></span>
+      <span class="meta-item">Sub-Sector: <strong>Telecommunication</strong></span>
       <span class="meta-item">Board: <strong>Main</strong></span>
-      <span class="meta-item">ESG Risk: <strong>23.8</strong></span>
+      <span class="meta-item">ESG Risk: <strong>24.57</strong></span>
     </div>
 
     <div class="tags-row">
-      <span class="index-pill">KOMPAS100</span><span class="index-pill">IDX80</span>
-      <span class="tag">#idx listed</span><span class="tag">#active market mover</span><span class="tag">#high liquidity</span>
+      <span class="index-pill">IDXHIDIV20</span><span class="index-pill">SMINFRA18</span><span class="index-pill">LQ45</span><span class="index-pill">KOMPAS100</span><span class="index-pill">IDXQ30</span><span class="index-pill">IDXESGL</span>
+      <span class="tag">#dividend yield ttm above 5 percent</span><span class="tag">#esg under 25</span><span class="tag">#invested by danantara</span><span class="tag">#top 90d transaction value</span>
     </div>
 
     <hr class="section-divider" />
@@ -327,51 +342,51 @@
     <div class="metric-grid">
       <div class="metric-item">
         <div class="metric-label">Market Capitalisation</div>
-        <div class="metric-val">Rp 12.5 T</div>
-        <div class="metric-sub">Rank #65 on IDX</div>
+        <div class="metric-val">Rp 257.6 T</div>
+        <div class="metric-sub">Rank #8 on IDX</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Earnings (P/E)</div>
-        <div class="metric-val">16.5x</div>
-        <div class="metric-sub">Forward: 14.2x</div>
+        <div class="metric-val">17.9x</div>
+        <div class="metric-sub">Forward: 9.96x</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Book (P/B)</div>
-        <div class="metric-val">1.75x</div>
-        <div class="metric-sub">Fair: Rp 2,750</div>
+        <div class="metric-val">2.49x</div>
+        <div class="metric-sub">Fair: Rp 9,361</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Dividend Yield (TTM)</div>
-        <div class="metric-val">2.5%</div>
-        <div class="metric-sub">Payout: 42%</div>
+        <div class="metric-val">8.58%</div>
+        <div class="metric-sub">Payout: 127%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Net Profit Margin</div>
-        <div class="metric-val">15.4%</div>
-        <div class="metric-sub">OP Margin: 19.8%</div>
+        <div class="metric-val">13.8%</div>
+        <div class="metric-sub">OP Margin: 31.3%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Return on Equity (ROE)</div>
-        <div class="metric-val">14.2%</div>
-        <div class="metric-sub">ROA: 5.8%</div>
+        <div class="metric-val">15.9%</div>
+        <div class="metric-sub">ROA: 8.4%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">52-Week Range</div>
         <div class="metric-val" style="font-size: 15px;">
-          Rp 1,750 - 3,500
+          Rp 2,350 - 3,990
         </div>
-        <div class="metric-sub">ATH: Rp 4,000</div>
+        <div class="metric-sub">ATH: Rp 4,850</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Revenue Expansion</div>
-        <div class="metric-val">+14%</div>
+        <div class="metric-val">+12.5580951602132%</div>
         <div class="metric-sub">YoY Growth</div>
       </div>
     </div>
@@ -382,21 +397,21 @@
       <div>
         <div class="panel-heading">
           <span>Analyst Consensus</span>
-          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">83% Buy Rating</span>
+          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">88% Buy Rating</span>
         </div>
         <div class="analyst-bar-wrapper">
           <div class="bar-buy" title="Buy / Strong Buy"></div>
           <div class="bar-hold" title="Hold / Neutral"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #6B7280;">
-          <span>6 Strong Buy</span>
-          <span>4 Buy</span>
-          <span>2 Hold</span>
+          <span>21 Strong Buy</span>
+          <span>88 Buy</span>
+          <span>12 Hold</span>
           <span>0 Sell</span>
         </div>
         
           <div style="margin-top: 14px; font-size: 11px; color: #4B5563; line-height: 1.5;">
-            Forecast: Projected EPS growth of <strong>+12.0%</strong> on <strong>+14.0%</strong> revenue expansion.
+            Forecast: Projected EPS growth of <strong>+33.2%</strong> on <strong>+12.6%</strong> revenue expansion.
           </div>
         
       </div>
@@ -409,20 +424,21 @@
         <div>
           
       <div class="list-item">
-        <div class="item-title">Major Core Shareholders</div>
-        <span class="share-pct">55.0%</span>
+        <div class="item-title">PT Danantara Asset Management</div>
+        <span class="share-pct">undefined</span>
       </div>
     
       <div class="list-item">
-        <div class="item-title">Public Free Float</div>
-        <span class="share-pct">45.0%</span>
+        <div class="item-title">Public</div>
+        <span class="share-pct">undefined</span>
+      </div>
+    
+      <div class="list-item">
+        <div class="item-title">The Bank Of New York Mellon Dr</div>
+        <span class="share-pct">undefined</span>
       </div>
     
         </div>
-        
-          <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">
-            Group / Conglomerate: <strong style="color: #111827;">Listed Group</strong>
-          </div>
         
       </div>
     </div>
@@ -432,7 +448,7 @@
     <div class="thesis-box">
       <div class="thesis-label">Automated Trigger Thesis Summary</div>
       <div class="thesis-text">
-        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>PT BMRI Indonesia Tbk.</strong> (BMRI) trades at <strong>16.5x P/E</strong> and <strong>1.75x P/B</strong> with a <strong>2.5%</strong> dividend yield, supported by <strong>83% analyst buy consensus</strong>.
+        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>PT Telkom Indonesia (Persero) Tbk</strong> (TLKM) trades at <strong>17.9x P/E</strong> and <strong>2.49x P/B</strong> with a <strong>8.58%</strong> dividend yield, supported by <strong>88% analyst buy consensus</strong>.
       </div>
     </div>
 
@@ -468,7 +484,7 @@
 
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
-      <div>Generated on Sep 12, 2026 • Scriffle Studio</div>
+      <div>Generated on Sep 14, 2026  • Scriffle Studio</div>
     </div>
   </div>
 </body>

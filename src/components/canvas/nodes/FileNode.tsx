@@ -239,6 +239,20 @@ export const FileNode = memo(({ data, selected }: NodeProps) => {
                 {meta.category}
               </span>
             )}
+
+            {/* Revision Counter Badge */}
+            {((config.revisionCount && config.revisionCount > 1) || ((data.state as any)?.revisionCount > 1)) && (
+              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded font-semibold text-[9px] ${
+                isDark
+                  ? 'bg-blue-950/60 text-blue-400 border border-blue-800/60'
+                  : isMono
+                  ? 'bg-[#EAE7DF] text-[#242321] border border-[#D8D4CA]'
+                  : 'bg-blue-50 text-[#0050FF] border border-blue-200'
+              }`}>
+                <MingIcon name="refresh_line" size={10} />
+                <span>Rev {config.revisionCount || (data.state as any)?.revisionCount}</span>
+              </span>
+            )}
           </div>
         </div>
 

@@ -42,6 +42,20 @@
       color: #6B7280;
       font-weight: 500;
     }
+    .revision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0050FF;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 8px;
+    }
     .print-btn {
       background: #111827;
       color: #FFFFFF;
@@ -227,8 +241,8 @@
       display: flex;
       margin: 10px 0 8px 0;
     }
-    .bar-buy { background: #0050FF; height: 100%; width: 85%; }
-    .bar-hold { background: #9CA3AF; height: 100%; width: 15%; }
+    .bar-buy { background: #0050FF; height: 100%; width: 82%; }
+    .bar-hold { background: #9CA3AF; height: 100%; width: 18%; }
 
     .thesis-box {
       background: #FAFAFA;
@@ -289,9 +303,10 @@
 <body>
   <div class="document">
     <div class="top-bar">
-      <div>
+      <div style="display: flex; align-items: center;">
         <span class="brand-title">Scriffle Research Brief</span>
         <span class="brand-meta">&nbsp;•&nbsp; Sectors API v2</span>
+        <span class="revision-badge">Rev 4</span>
       </div>
       <button class="print-btn" onclick="window.print()">
         Print / Save PDF
@@ -301,24 +316,24 @@
     <div class="header-profile">
       <div>
         <h1 class="symbol-title">ELPI</h1>
-        <div class="company-name">PT Pelayaran Nasional Ekalya Purnamasari Tbk</div>
+        <div class="company-name">PT Pelayaran Nasional Ekalya Purnamasari Tbk.</div>
       </div>
       <div class="price-box">
-        <div class="current-price">Rp 680</div>
-        <div class="price-change">-4.23% Today</div>
+        <div class="current-price">Rp 392</div>
+        <div class="price-change">-21.69% Today</div>
       </div>
     </div>
 
     <div class="meta-details">
-      <span class="meta-item">Sector: <strong>Transportation & Logistic</strong></span>
-      <span class="meta-item">Sub-Sector: <strong>Logistics & Deliveries</strong></span>
+      <span class="meta-item">Sector: <strong>Industrials</strong></span>
+      <span class="meta-item">Sub-Sector: <strong>Logistics & Transportation</strong></span>
       <span class="meta-item">Board: <strong>Main</strong></span>
-      
+      <span class="meta-item">ESG Risk: <strong>24.1</strong></span>
     </div>
 
     <div class="tags-row">
-      
-      <span class="tag">#public float under 25</span>
+      <span class="index-pill">IDXTRANS</span><span class="index-pill">KOMPAS100</span>
+      <span class="tag">#marine logistics</span><span class="tag">#offshore vessel</span><span class="tag">#top losers</span>
     </div>
 
     <hr class="section-divider" />
@@ -327,51 +342,51 @@
     <div class="metric-grid">
       <div class="metric-item">
         <div class="metric-label">Market Capitalisation</div>
-        <div class="metric-val">Rp 6.5 T</div>
-        <div class="metric-sub">Rank #209 on IDX</div>
+        <div class="metric-val">Rp 6.0 T</div>
+        <div class="metric-sub">Rank #105 on IDX</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Earnings (P/E)</div>
-        <div class="metric-val">15.39x</div>
-        <div class="metric-sub">TTM Multiple</div>
+        <div class="metric-val">10.02x</div>
+        <div class="metric-sub">Forward: 10.5x</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Book (P/B)</div>
-        <div class="metric-val">0.94x</div>
-        <div class="metric-sub">Fair: Rp -111</div>
+        <div class="metric-val">1.14x</div>
+        <div class="metric-sub">Fair: Rp 431</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Dividend Yield (TTM)</div>
-        <div class="metric-val">2.31%</div>
-        <div class="metric-sub">Regular Payout</div>
+        <div class="metric-val">2.1%</div>
+        <div class="metric-sub">Payout: 32%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Net Profit Margin</div>
-        <div class="metric-val">15.8%</div>
-        <div class="metric-sub">OP Margin: 22.8%</div>
+        <div class="metric-val">16.8%</div>
+        <div class="metric-sub">OP Margin: 22.4%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Return on Equity (ROE)</div>
-        <div class="metric-val">5.0%</div>
-        <div class="metric-sub">ROA: 4.1%</div>
+        <div class="metric-val">12.5%</div>
+        <div class="metric-sub">ROA: 7.4%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">52-Week Range</div>
         <div class="metric-val" style="font-size: 15px;">
-          Rp 340 - 2,630
+          Rp 274 - 549
         </div>
-        <div class="metric-sub">ATH: Rp 2,630</div>
+        <div class="metric-sub">ATH: Rp 1,450</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Revenue Expansion</div>
-        <div class="metric-val">+8.5%</div>
+        <div class="metric-val">+18%</div>
         <div class="metric-sub">YoY Growth</div>
       </div>
     </div>
@@ -382,18 +397,22 @@
       <div>
         <div class="panel-heading">
           <span>Analyst Consensus</span>
-          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">85% Buy Rating</span>
+          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">82% Buy Rating</span>
         </div>
         <div class="analyst-bar-wrapper">
           <div class="bar-buy" title="Buy / Strong Buy"></div>
           <div class="bar-hold" title="Hold / Neutral"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #6B7280;">
-          <span>21 Strong Buy</span>
+          <span>5 Strong Buy</span>
           <span>4 Buy</span>
           <span>2 Hold</span>
           <span>0 Sell</span>
         </div>
+        
+          <div style="margin-top: 14px; font-size: 11px; color: #4B5563; line-height: 1.5;">
+            Forecast: Projected EPS growth of <strong>+15.0%</strong> on <strong>+18.0%</strong> revenue expansion.
+          </div>
         
       </div>
 
@@ -405,21 +424,20 @@
         <div>
           
       <div class="list-item">
-        <div class="item-title">PT Kreasi Cipta Timur</div>
-        <span class="share-pct">undefined</span>
+        <div class="item-title">PT Kreasi Cipta Bersama</div>
+        <span class="share-pct">68.50%</span>
       </div>
     
       <div class="list-item">
-        <div class="item-title">PT GMT Kapital Asia</div>
-        <span class="share-pct">undefined</span>
-      </div>
-    
-      <div class="list-item">
-        <div class="item-title">Public</div>
-        <span class="share-pct">undefined</span>
+        <div class="item-title">Public Shareholders</div>
+        <span class="share-pct">31.50%</span>
       </div>
     
         </div>
+        
+          <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">
+            Group / Conglomerate: <strong style="color: #111827;">Ekalya Group</strong>
+          </div>
         
       </div>
     </div>
@@ -429,7 +447,7 @@
     <div class="thesis-box">
       <div class="thesis-label">Automated Trigger Thesis Summary</div>
       <div class="thesis-text">
-        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>PT Pelayaran Nasional Ekalya Purnamasari Tbk</strong> (ELPI) trades at <strong>15.39x P/E</strong> and <strong>0.94x P/B</strong> with a <strong>2.31%</strong> dividend yield, supported by <strong>85% analyst buy consensus</strong>.
+        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>PT Pelayaran Nasional Ekalya Purnamasari Tbk.</strong> (ELPI) trades at <strong>10.02x P/E</strong> and <strong>1.14x P/B</strong> with a <strong>2.1%</strong> dividend yield, supported by <strong>82% analyst buy consensus</strong>.
       </div>
     </div>
 
@@ -465,7 +483,7 @@
 
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
-      <div>Generated on Sep 12, 2026 • Scriffle Studio</div>
+      <div>Generated on Sep 14, 2026 (Revision 4) • Scriffle Studio</div>
     </div>
   </div>
 </body>

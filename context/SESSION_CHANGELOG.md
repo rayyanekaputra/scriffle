@@ -4,6 +4,20 @@
  
  ---
  
+## 0. Radar Watcher Leaderboard Multi-Stock Brief Isolation & Dynamic In-Place Fundamental Reports
+
+**Key Issues Resolved:**
+1. **Radar Watcher Leaderboard Collapse on Subsequent Polling Cycles (`graphEngine.ts`)**:
+   - **Root Cause**: `executeGraphForEvent()` in `src/server/services/graphEngine.ts` evaluated `isRadar` modes and matched radar watchers when standard single tickers (e.g. `BBCA`, `BMRI`) registered price moves. This queued a single-ticker BFS traversal down radar watcher outgoing edges, calling `generateDefaultNoteContent()` and replacing multi-stock (5-item) leaderboards with a 1-stock note on the 2nd/3rd poll cycles.
+   - **Fix**: Updated `matchingWatchers` in `executeGraphForEvent()` to strictly exclude radar watchers (`isRadar: return false`). Radar watchers are now exclusively executed via `executeGraphForRadarWatcher()`, preserving multi-mover arrays and formatted leaderboards indefinitely.
+2. **Dynamic In-Place Multi-Property Fundamental Report Updates (`sectorsApi.ts`, `reportExporter.ts`, `graphEngine.ts`)**:
+   - Dynamic mock generator updates market cap, enterprise value, valuation multiples (P/E, P/B), and context rank dynamically based on real-time price changes across repeated polling cycles.
+   - In-place file overwrites preserve existing file paths while dynamically incrementing revision numbers (`Rev 1`, `Rev 2`, `Rev 3`...).
+3. **Unit Tests & Build Verification**:
+   - Added radar watcher filtering isolation test in `src/__tests__/unit/leaderboard.test.ts`.
+   - All 113 unit tests passing (`bun test`), 0 build errors (`bun run build`).
+
+ 
 ## 1. UI Contrast & Typography Cleanup (Esc Badge, Shortcuts Group Titles, FileNode Contrast, Zero All-Caps Enforcement)
 
 **Key Issues Resolved:**

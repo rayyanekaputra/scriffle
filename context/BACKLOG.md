@@ -6,6 +6,12 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⭐ Mock Top Movers Leaderboard Generation & Fallback Fix (`WatcherNode.tsx`, `mockData.ts`, `graphEngine.ts`, `SimulationBar.tsx`)**
+  - Added dedicated shared mock constants (`MOCK_TOP_GAINERS`, `MOCK_TOP_LOSERS`) in `@/lib/mockData.ts` and exported from `sectorsApi.ts`.
+  - Implemented zero-flicker mock leaderboard fallback in `WatcherNode.tsx`: automatically displays rich mock leaderboards on creation, restore, or simulation without getting stuck on blank "Waiting..." states.
+  - Upgraded `executeGraphForEvent` in `graphEngine.ts` to preserve and update `movers` arrays for radar watchers during single-event triggers instead of resetting them to empty.
+  - Added instant mock spike triggers for `🚀 Top Gainer (JECX +25%)` and `🔻 Top Loser (BKSL -8.96%)` in `SimulationBar.tsx` and `DevSpikeTool.tsx`.
+  - Expanded unit test suite in `leaderboard.test.ts` (111 passing tests across 7 files).
 - [x] **⭐ Navigation & Productivity Suite (Spotlight Search, Shortcuts Guide & Zoom Presets)**
   - **Spotlight Quick Search (`SpotlightSearchModal.tsx`)**: Fuzzy indexer (`searchIndexer.ts`) across all tickers (`BBCA`, `TLKM`), AI prompts, note text, rules, and files with keyboard navigation (`↑`/`↓`/`↵`) and smooth camera pan & zoom (`setCenter`).
   - **Keyboard Shortcuts Guide (`ShortcutsModal.tsx`)**: Categorized visual cheat sheet for Tools (`V`, `H`, `T`), Card Actions (`Cmd+C/V/D`, `Del`), Grouping (`Cmd+G/Shift+G`, Isolation), and Navigation.
@@ -61,7 +67,37 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ---
 
+- [x] **⭐ Mock Poll Randomizer & Clean Demo Controls (`sectorsApi.ts`, `SimulationBar.tsx`, `page.tsx`)**
+  - Implemented `generateMockMarketEvent(symbol)` in `sectorsApi.ts` using realistic probability distributions (20% mild drop, 20% slight down, 20% drift, 20% slight up, 20% surge), dynamic price calculations from prevPrice, and 60%–250% volume multipliers.
+  - Implemented `generateMockTopMovers(n)` with dynamic pool sampling and randomized percentage moves for Top Gainers & Losers radar watchers.
+  - Fully cleaned up manual preset spikes, `DevSpikeTool.tsx`, and `/api/engine/simulate` route in favor of clean live and randomized mock polling streams.
+  - Maintained 100% green test suite across all 111 unit tests.
+
+---
+
 ## 📌 Open Candidate Endpoints & Features
+
+### 🐛 BUG: Radar Watcher Leaderboard Brief Overwritten by Single-Stock Polls
+- **Status**: ✅ Completed
+- **Priority**: High — prevents 5-item Top Gainers / Losers Leaderboards and research briefs from collapsing into 1-stock notes on subsequent poll cycles
+- **Root Cause**: `executeGraphForEvent()` falsely matched radar watchers (`mode === 'top_gainers' || mode === 'top_losers'`) when single tickers rolled positive/negative, executing single-item BFS down radar watcher edges and overwriting the 5-item leaderboard.
+- **Fix**: Excluded radar watchers from `executeGraphForEvent()`; radar watchers are strictly processed via `executeGraphForRadarWatcher()`. See [`RADAR_LEADERBOARD_POLLUTION_FIX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/RADAR_LEADERBOARD_POLLUTION_FIX_PLAN.md).
+
+---
+
+### ⏳ ENHANCEMENT: Watcher Initial State Should Start Clean & Empty (Waiting for Poll / Trigger)
+- **Status**: ❌ Open — Planned
+- **Priority**: Medium — visual clarity and expected lifecycle progression
+- **Description**: Watcher nodes (both single tickers like `BBCA` and Top Gainers / Losers Radar watchers) currently instantiate with pre-filled mock mover lists or last values in their initial state (`WatcherNode.tsx`, `api/canvas/nodes/route.ts`, and `api/canvas/restore/route.ts`). Instead, fresh watchers should start in a clean initial state:
+  - **Radar Watchers (`Top Gainers` / `Top Losers`)**: Display `"Waiting for live leaderboard poll..."` until the first poll cycle or trigger executes.
+  - **Single Tickers (`BBCA`, `GOTO`, etc.)**: Display `"Waiting for tick"` for Last Price and empty Price Change with `0 runs` until the first market event fires.
+- **Files to Update**:
+  1. [`src/components/canvas/nodes/WatcherNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/WatcherNode.tsx): Remove automatic fallback assignment of `MOCK_TOP_GAINERS`/`MOCK_TOP_LOSERS` when `state.movers` is unpopulated.
+  2. [`src/app/api/canvas/nodes/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/canvas/nodes/route.ts): Start newly created nodes with clean empty initial state (`{ status: 'idle', cycleCount: 0 }`).
+  3. [`src/app/api/canvas/restore/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/canvas/restore/route.ts): Do not inject mock fallback arrays into newly imported/restored nodes if unpopulated.
+
+
+---
 
 ### 1. 📄 Redesign PDF & Export Brief Layout (Scriffle Design System)
 - **Status**: ✅ Completed (Clean institutional layout, metric glossary, `@media print`, auto-export to disk)
@@ -112,12 +148,11 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
      - **In-Place Emoji Picker**: Clicking the sticker icon opens a lightweight emoji / icon quick-picker dropdown directly on the canvas (e.g. 🚀, 🎯, ⭐, 🔥, 💎, ⚠️, 🐻, 🐂, 📈, 📉, 🍜, ⚡, 🏆).
      - **In-Place Editable Label**: Double-clicking or clicking the label allows inline typing directly on the canvas card (e.g. *"Accumulation Zone"*, *"High Conviction"*, *"Earnings Catalyst"*) with `Enter` / `Esc` to commit.
      - **Color Swatch / Pill Selector**: Option to customize badge background accent tint (Mint, Rose, Amber, Indigo, Teal, Warm Slate).
-2. **📊 Dynamic PDF Export & Fundamental Brief In-Place Updates with Revision Counter (`reportExporter.ts`, `FileNode.tsx`, `NoteNode.tsx`, `graphEngine.ts`)**
-   - **Problem:** Currently, repeated trigger executions or polling cycles can generate redundant canvas objects or new files instead of dynamically refreshing existing documents.
-   - **Proposed Solution & Experience:**
-     - **In-Place Dynamic Refresh:** When `ActionNode` (`fundamental_report`) or downstream automation fires on subsequent cycles, dynamically update the existing attached `FileNode` (PDF/HTML export on disk) and connected `NoteNode` (Fundamental Brief) instead of spawning duplicate nodes.
-     - **Revision & Update Counter Badge:** Display an update counter (e.g. `🔄 Rev 3` or `⚡ 4 updates`) on both the FileNode card and the Note card header, indicating how many times the document and brief have been refreshed with live market data.
-     - **Timestamp & Version History in Brief:** Auto-append the latest update timestamp and revision index in the brief note and exported report.
+- [x] **📊 Dynamic PDF Export & Fundamental Brief In-Place Updates with Revision Counter (`reportExporter.ts`, `FileNode.tsx`, `NoteNode.tsx`, `graphEngine.ts`)**
+  - Implemented `handleFundamentalReportMutation` in `graphEngine.ts` across single-event triggers, Top Movers Radar, and AI Screener pipelines.
+  - Dynamically updates existing attached `FileNode` documents on disk and connected `NoteNode` briefs in-place on repeat executions instead of spawning duplicate cards.
+  - Added revision tracking (`revisionCount: rev + 1`) and `🔄 Rev X` badge pills on `FileNode.tsx` and `NoteNode.tsx`, with institutional `Rev X` badge pills in exported HTML/PDF briefs.
+  - Added unit test suite `reportRevision.test.ts` (109 passing unit tests).
 
 - [x] **⚡ Dynamic Watcher Target Handle & Upstream Input Reception (`WatcherNode.tsx` & `graphEngine.ts`)**
   - Added target handle (`Position.Left`) to `WatcherNode.tsx` allowing direct visual drag-to-connect from Screener and Action nodes without React Flow connection warnings.
@@ -125,7 +160,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [x] **🐛 Dynamic Peer Watcher Action Label Fallback (`ActionNode.tsx` & `types/canvas.ts`)**
   - Updated `ActionNode.tsx` to dynamically render `Spawn Peer Watcher (Dynamic)` or configured symbol override instead of hardcoded `"BBRI"`. Added `targetSymbol`, `template`, and `interval` properties to `ActionConfig`.
 
-3. **🖼️ Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)**
+1. **🖼️ Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)**
    - **Problem:** Current `ImageNode` only supports resize handles (`NodeResizer`). Users cannot edit image URLs, swap/replace image files in-place, inline-edit the caption, toggle transparency/borders, or configure images via `EditNodeModal` (which currently lacks an `image` node tab).
    - **Proposed Solution & Experience:**
      - **In-Place Image Replace / Upload**: Hover action bar or double-click to swap the image URL or upload a new image from disk directly.
@@ -133,15 +168,15 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
      - **Transparency & Card Border Toggle**: Quick toggle between transparent sticker mode (`isTransparent: true`) and bordered card mode (`rounded-2xl border-2 border-slate-300 bg-white p-2`).
      - **Edit Modal Integration**: Add dedicated `image` configuration tab in `EditNodeModal.tsx` (URL input, upload dropzone, caption text, aspect ratio reset, dimensions).
 
-4. **🔗 Action-to-Action Chaining & Multi-Step Workflows (`ActionNode.tsx` & `graphEngine.ts`)**
-   - **Problem:** Currently, Action nodes are terminal leaf nodes in the visual flow. Users cannot chain sequential actions together (e.g., first create a watcher, then automatically generate a fundamental brief, then trigger an alert or canvas export).
-   - **Proposed Solution & Experience:**
-     - **Action Output Handles:** Add output connection handles to `ActionNode.tsx` allowing direct visual drag-to-connect from one action to another (`Action` → `Action`).
-     - **Graph Engine Chained Execution:** Extend `graphEngine.ts` BFS traversal to execute chained downstream actions sequentially, passing forward the current context/symbol payload.
-     - **Multi-Step Pipelines:** Support advanced multi-action automation (e.g., `[Screener]` → `[Action: create_watcher]` → `[Action: fundamental_report]` → `[Action: export_canvas]`).
+2. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
+3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
 
-5. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
-6. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+---
+
+### ⏸️ On-Hold / Deprioritized Backlog (Least Favored)
+
+- **🔗 Action-to-Action Chaining & Multi-Step Workflows (`ActionNode.tsx` & `graphEngine.ts`)**:
+  - *Status:* **Deprioritized / On-Hold** — Currently lacking a strong user logic-case or clear mental model. Single downstream action pipelines (e.g. `[Screener/Radar] -> [Action: create_watcher] -> [Pipeline]`) already satisfy all primary research and board mutation workflows without introducing multi-action recursion overhead.
 
 ---
 
@@ -161,7 +196,6 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - Quick transparency vs bordered card toggle.
 
 #### 2. ⚡ Automation & Flow Building (n8n-inspired)
-- [ ] **Action-to-Action Chaining (`ActionNode.tsx` & `graphEngine.ts`)**: Connect actions sequentially (`[Action] -> [Action]`) with output handles and multi-step pipeline execution in `graphEngine.ts`.
 - [ ] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
 - [ ] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on surge"`, `"export"`) to make automation pathways self-documenting.
 - [ ] **Live Signal Flow Pulses**: Visual pulsing packet animating along connecting edges when a watcher or condition triggers downstream nodes.

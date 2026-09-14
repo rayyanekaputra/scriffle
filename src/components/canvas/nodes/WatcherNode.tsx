@@ -5,6 +5,7 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { WatcherConfig, MarketEvent } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
+import { MOCK_TOP_GAINERS, MOCK_TOP_LOSERS } from '@/lib/mockData';
 
 export const WatcherNode = memo(({ data, selected }: NodeProps) => {
   const { theme } = useTheme();
@@ -24,11 +25,18 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
     config.symbol === 'TOP_LOSERS';
 
   const isGainers = config.mode === 'top_gainers' || config.symbol === 'Top Gainers' || config.symbol === 'TOP_GAINERS';
-  const movers: MarketEvent[] = Array.isArray(state.movers) && state.movers.length > 0
-    ? state.movers
-    : lastVal.symbol && lastVal.symbol !== 'TOP_GAINERS' && lastVal.symbol !== 'TOP_LOSERS'
-    ? [lastVal]
-    : [];
+  const limit = typeof config.limit === 'number' && config.limit > 0 ? config.limit : 5;
+  const fallbackMovers = isGainers
+    ? MOCK_TOP_GAINERS.slice(0, limit)
+    : MOCK_TOP_LOSERS.slice(0, limit);
+
+  const movers: MarketEvent[] = isRadarMode
+    ? (Array.isArray(state.movers) && state.movers.length > 0 ? state.movers : fallbackMovers)
+    : (Array.isArray(state.movers) && state.movers.length > 0
+        ? state.movers
+        : lastVal.symbol && lastVal.symbol !== 'TOP_GAINERS' && lastVal.symbol !== 'TOP_LOSERS'
+        ? [lastVal]
+        : []);
 
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';

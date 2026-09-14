@@ -42,6 +42,20 @@
       color: #6B7280;
       font-weight: 500;
     }
+    .revision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0050FF;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 8px;
+    }
     .print-btn {
       background: #111827;
       color: #FFFFFF;
@@ -227,8 +241,8 @@
       display: flex;
       margin: 10px 0 8px 0;
     }
-    .bar-buy { background: #0050FF; height: 100%; width: 85%; }
-    .bar-hold { background: #9CA3AF; height: 100%; width: 15%; }
+    .bar-buy { background: #0050FF; height: 100%; width: 44%; }
+    .bar-hold { background: #9CA3AF; height: 100%; width: 56%; }
 
     .thesis-box {
       background: #FAFAFA;
@@ -289,9 +303,10 @@
 <body>
   <div class="document">
     <div class="top-bar">
-      <div>
+      <div style="display: flex; align-items: center;">
         <span class="brand-title">Scriffle Research Brief</span>
         <span class="brand-meta">&nbsp;•&nbsp; Sectors API v2</span>
+        <span class="revision-badge">Rev 3</span>
       </div>
       <button class="print-btn" onclick="window.print()">
         Print / Save PDF
@@ -301,24 +316,24 @@
     <div class="header-profile">
       <div>
         <h1 class="symbol-title">BKSL</h1>
-        <div class="company-name">Sentul City Tbk</div>
+        <div class="company-name">PT Sentul City Tbk.</div>
       </div>
       <div class="price-box">
-        <div class="current-price">Rp 71</div>
-        <div class="price-change">-1.39% Today</div>
+        <div class="current-price">Rp 416</div>
+        <div class="price-change">-16.76% Today</div>
       </div>
     </div>
 
     <div class="meta-details">
-      <span class="meta-item">Sector: <strong>Properties & Real Estate</strong></span>
-      <span class="meta-item">Sub-Sector: <strong>Properties & Real Estate</strong></span>
+      <span class="meta-item">Sector: <strong>Real Estate</strong></span>
+      <span class="meta-item">Sub-Sector: <strong>Property Development</strong></span>
       <span class="meta-item">Board: <strong>Main</strong></span>
-      <span class="meta-item">ESG Risk: <strong>29.57</strong></span>
+      <span class="meta-item">ESG Risk: <strong>26.8</strong></span>
     </div>
 
     <div class="tags-row">
-      <span class="index-pill">KOMPAS100</span><span class="index-pill">ECONOMIC30</span><span class="index-pill">JII70</span>
-      <span class="tag">#insider 1 month buy</span><span class="tag">#insider 1 month sell</span><span class="tag">#top 90d transaction volume</span>
+      <span class="index-pill">IDXPROPERT</span><span class="index-pill">KOMPAS100</span>
+      <span class="tag">#top losers</span><span class="tag">#property township</span><span class="tag">#sentul highlands</span>
     </div>
 
     <hr class="section-divider" />
@@ -327,51 +342,51 @@
     <div class="metric-grid">
       <div class="metric-item">
         <div class="metric-label">Market Capitalisation</div>
-        <div class="metric-val">Rp 11.9 T</div>
-        <div class="metric-sub">Rank #145 on IDX</div>
+        <div class="metric-val">Rp 8.5 T</div>
+        <div class="metric-sub">Rank #82 on IDX</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Earnings (P/E)</div>
-        <div class="metric-val">-20.56x</div>
-        <div class="metric-sub">TTM Multiple</div>
+        <div class="metric-val">15.15x</div>
+        <div class="metric-sub">Forward: 15x</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Price to Book (P/B)</div>
-        <div class="metric-val">0.32x</div>
-        <div class="metric-sub">Fair: Rp -202</div>
+        <div class="metric-val">0.71x</div>
+        <div class="metric-sub">Fair: Rp 458</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Dividend Yield (TTM)</div>
-        <div class="metric-val">3.5%</div>
+        <div class="metric-val">0%</div>
         <div class="metric-sub">Regular Payout</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Net Profit Margin</div>
-        <div class="metric-val">5.2%</div>
-        <div class="metric-sub">OP Margin: 18.3%</div>
+        <div class="metric-val">11.3%</div>
+        <div class="metric-sub">OP Margin: 18.2%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Return on Equity (ROE)</div>
-        <div class="metric-val">0.5%</div>
-        <div class="metric-sub">ROA: 0.3%</div>
+        <div class="metric-val">4.8%</div>
+        <div class="metric-sub">ROA: 3.2%</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">52-Week Range</div>
         <div class="metric-val" style="font-size: 15px;">
-          Rp 52 - 193
+          Rp 291 - 582
         </div>
-        <div class="metric-sub">ATH: Rp 772</div>
+        <div class="metric-sub">ATH: Rp 450</div>
       </div>
 
       <div class="metric-item">
         <div class="metric-label">Revenue Expansion</div>
-        <div class="metric-val">+8.5%</div>
+        <div class="metric-val">+10%</div>
         <div class="metric-sub">YoY Growth</div>
       </div>
     </div>
@@ -382,18 +397,22 @@
       <div>
         <div class="panel-heading">
           <span>Analyst Consensus</span>
-          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">85% Buy Rating</span>
+          <span style="font-size: 12px; font-weight: 600; color: #0050FF;">44% Buy Rating</span>
         </div>
         <div class="analyst-bar-wrapper">
           <div class="bar-buy" title="Buy / Strong Buy"></div>
           <div class="bar-hold" title="Hold / Neutral"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #6B7280;">
-          <span>21 Strong Buy</span>
-          <span>4 Buy</span>
-          <span>2 Hold</span>
-          <span>0 Sell</span>
+          <span>2 Strong Buy</span>
+          <span>2 Buy</span>
+          <span>4 Hold</span>
+          <span>1 Sell</span>
         </div>
+        
+          <div style="margin-top: 14px; font-size: 11px; color: #4B5563; line-height: 1.5;">
+            Forecast: Projected EPS growth of <strong>+8.0%</strong> on <strong>+10.0%</strong> revenue expansion.
+          </div>
         
       </div>
 
@@ -405,21 +424,20 @@
         <div>
           
       <div class="list-item">
-        <div class="item-title">PT. Sakti Generasi Perdana</div>
-        <span class="share-pct">undefined</span>
+        <div class="item-title">PT Sakti Generasi Perdana</div>
+        <span class="share-pct">52.68%</span>
       </div>
     
       <div class="list-item">
-        <div class="item-title">Public</div>
-        <span class="share-pct">undefined</span>
-      </div>
-    
-      <div class="list-item">
-        <div class="item-title">Stella Isabella Djohan</div>
-        <span class="share-pct">undefined</span>
+        <div class="item-title">Public Shareholders</div>
+        <span class="share-pct">47.32%</span>
       </div>
     
         </div>
+        
+          <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">
+            Group / Conglomerate: <strong style="color: #111827;">Sentul Group</strong>
+          </div>
         
       </div>
     </div>
@@ -429,7 +447,7 @@
     <div class="thesis-box">
       <div class="thesis-label">Automated Trigger Thesis Summary</div>
       <div class="thesis-text">
-        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>Sentul City Tbk</strong> (BKSL) trades at <strong>-20.56x P/E</strong> and <strong>0.32x P/B</strong> with a <strong>3.5%</strong> dividend yield, supported by <strong>85% analyst buy consensus</strong>.
+        This institutional fundamental brief was compiled automatically by Scriffle's real-time engine following a condition trigger. <strong>PT Sentul City Tbk.</strong> (BKSL) trades at <strong>15.15x P/E</strong> and <strong>0.71x P/B</strong> with a <strong>0%</strong> dividend yield, supported by <strong>44% analyst buy consensus</strong>.
       </div>
     </div>
 
@@ -465,7 +483,7 @@
 
     <div class="report-footer">
       <div>Source: Sectors.app v2 API (Indonesia Stock Exchange)</div>
-      <div>Generated on Sep 12, 2026 • Scriffle Studio</div>
+      <div>Generated on Sep 14, 2026 (Revision 3) • Scriffle Studio</div>
     </div>
   </div>
 </body>

@@ -86,7 +86,7 @@
 [Sectors API / Mock Data]
          │
          ▼
-POST /api/engine/trigger (live poll) OR POST /api/engine/simulate (mock inject)
+POST /api/engine/trigger (Live Sectors API poll or realistic randomized Mock)
          │
          ▼
 graphEngine.ts → BFS traversal from Watcher → Condition → Note/Alert/Action
@@ -215,12 +215,11 @@ hackathon/
 | `GET` | `/api/canvas/list` | All saved canvases with metadata |
 | `POST` | `/api/canvas/restore` | Atomic replace canvas from .scriffle file |
 
-### Engine & Simulation
+### Engine & Live Poll
 | Method | Route | Description |
 |---|---|---|
 | `GET` | `/api/logs` | Recent execution logs |
-| `POST` | `/api/engine/trigger` | Live Sectors API poll + graph execution |
-| `POST` | `/api/engine/simulate` | Inject mock `MarketEvent` (symbol, price_change, volume, price) |
+| `POST` | `/api/engine/trigger` | Live Sectors API poll + graph execution (with randomized mock fallback) |
 
 ### Export & Files
 | Method | Route | Description |
@@ -315,6 +314,16 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
+- **Dynamic Mock Fundamental Report & Valuation Metric Updates (`sectorsApi.ts`, `graphEngine.ts`, `reportExporter.ts`, `reportRevision.test.ts`)**:
+  - Dynamically recalculates Market Cap ($\text{Market Cap}_{\text{base}} \times (1 + \frac{\Delta\%}{100})$), P/E, P/B, `lastClosePrice`, and `dailyCloseChange` on every mock poll tick and report revision instead of displaying static constants.
+  - Formats dynamic market cap strings with `formatMarketCap` (`T`, `B`, `Q`).
+  - Threaded `marketEvent` through `handleFundamentalReportMutation`, `getCompanyFundamentalReport`, and `exportReportToDisk`.
+  - Added unit test suite verification in `reportRevision.test.ts` (112 passing unit tests).
+- **Dynamic PDF & Fundamental Brief In-Place Refresh with Revision Counters (`reportExporter.ts`, `FileNode.tsx`, `NoteNode.tsx`, `graphEngine.ts`)**:
+  - Implemented `handleFundamentalReportMutation` in `graphEngine.ts` across single-event triggers, Top Movers Radar, and AI Screener pipelines.
+  - When subsequent market ticks trigger research for an already researched symbol, the engine dynamically refreshes the existing attached `FileNode` on disk and updates the connected `NoteNode` brief in-place, eliminating duplicate node clutter.
+  - Added revision counter tracking (`revisionCount: rev + 1`) and timestamps rendered as `🔄 Rev X` pills on both `FileNode.tsx` and `NoteNode.tsx` headers, as well as institutional `Rev X` badge pills and footer records inside the exported HTML/PDF brief.
+  - Added unit test suite `reportRevision.test.ts` (112 passing unit tests).
 - **Dynamic Watcher Target Handle & Upstream Input Reception (`WatcherNode.tsx` & `graphEngine.ts`)**: Added left-side target handle (`<Handle type="target" position={Position.Left} />`) to `WatcherNode.tsx`, resolving the React Flow edge creation error when connecting Action or Screener nodes to Watcher nodes. Updated `graphEngine.ts` across BFS event processing, Top Movers radar processing, and AI Screener flows to support dynamic symbol adoption when upstream nodes feed tickers into Watcher nodes.
 - **Dynamic Peer Watcher Action Label Fallback (`ActionNode.tsx` & `types/canvas.ts`)**: Fixed hardcoded `"BBRI"` default in `ActionNode.tsx` label to dynamically render `(Dynamic)` or configured symbol override (`config.targetSymbol` / `config.params.symbol`), and added `targetSymbol`, `template`, and `interval` properties to `ActionConfig`.
 - **UI Contrast & Typography Cleanup (Esc Badge, Shortcuts Group Titles, FileNode Contrast, Zero All-Caps Enforcement)**:
@@ -325,7 +334,7 @@ hackathon/
   - **Sticker Node & Modal Editor (`EditNodeModal.tsx` & `StickerNode.tsx`)**: Fixed empty modal on double-click sticker; added 32-emoji grid picker, custom emoji input, label field, 7-color badge palette, and live preview. Added inline quick emoji popover on canvas and converted toolbar Sticker button into a split button (direct click drops sticker at viewport center, chevron opens 8 presets with click-outside dismiss).
   - **Viewport-Centered Node Placement (`NavToolbar.tsx` & `src/app/page.tsx`)**: Replaced static top-left coordinate fallback `(300, 200)` with `useReactFlow().screenToFlowPosition` converting viewport center `(window.innerWidth / 2, window.innerHeight / 2)` to flow coordinates with natural scatter jitter. Wrapped `NavToolbar` inside `ReactFlowProvider`.
   - **Free-Text Formatting Toolbar Stability (`TextNode.tsx` & `TextFormatToolbar.tsx`)**: Added `onMouseDown` preventDefault in `TextFormatToolbar` to stop focus theft from `<textarea>`, and updated `showToolbar` to `(selected || isEditing) && selectedCount === 1` so formatting controls remain active and accessible.
-  - **Search Indexer & Testing**: Updated `searchIndexer.ts` with custom emoji and label search tokens; increased unit tests to 106 passing tests.
+  - **Search Indexer & Testing**: Updated `searchIndexer.ts` with custom emoji and label search tokens; increased unit tests to 109 passing tests.
 - **Navigation & Productivity Suite (`SpotlightSearchModal.tsx`, `ShortcutsModal.tsx`, `ZoomControls.tsx`)** — Implemented Figma/FigJam-inspired spatial navigation: Spotlight Search (`Cmd+K`/`Cmd+F`) with real-time fuzzy indexer (`searchIndexer.ts`) across all tickers, prompts, rules, notes, and files with smooth camera pan & zoom (`setCenter`); visual Keyboard Shortcuts Guide modal (`?` / `Shift+/`); and interactive bottom-left Zoom Controls with live percentage pill, preset dropdown (`50%`, `100%`, `150%`, `200%`, `Fit All`), and viewport hotkeys (`Shift+1` fit to screen, `Shift+0`/`Cmd+0` 100% reset).
 - **AI Natural Language Company Screener (`/v2/companies/?q=...`)** — Added dedicated `ScreenerNode` (`ScreenerNode.tsx`) on the canvas supporting natural language queries (e.g. *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*, *"tech companies by revenue"*). Integrated `fetchCompaniesScreener` with dynamic `query_values` unpacking, full Sectors API field coverage, smart metric stat capsule formatting, 3 AI credits notice, and downstream automation (`[Screener] -> [Note / Action / Watcher]`).
 - **Auto-Spawned Watcher Complete Automation Pipeline (`create_watcher`)** — When an Action node triggers `create_watcher` (from Top Gainers/Losers Radar or single breakout events), it now automatically spawns a complete, connected downstream automation pipeline: `[New Watcher] -> [Condition (price_change > 0)] -> [Sticky Note]`. This ensures newly discovered breakout stocks immediately execute live tracking on subsequent polling ticks without manual wiring.
@@ -339,16 +348,19 @@ hackathon/
 - **Free-Form Text Node Edit-Mode Race Fix (`TextNode.tsx`)** — Fixed bug where clicking a Text card caused edit mode to immediately close itself. Root cause: `useEffect` watching React Flow's `selected` prop fired `setIsEditing(false)` during the brief pointer-down de-select. Fix: replaced with a **200ms debounced timer** (`deselectedTimerRef`) that cancels on re-select; added **single-click-to-edit** when node was already selected (`wasSelectedRef`) matching FigJam/Notion UX; double-click always enters edit mode unconditionally.
 - **In-Place Customizable Emoji Stickers (`StickerNode.tsx`)** — Replaced the rigid 7-preset `stickerType` enum with a free-form `{ emoji, label, color }` schema. `StickerNode` fully rewritten: double-click emoji to change it (inline input), double-click label to rename it, color palette (7 colors) appears on hover/select. Fully backward-compatible with old `.scriffle` files via a `LEGACY_MAP`. NavToolbar and ContextMenu updated to seed stickers with new format; bullish/bearish presets replaced with 📈/📉 emoji stickers.
 
-- **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 106 tests across 6 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, and `spatialNavigator`. All pass in ~115ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
+- **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 109 tests across 7 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, `spatialNavigator`, and `reportRevision`. All pass in ~128ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
-### 🟡 Open Candidate Integrations & Polish (Planned)
-1. **Dynamic PDF & Brief In-Place Refresh** — Dynamically update existing attached `FileNode` PDF/HTML and connected `NoteNode` brief on repeat triggers/polls instead of creating duplicate nodes; add update/revision counters (`🔄 Rev 3` / `⚡ 4 updates`).
-2. **Action-to-Action Chaining** — Add output handles to `ActionNode.tsx` and enable sequential multi-action automation pipelines in `graphEngine.ts` (`[Action] -> [Action]`).
-3. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+### 🟡 Open Candidate Integrations & Polish (Prioritized)
+1. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+2. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
+3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
 4. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
 5. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
 6. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
 7. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+
+### ⏸️ On-Hold / Deprioritized Candidates
+- **Action-to-Action Chaining** — Chained sequential actions (`[Action] -> [Action]`). *Status: Deprioritized / On-Hold — currently lacking concrete logic-case as single downstream action pipelines (`[Screener/Radar] -> [Action] -> [Pipeline]`) already fulfill target workflows without compounding branching complexity.*
 
 ---
 
@@ -360,9 +372,10 @@ hackathon/
 4. **Cycle Counter Reset:** When clearing the Activity Feed, ALL watcher cycle counters reset to 0 in SQLite.
 5. **FileNode OS Reveal:** `POST /api/file/open-location` opens the OS file manager — only works in local dev, not production.
 6. **MingCute Loading:** Icons are loaded via CSS font from `public/mingcute/Mingcute.css`. Import it in `layout.tsx`. Use `<MingIcon name="mgc_xxx_line" />` — check Mingcute.css for valid icon names.
-7. **Multi-canvas isolation:** Each canvas has its own `canvasId`. The engine routes (`/api/engine/trigger`, `/api/engine/simulate`) must always scope to the correct canvas ID.
+7. **Multi-canvas isolation:** Each canvas has its own `canvasId`. The engine route (`/api/engine/trigger`) must always scope to the correct canvas ID.
 8. **No WebSockets:** Short-polling via SWR only (2s). Intentional — simpler and robust enough for demo scale.
 9. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
+10. **Mock Poll Randomization:** Mock market polling in `sectorsApi.ts` applies realistic per-call randomized distributions (±0–7% price movements, volume multipliers) so nodes update dynamically during offline demos.
 
 ---
 
@@ -420,7 +433,7 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **106 tests, 0 failures, ~115ms runtime**
+- **111 tests, 0 failures, ~140ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -431,10 +444,11 @@ src/__tests__/
 └── unit/
     ├── dslEngine.test.ts          ← 30 tests — all DSL operators, AND/OR compounds, camelCase aliases, edge cases
     ├── interpolateTemplate.test.ts ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
-    ├── leaderboard.test.ts        ← 18 tests — gainers/losers formatting, rank indicators, empty input
+    ├── leaderboard.test.ts        ← 20 tests — gainers/losers formatting, rank indicators, empty input, mock movers fallback
     ├── screenerNote.test.ts       ← 15 tests — screener output structure, company rows, fallbacks
     ├── searchIndexer.test.ts      ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
-    └── spatialNavigator.test.ts   ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
+    ├── spatialNavigator.test.ts   ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
+    └── reportRevision.test.ts     ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`

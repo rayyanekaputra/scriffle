@@ -20,6 +20,8 @@
 * **`watcher` (Radar sticker & Leaderboard):**
   * **Single Stock Mode:** Monitors individual Indonesian stock tickers (`BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`) with current price, % move, and cycle counter (`⚡ 12 runs`).
   * **Top Gainers / Losers Leaderboard Mode:** Full multi-mover ranking table (`#1`, `#2`, `#3`... with ticker, company name, last close price, and Mint/Coral % badges) querying `GET /v2/companies/top-changes/` with `n_stock`, `periods`, `classifications`, and `min_mcap_billion` parameters.
+  * **Zero-Flicker Mock Movers Fallback:** Seamlessly renders rich mock leaderboard data (`MOCK_TOP_GAINERS`, `MOCK_TOP_LOSERS` from `@/lib/mockData`) when created, restored, or simulated offline without getting stuck in blank "Waiting..." states.
+  * **Upstream Input Target Handle:** Equipped with a left-side Target Handle allowing upstream Screener or Action nodes to pipe dynamic ticker payloads directly into Watchers.
   * **Dual Downstream Workflows:** Direct connected sticky notes (`NoteNode`) auto-format the full ranked summary table; connected action nodes (`create_note`) spawn separate individual sticky notes for each ranked mover with non-overlapping spatial offsets.
 * **`screener` (AI Natural Language Company Screener):**
   * **Natural Language Queries:** Users query Indonesian stocks in plain English (e.g., *"top 5 banks by market cap"*, *"mining companies with high dividend"*, *"tech companies by revenue"*).
@@ -30,7 +32,8 @@
 * **`condition` (Rule capsule):** Evaluates boolean rules safely using `expr-eval` (e.g. `price_change > 5 AND volume > 1000000`). Zero insecure `eval()`.
 * **`note` (FigJam Sticky Note):** **Direct inline editable on canvas** without popups. Supports pastel color themes (`yellow`, `mint`, `pink`, `blue`, `purple`) and template interpolation (e.g. `${symbol} surged ${price_change}%`).
 * **`alert` (Notification sticker):** Emits UI notifications and logs them to the activity feed.
-* **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes, watchers, or generating institutional Fundamental Briefs (`fundamental_report` action auto-saved to disk + linked `FileNode` + research `NoteNode` populated with accurate ticker-specific metrics).
+* **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes, watchers, or generating institutional Fundamental Briefs (`fundamental_report` action auto-saved to disk + linked `FileNode` + research `NoteNode` with dynamic in-place `Rev 2+` incrementing on repeated runs).
+  * **Dynamic Peer Watcher Labeling:** Displays contextual peer symbols (e.g. `⚡ Auto-Spawn Peer Watcher (BBRI)`) or dynamic fallback (`⚡ Auto-Spawn Peer Watcher (Incoming Ticker)`) when no hardcoded ticker is set.
 * **`text` (FigJam × Miro Rich Freeform Text):**
   * **Direct inline editable on canvas** with auto-growing textarea and zero awkward scrollbars.
   * **Floating Contextual Formatting Toolbar (`TextFormatToolbar`):** Docks above active card with 4-level typography scale (`H1 Title`, `H2 Header`, `Body`, `Note/Caption`), styling toggles (`Bold`, `Italic`, `Underline`, `Strikethrough`), text alignment (`Left`, `Center`, `Right`), pastel highlighter markers (`Yellow`, `Mint`, `Coral`, `Purple`), and container styles (`Plain`, `Callout Banner`, `Card Box`).
@@ -187,7 +190,7 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
-* **Run Unit Tests:** `bun test` (106 tests across 6 files, ~115ms)
+* **Run Unit Tests:** `bun test` (111 tests across 7 files, ~140ms)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
 * **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`
