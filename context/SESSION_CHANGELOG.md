@@ -16,6 +16,7 @@
 3. **Contextual Quick-Add Popover ([`QuickAddPopover.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/QuickAddPopover.tsx))**:
    - Filterable search bar with keyboard navigation (`↑` / `↓` / `↵` / `Esc`).
    - Recommends logical next nodes (e.g. from `Watcher`/`Screener` $\rightarrow$ suggests `Condition`, `Sticky Note`, `Action`).
+   - **Full 3-Theme Color Alignment**: Polished Mono (warm-paper `#F4F3EF` / `#FCFBF9`, `#242321` text, `#78756D` muted text, `#D8D4CA` borders, monochrome icon badges), Dark (soft charcoal `#14151B`), and Light modes.
 4. **Collision Avoidance & Spatial Placement ([`quickAddNavigator.ts`](file:///home/abzolute/Projects/hackathon/src/lib/quickAddNavigator.ts))**:
    - Calculates target placement at `(source.x + 320, source.y)` and automatically staggers downwards (`+150px Y`) if space is occupied.
    - Smartly inherits symbol names and templates (e.g. creating a report action from a `TLKM` watcher automatically sets `targetSymbol: 'TLKM'`).

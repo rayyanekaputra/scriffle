@@ -109,7 +109,7 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
 
   // Keep popover inside viewport bounds
   const adjustedPosition = useMemo(() => {
-    const width = 280;
+    const width = 288;
     const height = 380;
     const padding = 16;
 
@@ -135,7 +135,37 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
     ? 'bg-[#14151B] border-[#2E3240] text-[#E2E4E9]'
     : isMono
     ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321]'
-    : 'bg-white border-slate-300 text-slate-800';
+    : 'bg-white border-slate-300 text-slate-900';
+
+  const headerBorder = isDark
+    ? 'border-[#262833]'
+    : isMono
+    ? 'border-[#EAE7DF]'
+    : 'border-slate-200';
+
+  const iconPillBg = isDark
+    ? 'bg-[#222530] text-[#BAC0D0] border-[#313442]'
+    : isMono
+    ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+    : 'bg-[#0050FF]/10 text-[#0050FF] border-[#0050FF]/20';
+
+  const titleText = isDark
+    ? 'text-[#E2E4E9]'
+    : isMono
+    ? 'text-[#242321]'
+    : 'text-slate-900';
+
+  const mutedText = isDark
+    ? 'text-[#8C90A0]'
+    : isMono
+    ? 'text-[#78756D]'
+    : 'text-slate-500';
+
+  const closeBtnHover = isDark
+    ? 'text-[#8C90A0] hover:bg-[#222530] hover:text-[#E2E4E9]'
+    : isMono
+    ? 'text-[#78756D] hover:bg-[#EAE7DF] hover:text-[#242321]'
+    : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700';
 
   const inputBg = isDark
     ? 'bg-[#1C1E26] border-[#2E3240] text-white placeholder-[#787C8D]'
@@ -155,6 +185,24 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
     ? 'hover:bg-[#F4F3EF]'
     : 'hover:bg-slate-50';
 
+  const suggestedBadge = isDark
+    ? 'bg-[#0050FF]/20 text-blue-300 border-[#0050FF]/40'
+    : isMono
+    ? 'bg-[#E2DFD6] text-[#242321] border-[#C8C4B8]'
+    : 'bg-[#0050FF]/10 text-[#0050FF] border-[#0050FF]/20';
+
+  const footerBorder = isDark
+    ? 'border-[#262833]'
+    : isMono
+    ? 'border-[#EAE7DF]'
+    : 'border-slate-200';
+
+  const footerKbd = isDark
+    ? 'bg-[#1C1E26] border-[#2E3240] text-[#BAC0D0]'
+    : isMono
+    ? 'bg-[#EFECE4] border-[#D8D4CA] text-[#242321]'
+    : 'bg-slate-100 border-slate-200 text-slate-700';
+
   return (
     <div
       ref={popoverRef}
@@ -163,15 +211,15 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
       onContextMenu={(e) => e.stopPropagation()}
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-inherit">
+      <div className={`flex items-center justify-between pb-2 mb-2 border-b ${headerBorder}`}>
         <div className="flex items-center gap-1.5">
-          <div className="p-1 rounded-lg bg-[#0050FF]/10 text-[#0050FF]">
+          <div className={`p-1 rounded-lg border ${iconPillBg}`}>
             <MingIcon name="add_line" size={14} />
           </div>
           <div>
-            <h3 className="text-xs font-bold leading-tight">Quick Add Next Node</h3>
+            <h3 className={`text-xs font-bold leading-tight ${titleText}`}>Quick Add Next Node</h3>
             {sourceNodeLabel && (
-              <span className="text-[10px] text-slate-400 font-medium">
+              <span className={`text-[10px] font-medium ${mutedText}`}>
                 From {sourceNodeLabel}
               </span>
             )}
@@ -179,7 +227,8 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg hover:bg-slate-200/50 text-slate-400 hover:text-slate-600 transition-colors"
+          className={`p-1 rounded-lg transition-colors cursor-pointer ${closeBtnHover}`}
+          title="Close (Esc)"
         >
           <MingIcon name="close_line" size={14} />
         </button>
@@ -187,7 +236,7 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
 
       {/* Search Bar */}
       <div className="relative mb-2">
-        <div className="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-slate-400">
+        <div className={`absolute inset-y-0 left-2.5 flex items-center pointer-events-none ${mutedText}`}>
           <MingIcon name="search_line" size={13} />
         </div>
         <input
@@ -203,18 +252,37 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
       {/* List */}
       <div className="max-h-60 overflow-y-auto space-y-1 pr-0.5">
         {filteredOptions.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-400">
+          <div className={`py-6 text-center text-xs ${mutedText}`}>
             No matching node types found
           </div>
         ) : (
           filteredOptions.map((opt, idx) => {
             const isSelected = idx === selectedIndex;
+
+            const iconBoxStyle = isMono
+              ? {
+                  backgroundColor: '#EFECE4',
+                  borderColor: '#D8D4CA',
+                  color: '#242321',
+                }
+              : isDark
+              ? {
+                  backgroundColor: '#1E202B',
+                  borderColor: '#2F3240',
+                  color: opt.color,
+                }
+              : {
+                  backgroundColor: `${opt.color}20`,
+                  borderColor: opt.color,
+                  color: opt.color,
+                };
+
             return (
               <button
                 key={opt.type}
                 onClick={() => onSelectType(opt.type)}
                 onMouseEnter={() => setSelectedIndex(idx)}
-                className={`w-full flex items-center gap-2.5 rounded-xl border-2 px-2.5 py-2 text-left transition-all ${
+                className={`w-full flex items-center gap-2.5 rounded-xl border-2 px-2.5 py-2 text-left transition-all cursor-pointer ${
                   isSelected
                     ? `${selectedItemBg} border-2`
                     : `border-transparent ${itemHoverBg}`
@@ -222,26 +290,22 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
               >
                 <div
                   className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-xs"
-                  style={{
-                    backgroundColor: `${opt.color}20`,
-                    borderColor: opt.color,
-                    color: opt.color,
-                  }}
+                  style={iconBoxStyle}
                 >
                   <MingIcon name={opt.icon} size={15} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold truncate">
+                    <span className={`text-xs font-bold truncate ${titleText}`}>
                       {opt.label}
                     </span>
                     {opt.recommended && (
-                      <span className="rounded-full bg-[#0050FF]/10 text-[#0050FF] px-1.5 py-0.2 text-[9px] font-bold border border-[#0050FF]/20">
+                      <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold border ${suggestedBadge}`}>
                         Suggested
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-slate-400 truncate leading-tight mt-0.5">
+                  <p className={`text-[10px] truncate leading-tight mt-0.5 ${mutedText}`}>
                     {opt.description}
                   </p>
                 </div>
@@ -252,16 +316,16 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
       </div>
 
       {/* Footer Navigation Tip */}
-      <div className="mt-2.5 pt-2 border-t border-inherit flex items-center justify-between text-[10px] text-slate-400">
+      <div className={`mt-2.5 pt-2 border-t flex items-center justify-between text-[10px] ${footerBorder} ${mutedText}`}>
         <span className="flex items-center gap-1">
-          <kbd className="rounded border px-1 py-0.2 text-[9px] font-mono">↑</kbd>
-          <kbd className="rounded border px-1 py-0.2 text-[9px] font-mono">↓</kbd>
+          <kbd className={`rounded border px-1 py-0.2 text-[9px] font-mono ${footerKbd}`}>↑</kbd>
+          <kbd className={`rounded border px-1 py-0.2 text-[9px] font-mono ${footerKbd}`}>↓</kbd>
           <span>Navigate</span>
         </span>
         <span className="flex items-center gap-1">
-          <kbd className="rounded border px-1 py-0.2 text-[9px] font-mono">↵</kbd>
+          <kbd className={`rounded border px-1 py-0.2 text-[9px] font-mono ${footerKbd}`}>↵</kbd>
           <span>Select</span>
-          <kbd className="rounded border px-1 py-0.2 text-[9px] font-mono ml-1">Esc</kbd>
+          <kbd className={`rounded border px-1 py-0.2 text-[9px] font-mono ml-1 ${footerKbd}`}>Esc</kbd>
           <span>Close</span>
         </span>
       </div>
