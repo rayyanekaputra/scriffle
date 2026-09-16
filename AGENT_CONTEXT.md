@@ -188,6 +188,8 @@ hackathon/
     │   │   └── ActivityFeed.tsx    ← Live event stream, camera pan, chain glow
     │   └── ui/
     │       └── MingIcon.tsx        ← Reusable MingCute icon component
+    ├── context/
+    │   └── LoadingContext.tsx      ← Global loading task queue (LoadingProvider, useLoading, runTracked, isNodeLoading)
     ├── hooks/
     │   └── useCanvasSync.ts        ← SWR polling hook (2s interval)
     ├── lib/
@@ -323,7 +325,15 @@ hackathon/
 - **Project File Actions**: 3-button grid for **New File** (fresh `/b/[uuid]` board), **Open File** (`.scriffle`), and **Save File**.
 - **Examples**: Built-in starter workflows (`Rotation Engine`, `Momentum Breakout Loop`, `Banking Sector Trio`).
 
+### Global &amp; Card-Level Loading Feedback
+- **`LoadingContext.tsx`**: Centralized loading task queue using React Context + `useState` + `useRef` for timeout safety. Exports `LoadingProvider`, `useLoading()`. API: `startTask(taskInput)`, `endTask(id)`, `updateTask(id, updates)`, `isNodeLoading(nodeId?)`, `runTracked(taskInput, asyncFn)`. 12-second safety auto-timeout per task; cleanup on unmount.
+- **Global TopNav feedback**: A 2px electric blue (`#0050FF`) hairline progress bar at the bottom of the header appears during any active loading task. A center status capsule with MingCute spinner and `activeTask.label` text provides institutional-style status visibility across all 3 themes.
+- **Card-level feedback**: `ScreenerNode` (`🤖 Screening...` badge + animate-pulse outline), `ActionNode` (`Running...` badge + pulse outline), `WatcherNode` (`⚡ Polling...` badge + pulse outline), `FileNode` (`⏳ Generating...` amber badge).
+- **Wired operations**: Live/mock stream polling (`SimulationBar.tsx`), AI screener queries (`ScreenerNode.tsx`), `.scriffle` file imports, preset template loading, and per-node auto-stream polling (`page.tsx`).
+- **Unit tests**: `loadingState.test.ts` — 7 tests covering idle state, single task, concurrent tasks, update, `runTracked` resolve, `runTracked` throw, and 12s timeout.
+
 ---
+
 
 ## 10. Open Backlog (Prioritized)
 
@@ -429,7 +439,7 @@ bun run prisma/seed.ts            # Reset & seed demo canvas
 bun run src/server/test-engine.ts # Smoke test the graph engine directly
 bunx prisma db push               # Push schema changes to dev.db
 bunx prisma studio                # Visual DB browser
-bun test                          # ⚠️ Run ALL unit tests — must stay green (128 tests across 10 suites, ~140ms)
+bun test                          # ⚠️ Run ALL unit tests — must stay green (135 tests across 11 suites, ~140ms)
 bun run test:watch                # Run tests in watch mode during development
 bun run test:coverage             # Run tests with coverage report
 ```
@@ -446,6 +456,7 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
 | `TESTING_PLAN.md` | ⭐ Full 3-tier testing strategy & mandate — **read before adding any new feature** |
+| `GLOBAL_LOADING_FEEDBACK_PLAN.md` | Architecture and implementation plan for global loading queue & indicators |
 | `CURRENT_ENDPOINT.md` | Active vs. planned Sectors API endpoint mapping |
 | `ENDPOINTS.md` | All 32 Sectors API v2 endpoints reference |
 | `CONTEXT.md` | Original master contracts & TypeScript interfaces |
@@ -473,11 +484,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 128 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 135 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **128 tests, 0 failures, ~140ms runtime**
+- **135 tests, 0 failures, 11 suites, ~140ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -495,7 +506,8 @@ src/__tests__/
     ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
     ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
     ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)
-    └── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
+    ├── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
+    └── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`

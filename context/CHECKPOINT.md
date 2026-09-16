@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **128 unit tests across 10 test suites (100% green).**
+* **Master Unit Test Suite:** **135 unit tests across 11 test suites (100% green).**
 
 ---
 
@@ -160,6 +160,8 @@ hackathon/
 │   │   │   └── ActivityFeed.tsx       # Live activity stream
 │   │   └── ui/
 │   │       └── MingIcon.tsx           # Reusable MingCute icon component
+│   ├── context/
+│   │   └── LoadingContext.tsx         # Centralized loading task queue (LoadingProvider, useLoading, runTracked)
 │   ├── hooks/
 │   │   └── useCanvasSync.ts           # SWR polling hook (2s interval)
 │   ├── lib/
@@ -182,7 +184,7 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
-* **Run Unit Tests:** `bun test` (**128 tests across 10 suites, 100% green, ~140ms**)
+* **Run Unit Tests:** `bun test` (**135 tests across 11 suites, 100% green, ~140ms**)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
 * **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`
