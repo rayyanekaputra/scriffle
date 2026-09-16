@@ -82,6 +82,7 @@ Executes natural language queries across the Indonesian stock universe.
   "position": { "x": 100, "y": 450 },
   "config": {
     "query": "coal mining companies with dividend yield > 8% and PE < 6",
+    "mode": "natural",
     "limit": 5,
     "interval": 600
   }
@@ -89,6 +90,10 @@ Executes natural language queries across the Indonesian stock universe.
 ```
 * **Config Fields:**
   * `query` *(string)*: Natural language screener prompt (e.g. `"top 5 banks by market cap"`, `"tech companies with positive revenue growth"`).
+  * `mode` *(optional string)*: `"natural"` (default) | `"structured"`.
+  * `where` *(optional string)*: Optional SQL-like query filter.
+  * `orderBy` *(optional string)*: Optional sort field (e.g. `"market_cap"`, `"dividend_yield"`).
+  * `desc` *(optional boolean)*: Sort descending.
   * `limit` *(optional number)*: Maximum number of results returned (default `5`).
   * `interval` *(optional number)*: Polling interval in seconds (default `300`).
 
@@ -134,7 +139,8 @@ Displays real-time interpolated text or static analytical observations.
     "template": "⚡ Momentum Trigger:\n${symbol} gained +${price_change}% at price IDR ${price}.\nVolume: ${volume}",
     "color": "mint",
     "width": 300,
-    "height": 180
+    "height": 180,
+    "revisionCount": 1
   }
 }
 ```
@@ -144,6 +150,8 @@ Displays real-time interpolated text or static analytical observations.
   * `color` *(optional string)*: `"yellow"` | `"mint"` | `"pink"` | `"blue"` | `"purple"`.
   * `width` *(optional number)*: Width in pixels (default `260`).
   * `height` *(optional number)*: Height in pixels (default `180`).
+  * `revisionCount` *(optional number)*: In-place report update counter (displays `🔄 Rev X` badge).
+  * `symbol` *(optional string)*: Associated stock ticker for automated refresh.
 
 ---
 
@@ -175,6 +183,7 @@ Triggers autonomous canvas actions when market conditions are met.
   "position": { "x": 840, "y": 600 },
   "config": {
     "action": "fundamental_report",
+    "targetSymbol": "BBCA",
     "params": {
       "autoDownload": true
     }
@@ -183,10 +192,13 @@ Triggers autonomous canvas actions when market conditions are met.
 ```
 * **Config Fields:**
   * `action` *(string)*:
-    * `"fundamental_report"`: Generates comprehensive institutional financial brief PDF/HTML and creates an attached `FileNode` on canvas.
+    * `"fundamental_report"`: Generates comprehensive institutional financial brief PDF/HTML and creates or updates attached `FileNode` on canvas.
     * `"create_watcher"`: Automatically spawns a complete downstream pipeline (`[Watcher] -> [Condition] -> [Note]`) for the triggering stock.
     * `"create_note"`: Spawns an individual sticky note for the event.
     * `"export_canvas"`: Exports canvas snapshot.
+  * `targetSymbol` *(optional string)*: Target ticker override (defaults dynamically to the upstream event ticker).
+  * `template` *(optional string)*: Custom note template when `action` is `"create_note"`.
+  * `interval` *(optional number)*: Polling interval in seconds when spawning a watcher via `"create_watcher"`.
   * `params` *(optional object)*: Action parameters.
 
 ---
@@ -252,15 +264,19 @@ Triggers autonomous canvas actions when market conditions are met.
     "fileCategory": "pdf",
     "fileSize": "342 KB",
     "isDownloaded": true,
-    "savedLocally": true
+    "savedLocally": true,
+    "revisionCount": 1
   }
 }
 ```
 * **Config Fields:**
   * `fileName` *(string)*: Display name with extension.
   * `fileUrl` *(string)*: URL or API path.
-  * `fileCategory` *(optional string)*: `"pdf"` | `"presentation"` | `"document"` | `"spreadsheet"` | `"generic"`.
+  * `filePath` *(optional string)*: Absolute file path on disk (e.g. `reports/Project/BBCA_Fundamental_Brief.html`).
+  * `fileCategory` *(optional string)*: `"pdf"` | `"presentation"` | `"document"` | `"spreadsheet"` | `"audio"` | `"code"` | `"archive"` | `"generic"`.
   * `savedLocally` *(optional boolean)*: If `true`, shows green `✓ Saved` indicator.
+  * `revisionCount` *(optional number)*: Current version count (renders `🔄 Rev X` badge).
+  * `symbol` *(optional string)*: Associated stock ticker for in-place re-export.
 
 ---
 
@@ -297,14 +313,16 @@ Edges define directed connections from a source node (`from`) to a target node (
 ### Valid Signal Flow Rules:
 1. **Source Nodes**: `watcher`, `screener`
 2. **Intermediate Logic**: `condition`
-3. **Execution Terminals**: `note`, `alert`, `action`
+3. **Execution Terminals / Auto-Mutators**: `note`, `alert`, `action`, `watcher`
 4. **Valid Pipeline Sequences**:
    - `[watcher]` → `[condition]` → `[note]`
    - `[watcher]` → `[condition]` → `[alert]`
    - `[watcher]` → `[condition]` → `[action]`
-   - `[screener]` → `[note]`
-   - `[screener]` → `[action]`
-   - `[watcher]` → `[note]` (Direct feed)
+   - `[watcher]` → `[action]` (Direct action trigger, e.g. fundamental report or create_note)
+   - `[watcher]` → `[note]` (Direct feed / leaderboard summary)
+   - `[screener]` → `[note]` (AI screener company summary table)
+   - `[screener]` → `[action]` (Auto-spawning downstream watchers or reports)
+   - `[screener]` → `[watcher]` (Direct dynamic ticker feed into watcher radar)
 
 ---
 
@@ -419,6 +437,7 @@ Below is a complete, production-ready example monitoring Indonesia's Big 3 Banks
       "position": { "x": 840, "y": 400 },
       "config": {
         "action": "fundamental_report",
+        "targetSymbol": "BBRI",
         "params": { "symbol": "BBRI" }
       }
     },
@@ -436,7 +455,9 @@ Below is a complete, production-ready example monitoring Indonesia's Big 3 Banks
       "type": "sticker",
       "position": { "x": 1160, "y": 160 },
       "config": {
-        "stickerType": "approved"
+        "emoji": "🎯",
+        "label": "Approved Thesis",
+        "color": "green"
       }
     }
   ],

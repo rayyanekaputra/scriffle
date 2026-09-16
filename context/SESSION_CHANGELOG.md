@@ -1,8 +1,57 @@
-# 📋 Session Changelog — 2026-09-14
+# 📋 Session Changelog — 2026-09-16
  
  > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
  
  ---
+
+## 0. Quick-Add Node Connector & Flow Auto-Wiring
+
+**Key Capabilities Implemented:**
+1. **Floating `[+]` Quick-Add Handle ([`QuickAddSourceHandle.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/QuickAddSourceHandle.tsx))**:
+   - Standard output handles across `WatcherNode`, `ConditionNode`, `ScreenerNode`, and `ActionNode` now feature a floating `+` button positioned `36px` to the right of the card edge.
+   - Appears dynamically on card hover or selection across Light, Mono (warm-paper), and Dark (soft charcoal) modes.
+   - Clean separation of the connection dot and plus button prevents any distortion of React Flow's native edge origin calculation.
+2. **Drag-to-Empty-Canvas Connector Drop ([`MarketCanvas.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/MarketCanvas.tsx))**:
+   - Releasing a connector line onto empty canvas triggers `onConnectEnd`, opening the Quick-Add popover directly at release coordinates.
+3. **Contextual Quick-Add Popover ([`QuickAddPopover.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/QuickAddPopover.tsx))**:
+   - Filterable search bar with keyboard navigation (`↑` / `↓` / `↵` / `Esc`).
+   - Recommends logical next nodes (e.g. from `Watcher`/`Screener` $\rightarrow$ suggests `Condition`, `Sticky Note`, `Action`).
+   - **Full 3-Theme Color Alignment**: Polished Mono (warm-paper `#F4F3EF` / `#FCFBF9`, `#242321` text, `#78756D` muted text, `#D8D4CA` borders, monochrome icon badges), Dark (soft charcoal `#14151B`), and Light modes.
+4. **Collision Avoidance & Spatial Placement ([`quickAddNavigator.ts`](file:///home/abzolute/Projects/hackathon/src/lib/quickAddNavigator.ts))**:
+   - Calculates target placement at `(source.x + 320, source.y)` and automatically staggers downwards (`+150px Y`) if space is occupied.
+   - Smartly inherits symbol names and templates (e.g. creating a report action from a `TLKM` watcher automatically sets `targetSymbol: 'TLKM'`).
+5. **Instant Node & Edge Auto-Wiring**:
+   - Spawns target node, connects edge, focuses the new card, and persists both in SQLite via `/api/canvas/nodes` and `/api/canvas/edges`.
+6. **Theme Customization Backlog Addition (`themes/*.scrifflemes`)**:
+   - Added `.conf`-based theme customizability to `context/BACKLOG.md` using Alacritty/Kitty style key-value pairs for financial analysts and non-web developers.
+7. **Unit Test Suite & Verification**:
+   - Added `src/__tests__/unit/quickAddNavigator.test.ts` (8 unit tests).
+   - **143 tests passing (100% green across 12 test suites)** in ~140ms.
+   - `bun run build` passes with 0 errors.
+
+---
+ 
+## 0. UI Fixes: Control Panel Rebranding, Unified Data Stream & Theme-Aware Rank Badges
+
+**Key Issues Resolved:**
+1. **Theme-Aware Rank Capsules in Top Gainers / Losers Leaderboards (`WatcherNode.tsx`)**:
+   - Replaced hardcoded Light Mode classes on `#1`, `#2`, and `#3` rank badges with theme-aware styling.
+   - Dark Mode: Uses translucent amber (`bg-amber-500/20 text-amber-300 border-amber-500/40`), silver (`bg-slate-400/20 text-slate-200`), and bronze badges (`bg-orange-500/20 text-orange-300`).
+   - Mono Mode: Uses warm-paper graphite tones (`bg-[#E2DFD6] text-[#242321] border-[#C8C4B8] font-black`).
+   - Light Mode: Crisp gold, silver, bronze, and neutral slate badges.
+2. **Rebranded Left Panel to "Control Panel" (`SimulationBar.tsx`, `TopNav.tsx`, `page.tsx`)**:
+   - Updated header title from `"Demo Controls"` to `"Control Panel"` and icon to `settings_3_line`.
+   - Updated tooltips across `TopNav` and drawer close button.
+3. **Unified Market Data Stream Container (`SimulationBar.tsx`)**:
+   - Merged Section 2 (*"Market Data Sync"*) and Section 3 (*"Auto-Polling Stream"*) into a single cohesive container.
+   - Simplified copy to clean 1-line buttons: **"Do Once"** (single manual poll tick with spinner) and **"Stream Data"** / **"Stop Stream"** (continuous interval polling toggle).
+   - Removed awkward line breaks and text wrapping in side drawer.
+4. **"New File" Action in Project File Container (`SimulationBar.tsx`, `page.tsx`)**:
+   - Upgraded file container into a 3-button grid: **New**, **Open**, **Save**.
+   - `New` initializes a fresh canvas board (`/b/[uuid]`).
+5. **Rebranded "Presets" to "Examples" (`SimulationBar.tsx`)**:
+   - Changed section label from `"Load Preset Template:"` to `"Examples"` to emphasize optional starter boards.
+
  
 ## 0. Radar Watcher Leaderboard Multi-Stock Brief Isolation & Dynamic In-Place Fundamental Reports
 

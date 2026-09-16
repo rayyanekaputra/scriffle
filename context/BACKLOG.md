@@ -6,6 +6,24 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⚡ Quick-Add Node Connector & Flow Auto-Wiring (`QuickAddHandle.tsx`, `QuickAddPopover.tsx`, `quickAddNavigator.ts`, `MarketCanvas.tsx`)**
+  - Implemented floating `+` quick-add button on all output handles (`WatcherNode`, `ConditionNode`, `ScreenerNode`, `ActionNode`) that appears on card hover/selection.
+  - Implemented drag-to-empty-canvas connector drop (`onConnectEnd` in `MarketCanvas.tsx`) to open quick-picker directly at release coordinates.
+  - Built `QuickAddPopover.tsx` with fuzzy search, keyboard navigation (`↑`/`↓`/`↵`/`Esc`), MingCute icons, and contextual recommendations per source node type.
+  - Built `quickAddNavigator.ts` with spatial collision avoidance (staggers `+150px Y` if slot is occupied) and smart inheritance of ticker symbols / templates.
+  - Automatically spawns target node, wires edge, persists to `/api/canvas/nodes` + `/api/canvas/edges`, and selects new node.
+  - Added unit test suite `quickAddNavigator.test.ts` (143 total passing unit tests across 12 suites).
+- [x] **⭐ Global & Card-Level Loading Feedback for Long-Running Operations (`LoadingContext.tsx`, `TopNav.tsx`, `ScreenerNode.tsx`, `ActionNode.tsx`, `WatcherNode.tsx`, `FileNode.tsx`, `SimulationBar.tsx`, `page.tsx`)**
+  - Implemented centralized task queue manager (`LoadingContext.tsx`) with `startTask`, `endTask`, `runTracked`, `isNodeLoading`, and auto-timeout safety cleanup.
+  - Added global 2px electric blue hairline progress bar and dynamic center status capsule in `TopNav.tsx` displaying active operation details with MingCute spinner.
+  - Added card-level visual loading feedback across `ScreenerNode` (`🤖 Screening...` badge + pulse border), `ActionNode` (`Running...` spinner + pulse border), `WatcherNode` (`⚡ Polling...` badge + pulse border), and `FileNode` (`⏳ Generating...` badge).
+  - Wired async operation tracking to live/mock polling ticks, AI company screener queries, `.scriffle` project imports, and example template restorations.
+  - Added unit test suite `loadingState.test.ts` (135 total passing tests, 100% green).
+- [x] **⭐ Control Panel Rebranding, Unified Data Stream & Theme-Aware Rank Badges (`WatcherNode.tsx`, `SimulationBar.tsx`, `TopNav.tsx`, `page.tsx`)**
+  - Theme-aware rank capsule styling (#1 gold, #2 silver, #3 bronze, #4+ neutral) in `WatcherNode.tsx` across Light, Mono (warm-paper), and Dark (soft charcoal) modes.
+  - Combined Market Data Sync and Auto-Polling Stream into a unified single-line **Market Data Stream** container with **Do Once** and **Stream Data** action buttons.
+  - Added **New File** action button alongside Open and Save in Project File container.
+  - Rebranded Presets to **Examples** and renamed drawer from "Demo Controls" to **Control Panel**.
 - [x] **⭐ Top Movers API Fix & Error Transparency (`sectorsApi.ts`, `graphEngine.ts`, `WatcherNode.tsx`, `trigger/route.ts`)**
   - Fixed `/v2/companies/top-changes/` parameter building bug (omit `classifications` param when `'all'`).
   - Implemented structured error capture (`{ code, message }`) in `getTopMarketMovers()` and logged failures to Activity Feed.
@@ -211,7 +229,42 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
      - **Edit Modal Integration**: Add dedicated `image` configuration tab in `EditNodeModal.tsx` (URL input, upload dropzone, caption text, aspect ratio reset, dimensions).
 
 2. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
-3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+3. ~~**⚡ Quick-Add Node Connector (`+` Port Handle & Flow Auto-Wiring)**~~ ✅ **Completed**
+4. **🎨 Simple `.conf`-Based Theme Customization Engine (`.scrifflemes` / `themes/` folder)**
+   - **Concept**: Kitty/Alacritty-style simple key-value configuration file for custom themes (no CSS knowledge required).
+   - **Target Audience**: Financial market researchers, quantitative analysts, and non-web developers who want custom branding or terminal-style aesthetics (e.g., Bloomberg Terminal amber, Cyberpunk neon, Gruvbox, Nord, Solarized).
+   - **Dedicated Directory & Extension**: `themes/*.scrifflemes` (plain-text INI/conf format).
+   - **Proposed File Format (`themes/bloomberg.scrifflemes`)**:
+     ```ini
+     # Scriffle Theme Configuration (Alacritty / Kitty style)
+     name = "Cyberpunk Dark"
+     author = "rayyanekaputra"
+
+     [canvas]
+     background = #0F1014
+     grid_dot = #2A2D37
+     selection_box = #0050FF
+
+     [ui]
+     primary = #0050FF
+     border = #2E3240
+     text = #F1F5F9
+     text_muted = #94A3B8
+     surface = #181920
+
+     [nodes]
+     watcher = #10B981
+     condition = #FFD728
+     alert = #FF5B79
+     screener = #0050FF
+     note_default = #FEF08A
+     ```
+   - **Experience & Capabilities**:
+     - **Dedicated Themes Folder**: Packaged in `themes/` alongside starter presets.
+     - **Import / Drag & Drop**: Drag a `my-theme.scrifflemes` file onto the canvas or select it from the Theme Switcher to apply immediately.
+     - **Dynamic CSS Variable Mapping**: Under the hood, a lightweight parser converts key-value pairs into standard CSS variables / `[data-theme="custom"]` properties at runtime.
+     - **Export Active Theme**: One-click "Export Theme" button in settings/theme picker to save current colors as a shareable `.scrifflemes` file.
+     - **Presets Bundle**: Ships with popular colorways out of the box in `themes/` (e.g. *Bloomberg Amber*, *Nord*, *Gruvbox*, *Solarized*, *Tokyo Night*).
 
 ---
 
@@ -251,9 +304,13 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [x] **Spotlight Quick Search (`Cmd+K` / `Cmd+F`)**: Modal search across stock tickers (`BBCA`, `BBRI`), note text, and node labels with 1-click camera pan & zoom.
 - [x] **Keyboard Shortcuts Cheat Sheet Modal (`?`)**: Clean visual shortcut guide overlay showing all canvas hotkeys (`V`, `H`, `T`, `Cmd+G`, `Cmd+Shift+G`, `Cmd+C/V/D`, `Cmd+Z/Y`, `Delete`, `Esc`, `Space`).
 - [x] **Zoom Percentage Badge & Fit-to-Screen (`Shift+1` / `Shift+0`)**: Clickable zoom indicator in toolbar with presets (`50%`, `100%`, `150%`, `200%`, `Fit All`).
+- [x] **⏳ Global & Card-Level Loading Feedback for Long-Running Operations**:
+  - Show an institutional progress/loading banner and center status pill during AI company screening, multi-stock fundamental reports, `.scriffle` imports/exports, and live/mock market streams.
+  - Eliminates user uncertainty during heavy API roundtrips and disk exports with automatic 12s safety timeout.
 
 #### 4. 🎭 Presentation & Live Pitch Mode (Miro-inspired)
 - [ ] **Zen / Presenter Mode (`Cmd+.`)**: 1-click toggle to hide all UI chrome (toolbars, docks, sidebars) for distraction-free presentation to judges.
 - [ ] **Presenter Laser Pointer**: Hold modifier key or toggle a laser pointer tool that leaves a smooth fading line for explaining live graphs.
+
 
 

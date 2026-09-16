@@ -12,6 +12,7 @@ import { ProjectSwitcherModal } from '@/components/controls/ProjectSwitcherModal
 import { SpotlightSearchModal } from '@/components/controls/SpotlightSearchModal';
 import { ShortcutsModal } from '@/components/controls/ShortcutsModal';
 import { ToastProvider, useToast } from '@/components/ui/ToastProvider';
+import { useLoading } from '@/context/LoadingContext';
 import { useCanvasSync } from '@/hooks/useCanvasSync';
 import { CanvasNodeData, CanvasToolMode, NodeType } from '@/types/canvas';
 
@@ -31,6 +32,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
   const [toolMode, setToolMode] = useState<CanvasToolMode>('select');
   const { showToast } = useToast();
+  const { runTracked } = useLoading();
 
   // Panels visibility state (hideable Left Panel & Activity Feed)
   const [isFeedOpen, setIsFeedOpen] = useState(true);
@@ -276,19 +278,29 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
       // Function to execute a single targeted poll for this watcher's symbol
       const pollWatcher = async () => {
         try {
-          const res = await fetch('/api/engine/trigger', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              canvasId: canvas.id,
-              apiKey: sectorsApiKey.trim(),
+          await runTracked(
+            {
+              label: `Streaming ticker: ${symbol}`,
+              category: 'poll',
+              nodeId: node.id,
               symbol,
-            }),
-          });
-          if (res.ok) {
-            mutate();
-            mutateLogs();
-          }
+            },
+            async () => {
+              const res = await fetch('/api/engine/trigger', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  canvasId: canvas.id,
+                  apiKey: sectorsApiKey.trim(),
+                  symbol,
+                }),
+              });
+              if (res.ok) {
+                mutate();
+                mutateLogs();
+              }
+            }
+          );
         } catch (err) {
           console.error(`Auto-polling failed for ${symbol}:`, err);
         }
@@ -344,6 +356,12 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     } catch (err) {
       console.error('Failed to clear logs:', err);
     }
+  };
+
+  // Create a new project / canvas board
+  const handleNewProject = () => {
+    const newId = crypto.randomUUID();
+    window.location.href = `/b/${newId}`;
   };
 
   // Export full project as .scriffle file (UTF-8 JSON formatted)
@@ -404,24 +422,32 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
 
           recordSnapshot();
 
-          const res = await fetch(`/api/canvas/restore${canvasId ? `?id=${canvasId}` : ''}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: content,
-          });
+          await runTracked(
+            {
+              label: `Restoring: "${parsed.name || file.name}"`,
+              category: 'restore',
+            },
+            async () => {
+              const res = await fetch(`/api/canvas/restore${canvasId ? `?id=${canvasId}` : ''}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: content,
+              });
 
-          if (res.ok) {
-            mutate();
-            mutateLogs([], false);
-            showToast(
-              'Project Restored',
-              `Loaded "${parsed.name || file.name}" with ${parsed.nodes?.length || 0} cards`,
-              'rising'
-            );
-          } else {
-            const errData = await res.json();
-            showToast('Restore Failed', errData.error || 'Server rejected file payload', 'crashing');
-          }
+              if (res.ok) {
+                mutate();
+                mutateLogs([], false);
+                showToast(
+                  'Project Restored',
+                  `Loaded "${parsed.name || file.name}" with ${parsed.nodes?.length || 0} cards`,
+                  'rising'
+                );
+              } else {
+                const errData = await res.json();
+                showToast('Restore Failed', errData.error || 'Server rejected file payload', 'crashing');
+              }
+            }
+          );
         } catch (err: any) {
           console.error('JSON parse error:', err);
           showToast('Corrupt File', 'Selected file contains invalid JSON', 'crashing');
@@ -712,17 +738,25 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     recordSnapshot();
 
     try {
-      const res = await fetch(`/api/canvas/restore${canvasId ? `?id=${canvasId}` : ''}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(presetData),
-      });
+      await runTracked(
+        {
+          label: `Loading template: "${presetData.name}"`,
+          category: 'restore',
+        },
+        async () => {
+          const res = await fetch(`/api/canvas/restore${canvasId ? `?id=${canvasId}` : ''}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(presetData),
+          });
 
-      if (res.ok) {
-        mutate();
-        mutateLogs([], false);
-        showToast('Preset Loaded', `Template "${presetData.name}" is ready`, 'rising');
-      }
+          if (res.ok) {
+            mutate();
+            mutateLogs([], false);
+            showToast('Preset Loaded', `Template "${presetData.name}" is ready`, 'rising');
+          }
+        }
+      );
     } catch (err) {
       console.error('Failed to load preset:', err);
       showToast('Preset Error', 'Failed to load starter template', 'crashing');
@@ -749,30 +783,38 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   // Live / Mock Market Polling
   const handlePollMarket = async () => {
     try {
-      const res = await fetch('/api/engine/trigger', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          canvasId: canvas?.id,
-          apiKey: sectorsApiKey.trim(),
-        }),
-      });
+      await runTracked(
+        {
+          label: sectorsApiKey.trim() ? 'Polling live market stream...' : 'Generating mock market cycle...',
+          category: 'poll',
+        },
+        async () => {
+          const res = await fetch('/api/engine/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              canvasId: canvas?.id,
+              apiKey: sectorsApiKey.trim(),
+            }),
+          });
 
-      const data = await res.json();
-      if (res.ok) {
-        mutate();
-        mutateLogs();
+          const data = await res.json();
+          if (res.ok) {
+            mutate();
+            mutateLogs();
 
-        const count = data.polledEvents?.length || 0;
-        const isLive = Boolean(data.isLive);
-        showToast(
-          isLive ? 'Market Polled (Live Sectors v2)' : 'Market Polled (Simulated)',
-          `Synced ${count} ticker${count !== 1 ? 's' : ''} across active Watchers`,
-          isLive ? 'rising' : 'info'
-        );
-      } else {
-        showToast('Poll Error', data.error || 'Failed to poll market data', 'crashing');
-      }
+            const count = data.polledEvents?.length || 0;
+            const isLive = Boolean(data.isLive);
+            showToast(
+              isLive ? 'Market Polled (Live Sectors v2)' : 'Market Polled (Simulated)',
+              `Synced ${count} ticker${count !== 1 ? 's' : ''} across active Watchers`,
+              isLive ? 'rising' : 'info'
+            );
+          } else {
+            showToast('Poll Error', data.error || 'Failed to poll market data', 'crashing');
+          }
+        }
+      );
     } catch (err: any) {
       console.error('Failed to poll market:', err);
       showToast('Poll Failed', err.message || 'Network error during poll', 'crashing');
@@ -812,6 +854,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
           onClose={() => setIsControlsOpen(false)}
           autoTickActive={autoTickActive}
           onToggleAutoTick={handleToggleAutoTick}
+          onNewProject={handleNewProject}
           onExportScriffle={handleExportScriffle}
           onImportScriffle={handleImportScriffle}
           onLoadPreset={handleLoadPreset}

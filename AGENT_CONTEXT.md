@@ -34,23 +34,25 @@
 
 ---
 
-## 3. Design System Rules (Critical — Never Violate)
+## 3. Core Agent Operating Rules (Critical — Never Violate)
 
-1. **Zero drop shadows** — no `shadow-md`, `shadow-xl`, `drop-shadow` anywhere
-2. **Flat outline** — 2px solid borders (`border-slate-300`, `border-slate-800`)
-3. **Font: Stack Sans Text & Typography Hierarchy** — strictly sentence/title case only.
+1. **NO SUBAGENTS**: **DO NOT CREATE SUBAGENTS** under any circumstances (`invoke_subagent` / `define_subagent`). All reading, searching, code editing, and planning must be handled directly within the main agent context to conserve token quota and API data.
+2. **NO TESTS FOR IMPLEMENTATION PLANS OR DOCUMENTATION**: Never run `bun test` or ask to test when writing, editing, or reviewing implementation plans, markdown specs, architectural proposals, backlog items, or documentation. Tests are strictly reserved for actual application code changes (`.ts`, `.tsx`, API routes, engines).
+3. **Zero drop shadows** — no `shadow-md`, `shadow-xl`, `drop-shadow` anywhere
+4. **Flat outline** — 2px solid borders (`border-slate-300`, `border-slate-800`)
+5. **Font: Stack Sans Text & Typography Hierarchy** — strictly sentence/title case only.
    - **NO all-caps / uppercase** (`text-transform: uppercase`, `uppercase` class) — only allow uppercase for necessary acronyms/tickers (e.g. `BBCA`, `IDX`, `ROE`, `P/E`, `ESG`, `LQ45`, `PDF`, `SOE`, `CAGR`).
    - **NO spaced-out letters** (`letter-spacing`, `tracking-wider`, `tracking-widest`, `l e t t e r s`).
    - Header labels, brand titles, section headings, and buttons must always use clean Sentence Case or Title Case.
-4. **Icons: MingCute only** — `<MingIcon name="mgc_..." />` from `src/components/ui/MingIcon.tsx`
-5. **Color palette:**
+6. **Icons: MingCute only** — `<MingIcon name="mgc_..." />` from `src/components/ui/MingIcon.tsx`
+7. **Color palette:**
    - Primary: `#0050FF` (Electric Blue)
    - Yellow: `#FFD728` (Condition nodes)
    - Mint: `#10B981` (Watcher positive states)
    - Coral: `#FF5B79` (Alert nodes)
    - Lavender: `#8B5CF6`
    - Canvas bg: `#F8F9FC` with dotted grid `#CBD5E1`
-6. **3 Themes:** Light (default), Mono (warm-paper `#F4F3EF`), Dark (soft charcoal `#0F1014`) — implemented via `[data-theme]` CSS tokens
+8. **3 Themes:** Light (default), Mono (warm-paper `#F4F3EF`), Dark (soft charcoal `#0F1014`) — implemented via `[data-theme]` CSS tokens
 
 ---
 
@@ -178,7 +180,7 @@ hackathon/
     │   ├── controls/
     │   │   ├── TopNav.tsx          ← Floating whiteboard toolbar
     │   │   ├── NavToolbar.tsx      ← Secondary toolbar
-    │   │   ├── SimulationBar.tsx   ← Presenter demo dock
+    │   │   ├── SimulationBar.tsx   ← Control Panel drawer (stream manager, project file ops, examples)
     │   │   ├── EditNodeModal.tsx   ← Full property editor modal
     │   │   ├── DevSpikeTool.tsx    ← 4-param developer spike injector
     │   │   └── ProjectSwitcherModal.tsx ← Multi-project switcher
@@ -186,6 +188,8 @@ hackathon/
     │   │   └── ActivityFeed.tsx    ← Live event stream, camera pan, chain glow
     │   └── ui/
     │       └── MingIcon.tsx        ← Reusable MingCute icon component
+    ├── context/
+    │   └── LoadingContext.tsx      ← Global loading task queue (LoadingProvider, useLoading, runTracked, isNodeLoading)
     ├── hooks/
     │   └── useCanvasSync.ts        ← SWR polling hook (2s interval)
     ├── lib/
@@ -255,6 +259,7 @@ hackathon/
 - **Shift+Click / Ctrl+Click** → multi-select; **Shift+Drag** → box marquee select
 - **Figma-Style Selection Bounding Box (`SelectionBoundingBox.tsx`):** 8-point corner and edge midpoint handles with dashed outline and quick `Group` / `Ungroup` action buttons when 2+ elements are selected
 - **Group & Ungroup (`Cmd+G` / `Cmd+Shift+G`):** Cohesive multi-node dragging, group-aware copy & paste (`Cmd+C` / `Cmd+V`) preserving internal connectors and relative offsets
+- **Quick-Add Connected Node (`+` Handle & Popover):** Hovering any node's output handle reveals a floating `+` button, or dragging a connector onto empty canvas opens a contextual quick-add menu (`QuickAddPopover.tsx`) that automatically spawns and wires the next node with collision avoidance (`quickAddNavigator.ts`).
 - **Double-Click Isolation Mode:** Isolates group into focus mode with top banner to edit individual elements or make `Shift+Click` sub-selections (`Esc` to exit)
 - **Delete / Backspace** → bulk delete selected
 - **Ctrl+C / Ctrl+V** → Copy/paste nodes; **Ctrl+D** → Duplicate
@@ -315,14 +320,35 @@ hackathon/
 - **Mono** (Warm-Paper): `#F4F3EF` canvas, warm graphite borders
 - **Dark** (Soft Charcoal): `#0F1014` canvas, low-contrast borders, soft silver text
 
-### Dev Tools
-- **DevSpikeTool** (`DevSpikeTool.tsx`): 4-param market spike injector (symbol, price_change, volume, price) with quick presets
-- **SimulationBar:** BBCA surge, BMRI volume spike, live poll, board reset
+### Control Panel & Data Streaming
+- **Control Panel Drawer (`SimulationBar.tsx`)**: Rebranded from Demo Controls to institutional Control Panel with clean single-line headers.
+- **Unified Market Data Stream**: Merged manual sync and auto-polling into a unified stream controller with **Do Once** (single poll tick) and **Stream Data** (continuous per-node interval streaming).
+- **Project File Actions**: 3-button grid for **New File** (fresh `/b/[uuid]` board), **Open File** (`.scriffle`), and **Save File**.
+- **Examples**: Built-in starter workflows (`Rotation Engine`, `Momentum Breakout Loop`, `Banking Sector Trio`).
+
+### Global &amp; Card-Level Loading Feedback
+- **`LoadingContext.tsx`**: Centralized loading task queue using React Context + `useState` + `useRef` for timeout safety. Exports `LoadingProvider`, `useLoading()`. API: `startTask(taskInput)`, `endTask(id)`, `updateTask(id, updates)`, `isNodeLoading(nodeId?)`, `runTracked(taskInput, asyncFn)`. 12-second safety auto-timeout per task; cleanup on unmount.
+- **Global TopNav feedback**: A 2px electric blue (`#0050FF`) hairline progress bar at the bottom of the header appears during any active loading task. A center status capsule with MingCute spinner and `activeTask.label` text provides institutional-style status visibility across all 3 themes.
+- **Card-level feedback**: `ScreenerNode` (`🤖 Screening...` badge + animate-pulse outline), `ActionNode` (`Running...` badge + pulse outline), `WatcherNode` (`⚡ Polling...` badge + pulse outline), `FileNode` (`⏳ Generating...` amber badge).
+- **Wired operations**: Live/mock stream polling (`SimulationBar.tsx`), AI screener queries (`ScreenerNode.tsx`), `.scriffle` file imports, preset template loading, and per-node auto-stream polling (`page.tsx`).
+- **Unit tests**: `loadingState.test.ts` — 7 tests covering idle state, single task, concurrent tasks, update, `runTracked` resolve, `runTracked` throw, and 12s timeout.
 
 ---
 
+
 ## 10. Open Backlog (Prioritized)
 
+- **Global & Card-Level Loading Feedback (`LoadingContext.tsx`, `TopNav.tsx`, `ScreenerNode.tsx`, `ActionNode.tsx`, `WatcherNode.tsx`, `FileNode.tsx`, `page.tsx`)**:
+  - Centralized task queue manager with `runTracked`, `startTask`, `endTask`, `isNodeLoading`, and auto-timeout safety cleanup.
+  - Global 2px electric blue hairline progress bar and center status capsule in `TopNav.tsx` displaying live operation details with MingCute spinner.
+  - Card-level visual feedback: `ScreenerNode` (`🤖 Screening...` badge + pulse outline), `ActionNode` (`Running...` badge + pulse outline), `WatcherNode` (`⚡ Polling...` badge + pulse outline), and `FileNode` (`⏳ Generating...` badge).
+  - Wired to live/mock stream polling, AI screener queries, `.scriffle` file imports, and preset template loading.
+  - Unit test suite `loadingState.test.ts` (135 total passing unit tests).
+- **Control Panel Rebranding, Unified Data Stream & Theme-Aware Rank Badges (`WatcherNode.tsx`, `SimulationBar.tsx`, `TopNav.tsx`, `page.tsx`)**:
+  - Implemented contrast-compliant rank capsule badges (#1 gold, #2 silver, #3 bronze, #4+ neutral) in `WatcherNode.tsx` across Light, Mono (warm-paper), and Dark (soft charcoal) modes.
+  - Combined Market Data Sync and Auto-Polling Stream into a unified single-line **Market Data Stream** card with **Do Once** and **Stream Data** action buttons.
+  - Added **New File** action button alongside Open and Save in Project File container.
+  - Rebranded Presets to **Examples** and renamed drawer from "Demo Controls" to **Control Panel**.
 - **Dynamic Mock Fundamental Report & Valuation Metric Updates (`sectorsApi.ts`, `graphEngine.ts`, `reportExporter.ts`, `reportRevision.test.ts`)**:
   - Dynamically recalculates Market Cap ($\text{Market Cap}_{\text{base}} \times (1 + \frac{\Delta\%}{100})$), P/E, P/B, `lastClosePrice`, and `dailyCloseChange` on every mock poll tick and report revision instead of displaying static constants.
   - Formats dynamic market cap strings with `formatMarketCap` (`T`, `B`, `Q`).
@@ -360,13 +386,14 @@ hackathon/
 - **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 109 tests across 7 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, `spatialNavigator`, and `reportRevision`. All pass in ~128ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
 ### 🟡 Open Candidate Integrations & Polish (Prioritized)
-1. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
-2. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
-3. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
-4. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-5. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-6. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-7. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+1. **⏳ Global & Card-Level Loading Feedback for Long-Running Operations** — Show institutional loading/progress feedback during multi-stock PDF generation, `.scriffle` exports, or heavy API fetches.
+2. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+3. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
+4. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
+5. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+6. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+7. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+8. **Volume Breakout Scanner** — `GET /v2/most-traded/`
 
 ### ⏸️ On-Hold / Deprioritized Candidates
 - **Action-to-Action Chaining** — Chained sequential actions (`[Action] -> [Action]`). *Status: Deprioritized / On-Hold — currently lacking concrete logic-case as single downstream action pipelines (`[Screener/Radar] -> [Action] -> [Pipeline]`) already fulfill target workflows without compounding branching complexity.*
@@ -413,7 +440,7 @@ bun run prisma/seed.ts            # Reset & seed demo canvas
 bun run src/server/test-engine.ts # Smoke test the graph engine directly
 bunx prisma db push               # Push schema changes to dev.db
 bunx prisma studio                # Visual DB browser
-bun test                          # ⚠️ Run ALL unit tests — must stay green (128 tests across 10 suites, ~140ms)
+bun test                          # ⚠️ Run ALL unit tests — must stay green (135 tests across 11 suites, ~140ms)
 bun run test:watch                # Run tests in watch mode during development
 bun run test:coverage             # Run tests with coverage report
 ```
@@ -430,6 +457,7 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
 | `TESTING_PLAN.md` | ⭐ Full 3-tier testing strategy & mandate — **read before adding any new feature** |
+| `GLOBAL_LOADING_FEEDBACK_PLAN.md` | Architecture and implementation plan for global loading queue & indicators |
 | `CURRENT_ENDPOINT.md` | Active vs. planned Sectors API endpoint mapping |
 | `ENDPOINTS.md` | All 32 Sectors API v2 endpoints reference |
 | `CONTEXT.md` | Original master contracts & TypeScript interfaces |
@@ -457,11 +485,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 128 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 135 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **128 tests, 0 failures, ~140ms runtime**
+- **143 tests, 0 failures, 12 suites, ~140ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -476,10 +504,12 @@ src/__tests__/
     ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
     ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
+    ├── quickAddNavigator.test.ts     ← 8 tests — spatial offset collision calculation, node recommendations, inherited config
     ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
     ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
     ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)
-    └── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
+    ├── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
+    └── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`
@@ -489,19 +519,17 @@ These were made `export` specifically to enable unit testing (previously private
 - `generateLeaderboardNoteContent(movers, mode, period)` — radar watcher leaderboard formatter
 - `generateScreenerNoteContent(query, results, queryValues)` — AI screener output formatter
 
-### ⚠️ THE TESTING MANDATE — NON-NEGOTIABLE
+### ⚠️ THE TESTING MANDATE — APPLIES STRICTLY TO CODE CHANGES
 
-**Adding any new feature = adding new tests covering every possible input case and node connection. No exceptions. This is written into the implementation plan.**
+**When writing/editing code (TypeScript, TSX, React Flow components, API routes, engines):**
+- Adding any new feature = adding new unit tests covering all input branches and edge cases.
+- Run `bun test` only when **actual application code** (`.ts`, `.tsx`) has been modified.
+- Keep all unit tests 100% green.
 
-When you add or modify anything:
-- A new DSL variable or operator → add tests to `dslEngine.test.ts`
-- A new template variable (`${foo}`) → add tests to `interpolateTemplate.test.ts`
-- A new node type with a formatter function → create `src/__tests__/unit/<nodetype>.test.ts`
-- A new action type in `graphEngine.ts` → add integration test scenarios in `src/__tests__/integration/graphEngine.test.ts`
-- A new Sectors API integration → mock it in `fixtures/marketEvents.ts` and test its output shape
-- A new watcher mode or condition variant → test every branch (pass, fail, edge case)
-- A new node type, action, config parameter, or DSL variable → **must update `SCRIFFLE_AI_SPEC.md`** so the universal AI prompt stays 100% in sync with the codebase.
+> [!CAUTION]
+> **NO TESTS FOR IMPLEMENTATION PLANS / MARKDOWN / SPECS**:
+> When writing, updating, or reviewing implementation plans (e.g. `*_PLAN.md`), specifications (`SCRIFFLE_AI_SPEC.md`), backlog/status tracking, or documentation, you must **NEVER** run `bun test` or ask to execute tests. Markdown documents require zero test runs.
 
-Run `bun test` before marking **any** task done. If tests fail, fix them before proceeding.
-
-See `context/TESTING_PLAN.md` for the full 3-tier plan (Tier 2 = integration tests with isolated test.db, Tier 3 = Playwright E2E).
+> [!CAUTION]
+> **STRICT PROHIBITION ON SUBAGENTS**:
+> **DO NOT CREATE OR INVOKE SUBAGENTS** (`invoke_subagent`, `define_subagent`). All tasks, file operations, searches, and reasoning must be performed directly within the main agent context to prevent wasteful token/quota consumption.

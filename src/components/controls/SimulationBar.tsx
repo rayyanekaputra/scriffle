@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
+import { useLoading } from '@/context/LoadingContext';
 
 interface SimulationBarProps {
   isOpen: boolean;
   onClose: () => void;
   autoTickActive?: boolean;
   onToggleAutoTick?: (active: boolean, intervalSec: number) => void;
+  onNewProject?: () => void;
   onExportScriffle?: () => void;
   onImportScriffle?: (file: File) => void;
   onLoadPreset?: (presetName: string) => void;
@@ -22,6 +24,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   onClose,
   autoTickActive = false,
   onToggleAutoTick,
+  onNewProject,
   onExportScriffle,
   onImportScriffle,
   onLoadPreset,
@@ -30,6 +33,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   onPollMarket,
 }) => {
   const { theme } = useTheme();
+  const { runTracked } = useLoading();
   const [loading, setLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const scriffleInputRef = React.useRef<HTMLInputElement>(null);
@@ -49,15 +53,23 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   const runLivePoll = async () => {
     setLoading(true);
     try {
-      if (onPollMarket) {
-        await onPollMarket();
-      } else {
-        await fetch('/api/engine/trigger', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey: apiKey.trim() }),
-        });
-      }
+      await runTracked(
+        {
+          label: isLiveMode ? 'Polling live market stream...' : 'Generating mock market cycle...',
+          category: 'poll',
+        },
+        async () => {
+          if (onPollMarket) {
+            await onPollMarket();
+          } else {
+            await fetch('/api/engine/trigger', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ apiKey: apiKey.trim() }),
+            });
+          }
+        }
+      );
     } catch (err) {
       console.error('Live poll failed:', err);
     } finally {
@@ -105,15 +117,15 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
         isDark ? 'border-[#252730]' : isMono ? 'border-[#D8D4CA]' : 'border-slate-100'
       }`}>
         <div className="flex items-center gap-2">
-          <MingIcon name="game_2_line" size={18} className={iconColor} />
-          <h2 className={`text-sm font-bold ${textHeading}`}>Demo Controls</h2>
+          <MingIcon name="settings_3_line" size={18} className={iconColor} />
+          <h2 className={`text-sm font-bold ${textHeading}`}>Control Panel</h2>
         </div>
         <button
           onClick={onClose}
           className={`rounded-lg p-1 transition cursor-pointer ${
             isDark ? 'text-[#8C90A0] hover:bg-[#22242D] hover:text-[#E2E4E9]' : isMono ? 'text-[#78756D] hover:bg-[#E2DFD6] hover:text-[#242321]' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
           }`}
-          title="Hide Demo Controls"
+          title="Hide Control Panel"
         >
           <MingIcon name="close_line" size={16} />
         </button>
@@ -206,7 +218,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
           </div>
         </div>
 
-        {/* Section 1: Project File & Starter Presets */}
+        {/* Section 1: Project File & Examples */}
         <div className={`rounded-2xl border-2 p-3 space-y-2.5 ${cardContainer}`}>
           <div className="flex items-center justify-between">
             <span className={`text-[11px] font-bold flex items-center gap-1.5 ${textHeading}`}>
@@ -215,33 +227,43 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
             </span>
           </div>
 
-          {/* Save & Open Buttons */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* New, Open & Save Buttons */}
+          <div className="grid grid-cols-3 gap-1.5">
             <button
               type="button"
-              onClick={onExportScriffle}
-              className={`flex items-center justify-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer ${subCard}`}
-              title="Save current canvas as .scriffle file"
+              onClick={onNewProject}
+              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer ${subCard}`}
+              title="Create a new blank board"
             >
-              <MingIcon name="download_2_line" size={14} className={iconColor} />
-              <span>Save File</span>
+              <MingIcon name="file_new_line" size={14} className={iconColor} />
+              <span>New</span>
             </button>
 
             <button
               type="button"
               onClick={() => scriffleInputRef.current?.click()}
-              className={`flex items-center justify-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer ${subCard}`}
+              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer ${subCard}`}
               title="Open or import .scriffle project file"
             >
               <MingIcon name="folder_open_line" size={14} className={iconColor} />
-              <span>Open File</span>
+              <span>Open</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onExportScriffle}
+              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer ${subCard}`}
+              title="Save current canvas as .scriffle file"
+            >
+              <MingIcon name="download_2_line" size={14} className={iconColor} />
+              <span>Save</span>
             </button>
           </div>
 
-          {/* Quick Demo Presets */}
-          <div className={`pt-1 border-t ${isDark ? 'border-[#252732]' : isMono ? 'border-[#E2DFD6]' : 'border-indigo-100'}`}>
+          {/* Quick Examples */}
+          <div className={`pt-2 border-t ${isDark ? 'border-[#252732]' : isMono ? 'border-[#E2DFD6]' : 'border-indigo-100'}`}>
             <span className={`text-[11px] font-bold block mb-1.5 ${textMuted}`}>
-              Load Preset Template:
+              Examples
             </span>
             <div className="space-y-1.5">
               <button
@@ -283,94 +305,82 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
           </div>
         </div>
 
-        {/* Section 2: Live Market Poll (Real Data or Mock Data) */}
+        {/* Unified Section 2: Market Data Stream (Do Once & Continuous Stream) */}
         <div className={`rounded-2xl border-2 p-3 space-y-2.5 ${cardContainer}`}>
           <div className="flex items-center justify-between">
-            <span className={`text-[11px] font-bold flex items-center gap-1.5 ${textHeading}`}>
-              <MingIcon name="refresh_3_line" size={14} className={iconColor} />
-              Market Data Sync
-            </span>
-            <span className={`text-[10px] font-mono font-bold ${textMuted}`}>
-              {isLiveMode ? 'Live API' : 'Simulated'}
-            </span>
-          </div>
-
-          <button
-            disabled={loading}
-            onClick={runLivePoll}
-            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold border-2 transition-all active:scale-98 cursor-pointer ${
-              isDark
-                ? 'bg-[#22242D] text-[#E2E4E9] border-[#313442] hover:bg-[#2A2C38]'
-                : isMono
-                ? 'bg-[#E2DFD6] text-[#242321] border-[#C8C4B8] hover:bg-[#D5D1C6]'
-                : isLiveMode
-                ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
-                : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <MingIcon
-                name={loading ? 'refresh_3_line' : 'radar_line'}
-                size={15}
-                className={`${loading ? 'animate-spin' : ''} ${
-                  isDark ? 'text-[#E2E4E9]' : isMono ? 'text-[#242321]' : 'text-white'
-                }`}
-              />
-              <span className={isDark ? 'text-[#E2E4E9]' : isMono ? 'text-[#242321]' : 'text-white'}>
-                {isLiveMode ? 'Poll Live Sectors API' : 'Poll Market API (Mock)'}
-              </span>
-            </div>
-            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-              isDark ? 'bg-black/40 text-[#BAC0D0]' : isMono ? 'bg-black/10 text-[#242321]' : 'bg-black/20 text-white'
-            }`}>
-              {isLiveMode ? 'Live' : 'Mock'}
-            </span>
-          </button>
-        </div>
-
-        {/* Section 3: Continuous Per-Node Auto Polling Loop */}
-        <div className={`rounded-2xl border-2 p-3 space-y-2.5 ${cardContainer}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
               <span
-                className={`h-2 w-2 rounded-full ${
+                className={`h-2 w-2 rounded-full shrink-0 ${
                   autoTickActive
                     ? isDark ? 'bg-[#93C5A5] animate-ping' : isMono ? 'bg-[#242321] animate-ping' : 'bg-emerald-500 animate-ping'
                     : isDark ? 'bg-[#5A5D6E]' : isMono ? 'bg-[#78756D]' : 'bg-slate-400'
                 }`}
               />
-              <span className={`text-[11px] font-bold flex items-center gap-1.5 ${textHeading}`}>
-                <MingIcon name="time_line" size={14} className={iconColor} />
-                Auto-Polling Stream
+              <span className={`text-[11px] font-bold flex items-center gap-1 truncate ${textHeading}`}>
+                <MingIcon name="radar_line" size={13} className={iconColor} />
+                Market Data Stream
               </span>
             </div>
-            <span className={`text-[10px] font-semibold font-mono ${textMuted}`}>Per-Node Cadence</span>
+            <span className={`text-[10px] font-mono font-bold shrink-0 ${textMuted}`}>
+              {isLiveMode ? 'Live API' : 'Mock'}
+            </span>
           </div>
 
-          <p className={`text-[11px] leading-tight ${textMuted}`}>
-            Polls each active Watcher node independently at its configured interval.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => onToggleAutoTick?.(!autoTickActive, 2.5)}
-            className={`flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all active:scale-95 border-2 cursor-pointer ${
-              autoTickActive
-                ? isDark
-                  ? 'bg-[#3A1F26] text-[#E8A5A5] border-[#5A2C37]'
+          {/* Side-by-side action buttons: Do Once & Stream Data */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              disabled={loading}
+              onClick={runLivePoll}
+              className={`flex items-center justify-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer ${
+                isDark
+                  ? 'bg-[#22242D] text-[#E2E4E9] border-[#313442] hover:bg-[#2A2C38]'
                   : isMono
-                  ? 'bg-[#D8D4CA] text-[#242321] border-[#B8B4A8]'
-                  : 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700'
-                : isDark
-                ? 'bg-[#1E202B] text-[#D8DAE2] border-[#2C2E3A] hover:bg-[#252734]'
-                : isMono
-                ? 'bg-[#FCFBF9] text-[#242321] border-[#D8D4CA] hover:bg-[#EFECE4]'
-                : 'bg-slate-800 text-white border-slate-800 hover:bg-slate-900'
-            }`}
-          >
-            <MingIcon name={autoTickActive ? 'pause_line' : 'play_line'} size={15} />
-            <span>{autoTickActive ? 'Stop Auto-Polling' : 'Start Auto-Polling'}</span>
-          </button>
+                  ? 'bg-[#E2DFD6] text-[#242321] border-[#C8C4B8] hover:bg-[#D5D1C6]'
+                  : isLiveMode
+                  ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
+                  : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800'
+              }`}
+              title={isLiveMode ? 'Poll live Sectors API once' : 'Poll mock market data once'}
+            >
+              <MingIcon
+                name={loading ? 'refresh_3_line' : 'refresh_3_line'}
+                size={14}
+                className={loading ? 'animate-spin' : ''}
+              />
+              <span>{loading ? 'Polling...' : 'Do Once'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onToggleAutoTick?.(!autoTickActive, 2.5)}
+              className={`flex items-center justify-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer ${
+                autoTickActive
+                  ? isDark
+                    ? 'bg-[#3A1F26] text-[#E8A5A5] border-[#5A2C37]'
+                    : isMono
+                    ? 'bg-[#D8D4CA] text-[#242321] border-[#B8B4A8]'
+                    : 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700'
+                  : isDark
+                  ? 'bg-[#1E202B] text-[#D8DAE2] border-[#2C2E3A] hover:bg-[#252734]'
+                  : isMono
+                  ? 'bg-[#FCFBF9] text-[#242321] border-[#D8D4CA] hover:bg-[#EFECE4]'
+                  : 'bg-slate-800 text-white border-slate-800 hover:bg-slate-900'
+              }`}
+              title={autoTickActive ? 'Stop automated streaming' : 'Stream live or mock updates continuously'}
+            >
+              <MingIcon name={autoTickActive ? 'pause_line' : 'play_line'} size={14} />
+              <span>{autoTickActive ? 'Stop Stream' : 'Stream Data'}</span>
+            </button>
+          </div>
+
+          <p className={`text-[10px] leading-tight ${textMuted}`}>
+            {autoTickActive
+              ? 'Continuous stream active across watcher nodes.'
+              : isLiveMode
+              ? 'Sync live market data once or start auto-polling.'
+              : 'Sync mock market data once or stream continuous simulation.'}
+          </p>
         </div>
       </div>
     </aside>

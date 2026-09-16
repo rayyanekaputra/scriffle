@@ -30,7 +30,9 @@ import { FileNode } from './nodes/FileNode';
 import { ScreenerNode } from './nodes/ScreenerNode';
 import { ContextMenu } from './ContextMenu';
 import { SelectionBoundingBox } from './SelectionBoundingBox';
+import { QuickAddPopover } from './QuickAddPopover';
 import { findNextSpatialNode } from '@/lib/spatialNavigator';
+import { calculateQuickAddPosition, getDefaultConfigForQuickAdd } from '@/lib/quickAddNavigator';
 import { CanvasData, CanvasToolMode, NodeType } from '@/types/canvas';
 import { useTheme } from '@/context/ThemeContext';
 import { MingIcon } from '@/components/ui/MingIcon';
@@ -154,8 +156,42 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     edgeId: string | null;
   } | null>(null);
 
+  // Quick-Add Connected Node Popover State
+  const [quickAdd, setQuickAdd] = useState<{
+    isOpen: boolean;
+    sourceNodeId: string;
+    sourceNodeType?: NodeType | null;
+    sourceNodeLabel?: string;
+    screenX: number;
+    screenY: number;
+    targetFlowPos?: { x: number; y: number } | null;
+  } | null>(null);
+
   // Enhanced Multi-node & Group-aware Clipboard Buffer
   const clipboardRef = useRef<ClipboardPayload | null>(null);
+
+  // Listen for custom quick-add event dispatched from node handles
+  useEffect(() => {
+    const handleQuickAddEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const detail = customEvent.detail || {};
+      if (!detail.nodeId) return;
+
+      const sourceNode = nodes.find((n) => n.id === detail.nodeId);
+      setQuickAdd({
+        isOpen: true,
+        sourceNodeId: detail.nodeId,
+        sourceNodeType: detail.sourceNodeType || (sourceNode?.type as NodeType),
+        sourceNodeLabel: detail.sourceNodeLabel || sourceNode?.type,
+        screenX: detail.screenPosition?.x ?? (window.innerWidth / 2),
+        screenY: detail.screenPosition?.y ?? (window.innerHeight / 2),
+        targetFlowPos: detail.targetFlowPos || null,
+      });
+    };
+
+    window.addEventListener('scriffle:quick-add', handleQuickAddEvent);
+    return () => window.removeEventListener('scriffle:quick-add', handleQuickAddEvent);
+  }, [nodes]);
 
   // Track global mouse coordinates for paste placement safely on client
   useEffect(() => {
@@ -763,7 +799,133 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         console.error('Failed to create edge:', err);
       }
     },
-    [canvasData?.id, onRefresh, setEdges]
+    [canvasData?.id, onRefresh, setEdges, theme, onRecordSnapshot]
+  );
+
+  // Drag-and-drop connection line released onto empty canvas area
+  const onConnectEnd = useCallback(
+    (event: MouseEvent | TouchEvent, connectionState?: any) => {
+      if (connectionState && !connectionState.isValid && connectionState.fromNode) {
+        const clientX =
+          'clientX' in event
+            ? (event as MouseEvent).clientX
+            : (event as TouchEvent).touches?.[0]?.clientX ?? window.innerWidth / 2;
+        const clientY =
+          'clientY' in event
+            ? (event as MouseEvent).clientY
+            : (event as TouchEvent).touches?.[0]?.clientY ?? window.innerHeight / 2;
+        const flowPos = screenToFlowPosition({ x: clientX, y: clientY });
+
+        const fromNode = connectionState.fromNode;
+        const data: any = fromNode.data || {};
+        const cfg: any = data.config || {};
+        const label =
+          fromNode.type === 'watcher'
+            ? cfg.symbol || 'Watcher'
+            : fromNode.type === 'screener'
+            ? 'Screener'
+            : fromNode.type;
+
+        setQuickAdd({
+          isOpen: true,
+          sourceNodeId: fromNode.id,
+          sourceNodeType: fromNode.type as NodeType,
+          sourceNodeLabel: label,
+          screenX: clientX,
+          screenY: clientY,
+          targetFlowPos: flowPos,
+        });
+      }
+    },
+    [screenToFlowPosition]
+  );
+
+  // Auto-wires and spawns a new connected node from quick-add
+  const handleCreateAndConnectNode = useCallback(
+    async (type: NodeType) => {
+      if (!quickAdd?.sourceNodeId) return;
+      const sourceNodeId = quickAdd.sourceNodeId;
+      const sourceNode = nodes.find((n) => n.id === sourceNodeId);
+      if (!sourceNode) {
+        setQuickAdd(null);
+        return;
+      }
+
+      onRecordSnapshot?.();
+
+      // 1. Calculate non-overlapping target flow position
+      const targetPos =
+        quickAdd.targetFlowPos ||
+        calculateQuickAddPosition(sourceNode.position, nodes);
+
+      // 2. Prepare default configuration
+      const defaultConfig = getDefaultConfigForQuickAdd(type, {
+        type: sourceNode.type as NodeType,
+        config: sourceNode.data?.config,
+      });
+
+      const newId = crypto.randomUUID();
+      const newEdgeId = `edge-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+      const newNode: Node = {
+        id: newId,
+        type,
+        position: targetPos,
+        data: {
+          config: defaultConfig,
+          state: { status: 'idle', cycleCount: 0 },
+        },
+        selected: true,
+      };
+
+      const edgeStroke =
+        theme === 'dark' ? '#525668' : theme === 'mono' ? '#78756D' : '#0050FF';
+
+      const newEdge: Edge = {
+        id: newEdgeId,
+        source: sourceNodeId,
+        target: newId,
+        animated: true,
+        interactionWidth: 24,
+        style: { stroke: edgeStroke, strokeWidth: 2.5, cursor: 'pointer' },
+      };
+
+      // Select new node exclusively
+      setNodes((nds) => [...nds.map((n) => ({ ...n, selected: false })), newNode]);
+      setEdges((eds) => [...eds, newEdge]);
+      setQuickAdd(null);
+
+      // Persist node & edge to backend
+      try {
+        await fetch('/api/canvas/nodes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            canvasId: canvasData?.id,
+            id: newId,
+            type,
+            position: targetPos,
+            config: defaultConfig,
+          }),
+        });
+
+        await fetch('/api/canvas/edges', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            canvasId: canvasData?.id,
+            id: newEdgeId,
+            from: sourceNodeId,
+            to: newId,
+          }),
+        });
+
+        onRefresh?.();
+      } catch (err) {
+        console.error('Failed to persist quick-added node/edge:', err);
+      }
+    },
+    [quickAdd, nodes, theme, canvasData?.id, onRecordSnapshot, onRefresh, setNodes, setEdges]
   );
 
   // Keyboard delete (Backspace/Delete) or user edge deletion
@@ -1034,6 +1196,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectEnd={onConnectEnd}
         onNodesDelete={onNodesDelete}
         onEdgesDelete={onEdgesDelete}
         onNodeDragStart={onNodeDragStart}
@@ -1043,9 +1206,13 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onNodeDoubleClick={onNodeDoubleClick}
         onPaneClick={() => {
           setMenu(null);
+          setQuickAdd(null);
           if (isolatedGroupId) setIsolatedGroupId(null);
         }}
-        onEdgeClick={() => setMenu(null)}
+        onEdgeClick={() => {
+          setMenu(null);
+          setQuickAdd(null);
+        }}
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
@@ -1114,6 +1281,19 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           onUngroupSelected={handleUngroupSelected}
           onDeleteElement={(nodeId) => onDeleteNode?.(nodeId)}
           onDeleteEdge={(edgeId) => onDeleteEdge?.(edgeId)}
+        />
+      )}
+
+      {/* Quick-Add Connected Node Popover */}
+      {quickAdd && quickAdd.isOpen && (
+        <QuickAddPopover
+          x={quickAdd.screenX}
+          y={quickAdd.screenY}
+          sourceNodeId={quickAdd.sourceNodeId}
+          sourceNodeType={quickAdd.sourceNodeType}
+          sourceNodeLabel={quickAdd.sourceNodeLabel}
+          onSelectType={handleCreateAndConnectNode}
+          onClose={() => setQuickAdd(null)}
         />
       )}
     </div>

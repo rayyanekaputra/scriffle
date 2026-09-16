@@ -5,9 +5,12 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { ScreenerConfig, ScreenerCompanyResult } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
+import { useLoading } from '@/context/LoadingContext';
+import { QuickAddSourceHandle } from '../QuickAddSourceHandle';
 
-export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
+export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
+  const { isNodeLoading, runTracked } = useLoading();
   const config = (data.config || {}) as ScreenerConfig;
   const state = (data.state || {}) as any;
   const isPassed = state.status === 'passed';
@@ -16,6 +19,7 @@ export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
   const queryPrompt = config.query || 'top 5 banks by market cap';
 
   const [isLoading, setIsLoading] = useState(false);
+  const nodeIsLoading = isLoading || isNodeLoading(id);
 
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';
@@ -23,17 +27,23 @@ export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
   const cardBorder = isDark
     ? selected
       ? 'border-[#8E95A5] ring-2 ring-[#8E95A5]/20'
+      : nodeIsLoading
+      ? 'border-[#0050FF] ring-2 ring-[#0050FF]/30 animate-pulse'
       : isPassed
       ? 'border-[#8E95A5]'
       : 'border-[#282A36] hover:border-[#383B4A]'
   : isMono
     ? selected
       ? 'border-[#242321] ring-2 ring-[#242321]/20'
+      : nodeIsLoading
+      ? 'border-[#242321] ring-2 ring-[#242321]/30 animate-pulse'
       : isPassed
       ? 'border-[#242321]'
       : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
   : selected
     ? 'border-[#0050FF] ring-2 ring-[#0050FF]/20'
+    : nodeIsLoading
+    ? 'border-[#0050FF] ring-2 ring-[#0050FF]/30 animate-pulse'
     : isPassed
     ? 'border-[#0050FF]'
     : 'border-slate-300 hover:border-slate-400';
@@ -48,16 +58,25 @@ export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
     e.stopPropagation();
     setIsLoading(true);
     try {
-      const apiKey = typeof window !== 'undefined' ? (window as any).__sectorsSessionApiKey : undefined;
-      await fetch('/api/engine/trigger', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          canvasId: (data as any).canvasId,
-          nodeId: data.id,
-          apiKey,
-        }),
-      });
+      await runTracked(
+        {
+          label: `Screening IDX universe: "${queryPrompt}"`,
+          category: 'screener',
+          nodeId: id,
+        },
+        async () => {
+          const apiKey = typeof window !== 'undefined' ? (window as any).__sectorsSessionApiKey : undefined;
+          await fetch('/api/engine/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              canvasId: (data as any).canvasId,
+              nodeId: id,
+              apiKey,
+            }),
+          });
+        }
+      );
     } catch (err) {
       console.error('Failed to trigger screener:', err);
     } finally {
@@ -157,7 +176,7 @@ export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`relative w-84 rounded-2xl border-2 p-4 transition-all duration-150 ${cardBg} ${cardBorder}`}
+      className={`relative w-84 rounded-2xl border-2 p-4 transition-all duration-150 group/node ${cardBg} ${cardBorder}`}
     >
       {/* Top Header */}
       <div
@@ -192,7 +211,20 @@ export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
         </div>
 
         <div className="flex items-center gap-1.5">
-          {cycleCount > 0 && (
+          {nodeIsLoading ? (
+            <span
+              className={`text-[11px] font-medium px-2 py-0.5 rounded-full border flex items-center gap-1 animate-pulse ${
+                isDark
+                  ? 'bg-blue-950/60 text-blue-300 border-blue-800/60'
+                  : isMono
+                  ? 'bg-[#EAE7DF] text-[#242321] border-[#242321]'
+                  : 'bg-blue-50 text-[#0050FF] border-blue-200'
+              }`}
+            >
+              <MingIcon name="loading_3_line" size={11} className="animate-spin" />
+              <span>Screening...</span>
+            </span>
+          ) : cycleCount > 0 ? (
             <span
               className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
                 isDark
@@ -204,13 +236,13 @@ export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
             >
               ⚡ {cycleCount} runs
             </span>
-          )}
+          ) : null}
 
           <button
             onClick={handleManualTrigger}
-            disabled={isLoading}
+            disabled={nodeIsLoading}
             title="Execute Screener"
-            className={`p-1.5 rounded-lg border transition-all text-xs flex items-center gap-1 ${
+            className={`p-1.5 rounded-lg border transition-all text-xs flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
               isDark
                 ? 'bg-[#22242D] border-[#313442] hover:bg-[#2C2E3B] text-[#D2D6E0]'
                 : isMono
@@ -218,7 +250,7 @@ export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
                 : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'
             }`}
           >
-            <MingIcon name={isLoading ? 'loading_3_line' : 'refresh_3_line'} size={14} className={isLoading ? 'animate-spin' : ''} />
+            <MingIcon name={nodeIsLoading ? 'loading_3_line' : 'refresh_3_line'} size={14} className={nodeIsLoading ? 'animate-spin text-[#0050FF]' : ''} />
           </button>
         </div>
       </div>
@@ -369,11 +401,12 @@ export const ScreenerNode = memo(({ data, selected }: NodeProps) => {
         </span>
       </div>
 
-      {/* Flow Handles */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!w-3 !h-3 !bg-[#0050FF] !border-2 !border-white transition-transform hover:!scale-125"
+      {/* Flow Handles with Quick-Add [+] Connector */}
+      <QuickAddSourceHandle
+        nodeId={id || (data as any)?.id}
+        nodeType="screener"
+        nodeLabel={`Screener: ${queryPrompt}`}
+        selected={selected}
       />
       <Handle
         type="source"

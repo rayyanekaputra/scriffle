@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **128 unit tests across 10 test suites (100% green).**
+* **Master Unit Test Suite:** **143 unit tests across 12 test suites (100% green).**
 
 ---
 
@@ -20,7 +20,7 @@
 ### 2.1 The Node System
 * **`watcher` (Radar sticker & Leaderboard):**
   * **Single Stock Mode:** Monitors individual Indonesian stock tickers (`BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`) with current price, % move, and cycle counter (`⚡ 12 runs`).
-  * **Top Gainers / Losers Leaderboard Mode:** Full multi-mover ranking table (`#1`, `#2`, `#3`... with ticker, company name, last close price, and Mint/Coral % badges) querying `GET /v2/companies/top-changes/` with `n_stock`, `periods`, `classifications`, and `min_mcap_billion` parameters.
+  * **Top Gainers / Losers Leaderboard Mode:** Full multi-mover ranking table (`#1`, `#2`, `#3`... with ticker, company name, last close price, and Mint/Coral % badges) querying `GET /v2/companies/top-changes/` with `n_stock`, `periods`, `classifications`, and `min_mcap_billion` parameters. Features theme-aware rank badges (#1 gold, #2 silver, #3 bronze, #4+ slate) for Light, Mono (warm-paper), and Dark (soft charcoal) modes.
   * **Clean Initial State & Lifecycle:** Watchers start in a clean idle state (`0 runs`, `"Waiting for tick"` / `"Waiting for live leaderboard poll..."`) without premature mock data injection.
   * **API Error Transparency & Offline Mock Indicator:** Structured error capture (`{ code, message }`) displays a `⚠ API Error {code}` badge and detailed callout banner on live API failures. Offline mode displays a crisp `Mock` badge.
   * **Credit Rate Badge & Tooltip:** Shows `🪙 10 credits / poll` (with tooltip explaining the 1 credit per classification × period formula) or `🪙 1 credit / tick` in the card footer.
@@ -54,11 +54,19 @@
 
 ---
 
-### 2.2 Whiteboard Interactions, Project Files & Shortcuts
+### 2.2 Control Panel, Project Files & Whiteboard Interactions
+* **Quick-Add Connected Node & Auto-Wiring (`QuickAddHandle.tsx`, `QuickAddPopover.tsx`, `quickAddNavigator.ts`):**
+  * **Hover & Selection `[+]` Button:** Floating `+` button positioned 36px to the right of output handles on `WatcherNode`, `ConditionNode`, `ScreenerNode`, and `ActionNode` appears on hover/selection.
+  * **Drag-to-Empty-Canvas Connector Drop:** Releasing a connector line onto empty canvas (`onConnectEnd`) opens the Quick-Add popover at cursor coordinates.
+  * **Smart Recommendations & Collision Avoidance:** Recommends logical next nodes (e.g. `Watcher` $\rightarrow$ `Condition` / `Note` / `Action`) and calculates non-overlapping offsets (`+320px X`, staggering `+150px Y` if occupied).
+  * **Instant 1-Click Auto-Wiring:** Spawns target node, connects edge, focuses the card, and persists both in SQLite.
+* **Control Panel & Market Data Stream (`SimulationBar.tsx`):**
+  * **Unified Stream Container:** Single-line layout offering **Do Once** (1-tick poll) and **Stream Data** (continuous per-node interval streaming) across Live API and Mock modes.
+  * **Project File Operations:** 3-button actions for **New File** (creates fresh `/b/[uuid]` board), **Open File** (`.scriffle` / `.json`), and **Save File**.
+  * **Examples:** Quick starter board loader (`Rotation Engine`, `Momentum Breakout Loop`, `Banking Sector Trio`).
 * **Project Save & Open (`.scriffle` Format):**
   * **Save / Export:** 1-click **Save** button in top navbar creates and downloads `<canvas_name>.scriffle` (UTF-8 JSON formatted).
   * **Open / Import:** **Open** button with native file picker (`.scriffle`, `.json`) + Drag & Drop `.scriffle` file directly onto the canvas to restore full graph.
-  * **Starter Presets:** Quick template dropdown in Demo Controls to load `"Rotation Engine"`, `"Momentum Breakout Loop"`, or `"Banking Sector Trio"`.
   * **Atomic Restore API (`/api/canvas/restore`):** Validates nodes/edges and cleanly replaces canvas with run counters reset to 0; equipped with automatic `idMap` allocation preventing cross-tab `UNIQUE constraint` collisions and preserving 100% of graph edge connections.
 * **Group & Ungroup System (`Cmd+G` / `Cmd+Shift+G`):**
   * **Cohesive Selection & Dragging:** Multi-select nodes and press `Cmd+G` to group them into a single cohesive unit.
@@ -83,6 +91,7 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`QUICK_ADD_CONNECTOR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/QUICK_ADD_CONNECTOR_PLAN.md): Quick-Add floating handle, drag-to-empty-canvas drop, and flow auto-wiring.
 * [`TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md): Top Movers 400 bug fix, structured error capture, and Watcher error UI.
 * [`CREDIT_COST_BADGES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/CREDIT_COST_BADGES_PLAN.md): Centralized pricing registry (`creditCosts.ts`), node badges, and burst warning notices.
 * [`WATCHER_CLEAN_INITIAL_STATE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/WATCHER_CLEAN_INITIAL_STATE_PLAN.md): Watcher clean idle initial states and restore cleanliness.
@@ -137,6 +146,8 @@ hackathon/
 │   │   │   ├── MarketCanvas.tsx       # React Flow canvas, clipboard paste, context menus & drop events
 │   │   │   ├── ContextMenu.tsx        # Right-click context menus for canvas and nodes
 │   │   │   ├── SelectionBoundingBox.tsx # Figma-style 8-point bounding box handles & group pills
+│   │   │   ├── QuickAddSourceHandle.tsx # Output handle wrapper with floating [+] button
+│   │   │   ├── QuickAddPopover.tsx    # Contextual quick-add next node search popover
 │   │   │   └── nodes/
 │   │   │       ├── WatcherNode.tsx    # Watcher sticker + cycle counter + credit cost badge + error UI
 │   │   │       ├── ConditionNode.tsx  # Condition rule capsule
@@ -151,18 +162,21 @@ hackathon/
 │   │   │           └── TextFormatToolbar.tsx # Floating formatting toolbar (typography, highlight, container)
 │   │   ├── controls/
 │   │   │   ├── TopNav.tsx             # Floating whiteboard toolbar & sticker/image picker
-│   │   │   ├── SimulationBar.tsx      # Presenter demo dock (BBCA surge, volume spike)
+│   │   │   ├── SimulationBar.tsx      # Control Panel drawer (stream manager, project file ops, examples)
 │   │   │   └── EditNodeModal.tsx      # Modal editor for structured nodes with credit notices & burst warnings
 │   │   ├── feed/
 │   │   │   └── ActivityFeed.tsx       # Live activity stream
 │   │   └── ui/
 │   │       └── MingIcon.tsx           # Reusable MingCute icon component
+│   ├── context/
+│   │   └── LoadingContext.tsx         # Centralized loading task queue (LoadingProvider, useLoading, runTracked)
 │   ├── hooks/
 │   │   └── useCanvasSync.ts           # SWR polling hook (2s interval)
 │   ├── lib/
 │   │   ├── creditCosts.ts             # Centralized Sectors API credit pricing registry & burst warnings
 │   │   ├── mockData.ts                # Realistic market mocks
 │   │   ├── prisma.ts                  # Global Prisma client singleton
+│   │   ├── quickAddNavigator.ts       # Spatial placement collision resolution & smart node defaults
 │   │   └── utils.ts
 │   ├── server/
 │   │   └── services/
@@ -179,7 +193,7 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
-* **Run Unit Tests:** `bun test` (**128 tests across 10 suites, 100% green, ~140ms**)
+* **Run Unit Tests:** `bun test` (**143 tests across 12 suites, 100% green, ~140ms**)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
 * **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`
