@@ -1,8 +1,30 @@
-# 📋 Session Changelog — 2026-09-14
+# 📋 Session Changelog — 2026-09-16
  
  > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
  
  ---
+ 
+## 0. UI Fixes: Control Panel Rebranding, Unified Data Stream & Theme-Aware Rank Badges
+
+**Key Issues Resolved:**
+1. **Theme-Aware Rank Capsules in Top Gainers / Losers Leaderboards (`WatcherNode.tsx`)**:
+   - Replaced hardcoded Light Mode classes on `#1`, `#2`, and `#3` rank badges with theme-aware styling.
+   - Dark Mode: Uses translucent amber (`bg-amber-500/20 text-amber-300 border-amber-500/40`), silver (`bg-slate-400/20 text-slate-200`), and bronze badges (`bg-orange-500/20 text-orange-300`).
+   - Mono Mode: Uses warm-paper graphite tones (`bg-[#E2DFD6] text-[#242321] border-[#C8C4B8] font-black`).
+   - Light Mode: Crisp gold, silver, bronze, and neutral slate badges.
+2. **Rebranded Left Panel to "Control Panel" (`SimulationBar.tsx`, `TopNav.tsx`, `page.tsx`)**:
+   - Updated header title from `"Demo Controls"` to `"Control Panel"` and icon to `settings_3_line`.
+   - Updated tooltips across `TopNav` and drawer close button.
+3. **Unified Market Data Stream Container (`SimulationBar.tsx`)**:
+   - Merged Section 2 (*"Market Data Sync"*) and Section 3 (*"Auto-Polling Stream"*) into a single cohesive container.
+   - Simplified copy to clean 1-line buttons: **"Do Once"** (single manual poll tick with spinner) and **"Stream Data"** / **"Stop Stream"** (continuous interval polling toggle).
+   - Removed awkward line breaks and text wrapping in side drawer.
+4. **"New File" Action in Project File Container (`SimulationBar.tsx`, `page.tsx`)**:
+   - Upgraded file container into a 3-button grid: **New**, **Open**, **Save**.
+   - `New` initializes a fresh canvas board (`/b/[uuid]`).
+5. **Rebranded "Presets" to "Examples" (`SimulationBar.tsx`)**:
+   - Changed section label from `"Load Preset Template:"` to `"Examples"` to emphasize optional starter boards.
+
  
 ## 0. Radar Watcher Leaderboard Multi-Stock Brief Isolation & Dynamic In-Place Fundamental Reports
 

@@ -3,8 +3,14 @@
 > A pragmatic, zero-overhead testing scheme for a hackathon-scale codebase. No QA experience needed.
 
 > [!IMPORTANT]
-> **THE TESTING MANDATE — NON-NEGOTIABLE FOR ALL AGENTS:**
-> Adding any new feature means adding new test cases covering every possible input, edge case, and node connection scenario. This applies to every PR, every session, every agent. Run `bun test` before marking any task complete. All 83 existing tests must stay green.
+> **THE TESTING MANDATE — APPLIES STRICTLY TO CODE CHANGES:**
+> Adding any new feature or changing application code (`.ts`, `.tsx`, API routes, engines) means adding new unit tests covering input branches and edge cases. Run `bun test` only before marking code change tasks complete. All 128 existing tests must stay green.
+>
+> **NO TESTS FOR IMPLEMENTATION PLANS OR MARKDOWN**:
+> When writing, updating, or reviewing implementation plans (`*_PLAN.md`), specifications (`SCRIFFLE_AI_SPEC.md`), backlog/status tracking, or documentation, you must **NEVER** run `bun test` or ask to execute tests. Markdown documents require zero test execution.
+>
+> **NO SUBAGENTS**:
+> **DO NOT CREATE OR INVOKE SUBAGENTS** (`invoke_subagent`, `define_subagent`). Perform all reasoning, editing, and planning directly in the main agent context to conserve quota and data.
 
 > [!NOTE]
 > **Current Status (as of last session):** Tier 1 is fully implemented — 83 tests, 0 failures, ~120ms.

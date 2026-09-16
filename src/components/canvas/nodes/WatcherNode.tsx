@@ -218,18 +218,30 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span
-                      className={`inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold shrink-0 ${
-                        rank === 1
-                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                          : rank === 2
-                          ? 'bg-slate-200 text-slate-700 border border-slate-300'
-                          : rank === 3
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : isDark
-                          ? 'bg-[#22242D] text-[#8C90A0]'
+                      className={`inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] shrink-0 border ${
+                        isDark
+                          ? rank === 1
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
+                            : rank === 2
+                            ? 'bg-slate-400/20 text-slate-200 border-slate-400/40 font-semibold'
+                            : rank === 3
+                            ? 'bg-orange-500/20 text-orange-300 border-orange-500/40 font-semibold'
+                            : 'bg-[#22242D] text-[#8C90A0] border-[#313442]'
                           : isMono
-                          ? 'bg-[#EAE7DF] text-[#78756D]'
-                          : 'bg-slate-200 text-slate-600'
+                          ? rank === 1
+                            ? 'bg-[#E2DFD6] text-[#242321] border-[#C8C4B8] font-black'
+                            : rank === 2
+                            ? 'bg-[#EAE7DF] text-[#4F4C45] border-[#D8D4CA] font-bold'
+                            : rank === 3
+                            ? 'bg-[#EFECE4] text-[#78756D] border-[#D8D4CA] font-semibold'
+                            : 'bg-[#F4F3EF] text-[#8C8980] border-[#E2DFD6]'
+                          : rank === 1
+                          ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold'
+                          : rank === 2
+                          ? 'bg-slate-200 text-slate-800 border-slate-300 font-semibold'
+                          : rank === 3
+                          ? 'bg-orange-100 text-orange-900 border-orange-200 font-semibold'
+                          : 'bg-slate-100 text-slate-600 border-slate-200'
                       }`}
                     >
                       #{rank}

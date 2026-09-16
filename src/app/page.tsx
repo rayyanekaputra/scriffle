@@ -346,6 +346,12 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     }
   };
 
+  // Create a new project / canvas board
+  const handleNewProject = () => {
+    const newId = crypto.randomUUID();
+    window.location.href = `/b/${newId}`;
+  };
+
   // Export full project as .scriffle file (UTF-8 JSON formatted)
   const handleExportScriffle = () => {
     if (!canvas) {
@@ -812,6 +818,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
           onClose={() => setIsControlsOpen(false)}
           autoTickActive={autoTickActive}
           onToggleAutoTick={handleToggleAutoTick}
+          onNewProject={handleNewProject}
           onExportScriffle={handleExportScriffle}
           onImportScriffle={handleImportScriffle}
           onLoadPreset={handleLoadPreset}

@@ -6,6 +6,11 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⭐ Control Panel Rebranding, Unified Data Stream & Theme-Aware Rank Badges (`WatcherNode.tsx`, `SimulationBar.tsx`, `TopNav.tsx`, `page.tsx`)**
+  - Theme-aware rank capsule styling (#1 gold, #2 silver, #3 bronze, #4+ neutral) in `WatcherNode.tsx` across Light, Mono (warm-paper), and Dark (soft charcoal) modes.
+  - Combined Market Data Sync and Auto-Polling Stream into a unified single-line **Market Data Stream** container with **Do Once** and **Stream Data** action buttons.
+  - Added **New File** action button alongside Open and Save in Project File container.
+  - Rebranded Presets to **Examples** and renamed drawer from "Demo Controls" to **Control Panel**.
 - [x] **⭐ Top Movers API Fix & Error Transparency (`sectorsApi.ts`, `graphEngine.ts`, `WatcherNode.tsx`, `trigger/route.ts`)**
   - Fixed `/v2/companies/top-changes/` parameter building bug (omit `classifications` param when `'all'`).
   - Implemented structured error capture (`{ code, message }`) in `getTopMarketMovers()` and logged failures to Activity Feed.
@@ -251,9 +256,13 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [x] **Spotlight Quick Search (`Cmd+K` / `Cmd+F`)**: Modal search across stock tickers (`BBCA`, `BBRI`), note text, and node labels with 1-click camera pan & zoom.
 - [x] **Keyboard Shortcuts Cheat Sheet Modal (`?`)**: Clean visual shortcut guide overlay showing all canvas hotkeys (`V`, `H`, `T`, `Cmd+G`, `Cmd+Shift+G`, `Cmd+C/V/D`, `Cmd+Z/Y`, `Delete`, `Esc`, `Space`).
 - [x] **Zoom Percentage Badge & Fit-to-Screen (`Shift+1` / `Shift+0`)**: Clickable zoom indicator in toolbar with presets (`50%`, `100%`, `150%`, `200%`, `Fit All`).
+- [ ] **⏳ Global & Card-Level Loading Feedback for Long-Running Operations**:
+  - Show an institutional progress/loading banner or subtle canvas status pill when generating multi-stock fundamental reports (`/api/export/report`), exporting `.scriffle` bundles, or polling multiple live sectors.
+  - Prevents user uncertainty during heavy API roundtrips and disk exports.
 
 #### 4. 🎭 Presentation & Live Pitch Mode (Miro-inspired)
 - [ ] **Zen / Presenter Mode (`Cmd+.`)**: 1-click toggle to hide all UI chrome (toolbars, docks, sidebars) for distraction-free presentation to judges.
 - [ ] **Presenter Laser Pointer**: Hold modifier key or toggle a laser pointer tool that leaves a smooth fading line for explaining live graphs.
+
 
 

@@ -247,7 +247,7 @@ export const TopNav: React.FC<TopNavProps> = ({
               ? 'bg-slate-900 text-white border-slate-900'
               : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
           }`}
-          title="Toggle Left Demo Controls Panel"
+          title="Toggle Control Panel"
         >
           <MingIcon name="layout_left_line" size={16} />
           <span className="whitespace-nowrap">Controls</span>
