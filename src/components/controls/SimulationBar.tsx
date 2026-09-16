@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
+import { useLoading } from '@/context/LoadingContext';
 
 interface SimulationBarProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   onPollMarket,
 }) => {
   const { theme } = useTheme();
+  const { runTracked } = useLoading();
   const [loading, setLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const scriffleInputRef = React.useRef<HTMLInputElement>(null);
@@ -51,15 +53,23 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   const runLivePoll = async () => {
     setLoading(true);
     try {
-      if (onPollMarket) {
-        await onPollMarket();
-      } else {
-        await fetch('/api/engine/trigger', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey: apiKey.trim() }),
-        });
-      }
+      await runTracked(
+        {
+          label: isLiveMode ? 'Polling live market stream...' : 'Generating mock market cycle...',
+          category: 'poll',
+        },
+        async () => {
+          if (onPollMarket) {
+            await onPollMarket();
+          } else {
+            await fetch('/api/engine/trigger', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ apiKey: apiKey.trim() }),
+            });
+          }
+        }
+      );
     } catch (err) {
       console.error('Live poll failed:', err);
     } finally {

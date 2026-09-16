@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from '@/context/ThemeContext';
+import { LoadingProvider } from '@/context/LoadingContext';
 
 export default function RootLayout({
   children,
@@ -38,7 +39,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-[#F8F9FC] text-slate-900 selection:bg-yellow-200">
         <ThemeProvider>
-          {children}
+          <LoadingProvider>
+            {children}
+          </LoadingProvider>
         </ThemeProvider>
       </body>
     </html>

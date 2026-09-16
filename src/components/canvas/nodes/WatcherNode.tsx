@@ -5,14 +5,18 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { WatcherConfig, MarketEvent } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
-export const WatcherNode = memo(({ data, selected }: NodeProps) => {
+import { useLoading } from '@/context/LoadingContext';
+
+export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
+  const { isNodeLoading } = useLoading();
   const config = (data.config || {}) as WatcherConfig;
   const state = (data.state || {}) as any;
   const lastVal = state.lastValue || {};
   const isPassed = state.status === 'passed';
   const cycleCount = state.cycleCount || 0;
   const priceChange = lastVal.price_change !== undefined ? lastVal.price_change : null;
+  const nodeLoading = isNodeLoading(id);
 
   const isRadarMode =
     config.mode === 'top_gainers' ||
@@ -43,6 +47,8 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
   const cardBorder = isDark
     ? selected
       ? 'border-[#8E95A5] ring-2 ring-[#8E95A5]/20'
+      : nodeLoading
+      ? 'border-[#0050FF] ring-2 ring-[#0050FF]/30 animate-pulse'
       : isError
       ? 'border-rose-500/80 ring-1 ring-rose-500/20'
       : isPassed
@@ -51,6 +57,8 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
     : isMono
     ? selected
       ? 'border-[#242321] ring-2 ring-[#242321]/20'
+      : nodeLoading
+      ? 'border-[#242321] ring-2 ring-[#242321]/30 animate-pulse'
       : isError
       ? 'border-rose-600 ring-1 ring-rose-600/20'
       : isPassed
@@ -58,6 +66,8 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
       : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
     : selected
     ? 'border-[#0050FF] ring-2 ring-[#0050FF]/20'
+    : nodeLoading
+    ? 'border-[#0050FF] ring-2 ring-[#0050FF]/30 animate-pulse'
     : isError
     ? 'border-rose-500 ring-1 ring-rose-500/20'
     : isPassed
@@ -174,19 +184,34 @@ export const WatcherNode = memo(({ data, selected }: NodeProps) => {
             </span>
           ) : null}
 
-          {/* Cycle Counter Badge */}
-          <div
-            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
-              isDark
-                ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
-                : isMono
-                ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
-                : 'bg-blue-50 text-[#0050FF] border-blue-200'
-            }`}
-          >
-            <MingIcon name="repeat_line" size={12} />
-            <span>{cycleCount} runs</span>
-          </div>
+          {/* Cycle Counter / Polling Badge */}
+          {nodeLoading ? (
+            <div
+              className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold border animate-pulse ${
+                isDark
+                  ? 'bg-blue-950/60 text-blue-300 border-blue-800/60'
+                  : isMono
+                  ? 'bg-[#EAE7DF] text-[#242321] border-[#242321]'
+                  : 'bg-blue-50 text-[#0050FF] border-blue-200'
+              }`}
+            >
+              <MingIcon name="loading_3_line" size={12} className="animate-spin text-[#0050FF]" />
+              <span>Polling...</span>
+            </div>
+          ) : (
+            <div
+              className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
+                isDark
+                  ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]'
+                  : isMono
+                  ? 'bg-[#EFECE4] text-[#242321] border-[#D8D4CA]'
+                  : 'bg-blue-50 text-[#0050FF] border-blue-200'
+              }`}
+            >
+              <MingIcon name="repeat_line" size={12} />
+              <span>{cycleCount} runs</span>
+            </div>
+          )}
         </div>
       </div>
 

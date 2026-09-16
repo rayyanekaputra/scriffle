@@ -5,6 +5,7 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { FileConfig, FileCategory } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
+import { useLoading } from '@/context/LoadingContext';
 
 /**
  * Detects file category and extension from fileName/URL
@@ -109,9 +110,11 @@ function resolveFileMeta(config: FileConfig): {
   }
 }
 
-export const FileNode = memo(({ data, selected }: NodeProps) => {
+export const FileNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
+  const { isNodeLoading } = useLoading();
   const config = (data.config || {}) as FileConfig;
+  const nodeLoading = isNodeLoading(id);
 
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';
@@ -124,13 +127,19 @@ export const FileNode = memo(({ data, selected }: NodeProps) => {
   const cardBorder = isDark
     ? selected
       ? 'border-[#8E95A5] ring-2 ring-[#8E95A5]/20'
+      : nodeLoading
+      ? 'border-[#0050FF] ring-2 ring-[#0050FF]/30 animate-pulse'
       : 'border-[#282A36] hover:border-[#383B4A]'
     : isMono
     ? selected
       ? 'border-[#242321] ring-2 ring-[#242321]/20'
+      : nodeLoading
+      ? 'border-[#242321] ring-2 ring-[#242321]/30 animate-pulse'
       : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
     : selected
     ? 'border-[#0050FF] ring-2 ring-[#0050FF]/20'
+    : nodeLoading
+    ? 'border-[#0050FF] ring-2 ring-[#0050FF]/30 animate-pulse'
     : 'border-slate-300 hover:border-slate-400';
 
   const cardBg = isDark
@@ -219,7 +228,18 @@ export const FileNode = memo(({ data, selected }: NodeProps) => {
             <span className={`text-[9px] ${isDark ? 'text-[#4A4D5E]' : isMono ? 'text-[#C8C4B8]' : 'text-slate-300'}`}>•</span>
             
             {/* Download / Local Disk Status Indicator */}
-            {config.savedLocally || config.isDownloaded ? (
+            {nodeLoading ? (
+              <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded font-semibold text-[9px] animate-pulse ${
+                isDark
+                  ? 'bg-amber-950/60 text-amber-400 border border-amber-800/60'
+                  : isMono
+                  ? 'bg-[#EAE7DF] text-[#242321] border border-[#242321]'
+                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+              }`}>
+                <MingIcon name="loading_3_line" size={10} className="animate-spin text-amber-600 dark:text-amber-400" />
+                <span>Generating...</span>
+              </span>
+            ) : config.savedLocally || config.isDownloaded ? (
               <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded font-semibold text-[9px] ${
                 isDark
                   ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/60'

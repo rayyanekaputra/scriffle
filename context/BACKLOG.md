@@ -6,6 +6,12 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⭐ Global & Card-Level Loading Feedback for Long-Running Operations (`LoadingContext.tsx`, `TopNav.tsx`, `ScreenerNode.tsx`, `ActionNode.tsx`, `WatcherNode.tsx`, `FileNode.tsx`, `SimulationBar.tsx`, `page.tsx`)**
+  - Implemented centralized task queue manager (`LoadingContext.tsx`) with `startTask`, `endTask`, `runTracked`, `isNodeLoading`, and auto-timeout safety cleanup.
+  - Added global 2px electric blue hairline progress bar and dynamic center status capsule in `TopNav.tsx` displaying active operation details with MingCute spinner.
+  - Added card-level visual loading feedback across `ScreenerNode` (`🤖 Screening...` badge + pulse border), `ActionNode` (`Running...` spinner + pulse border), `WatcherNode` (`⚡ Polling...` badge + pulse border), and `FileNode` (`⏳ Generating...` badge).
+  - Wired async operation tracking to live/mock polling ticks, AI company screener queries, `.scriffle` project imports, and example template restorations.
+  - Added unit test suite `loadingState.test.ts` (135 total passing tests, 100% green).
 - [x] **⭐ Control Panel Rebranding, Unified Data Stream & Theme-Aware Rank Badges (`WatcherNode.tsx`, `SimulationBar.tsx`, `TopNav.tsx`, `page.tsx`)**
   - Theme-aware rank capsule styling (#1 gold, #2 silver, #3 bronze, #4+ neutral) in `WatcherNode.tsx` across Light, Mono (warm-paper), and Dark (soft charcoal) modes.
   - Combined Market Data Sync and Auto-Polling Stream into a unified single-line **Market Data Stream** container with **Do Once** and **Stream Data** action buttons.
@@ -256,9 +262,9 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [x] **Spotlight Quick Search (`Cmd+K` / `Cmd+F`)**: Modal search across stock tickers (`BBCA`, `BBRI`), note text, and node labels with 1-click camera pan & zoom.
 - [x] **Keyboard Shortcuts Cheat Sheet Modal (`?`)**: Clean visual shortcut guide overlay showing all canvas hotkeys (`V`, `H`, `T`, `Cmd+G`, `Cmd+Shift+G`, `Cmd+C/V/D`, `Cmd+Z/Y`, `Delete`, `Esc`, `Space`).
 - [x] **Zoom Percentage Badge & Fit-to-Screen (`Shift+1` / `Shift+0`)**: Clickable zoom indicator in toolbar with presets (`50%`, `100%`, `150%`, `200%`, `Fit All`).
-- [ ] **⏳ Global & Card-Level Loading Feedback for Long-Running Operations**:
-  - Show an institutional progress/loading banner or subtle canvas status pill when generating multi-stock fundamental reports (`/api/export/report`), exporting `.scriffle` bundles, or polling multiple live sectors.
-  - Prevents user uncertainty during heavy API roundtrips and disk exports.
+- [x] **⏳ Global & Card-Level Loading Feedback for Long-Running Operations**:
+  - Show an institutional progress/loading banner and center status pill during AI company screening, multi-stock fundamental reports, `.scriffle` imports/exports, and live/mock market streams.
+  - Eliminates user uncertainty during heavy API roundtrips and disk exports with automatic 12s safety timeout.
 
 #### 4. 🎭 Presentation & Live Pitch Mode (Miro-inspired)
 - [ ] **Zen / Presenter Mode (`Cmd+.`)**: 1-click toggle to hide all UI chrome (toolbars, docks, sidebars) for distraction-free presentation to judges.

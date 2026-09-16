@@ -5,6 +5,7 @@ import { CanvasToolMode, NodeType } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { Logo } from '@/components/ui/Logo';
 import { useTheme } from '@/context/ThemeContext';
+import { useLoading } from '@/context/LoadingContext';
 
 interface TopNavProps {
   canvasName: string;
@@ -40,6 +41,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenShortcuts,
 }) => {
   const { theme, setTheme } = useTheme();
+  const { isLoading, activeTask } = useLoading();
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(canvasName || 'untitled board');
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -58,15 +60,31 @@ export const TopNav: React.FC<TopNavProps> = ({
     }
   };
 
+  const isDark = theme === 'dark';
+  const isMono = theme === 'mono';
+
+  const headerBg = isDark
+    ? 'border-[#252730] bg-[#14151B] text-[#E2E4E9]'
+    : isMono
+    ? 'border-[#D8D4CA] bg-[#FCFBF9] text-[#242321]'
+    : 'border-slate-200 bg-white text-slate-900';
+
   return (
-    <header className="relative flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white px-6 z-30">
+    <header className={`relative flex h-16 items-center justify-between border-b-2 px-6 z-30 transition-colors ${headerBg}`}>
+      {/* Hairline Progress Indicator at bottom edge */}
+      {isLoading && (
+        <div className="absolute bottom-[-2px] left-0 right-0 h-[2.5px] overflow-hidden bg-blue-100/40 z-40">
+          <div className="h-full bg-[#0050FF] animate-pulse w-full transition-all duration-300" />
+        </div>
+      )}
+
       {/* Left: Brand & Canvas Title & Undo/Redo & Project Hub */}
       <div className="flex items-center gap-2 max-w-[380px] lg:max-w-[460px]">
         <div className="flex items-center shrink-0 pr-0.5">
           <Logo className="h-5 w-auto" />
         </div>
         <div className={`h-5 w-[2px] shrink-0 ${
-          theme === 'dark' ? 'bg-[#252730]' : theme === 'mono' ? 'bg-[#D8D4CA]' : 'bg-slate-200'
+          isDark ? 'bg-[#252730]' : isMono ? 'bg-[#D8D4CA]' : 'bg-slate-200'
         }`} />
 
         {/* Project Title with inline editing and UI truncation */}
@@ -92,7 +110,13 @@ export const TopNav: React.FC<TopNavProps> = ({
                 }
               }}
               placeholder="untitled board"
-              className="rounded-lg border-2 border-indigo-400 bg-indigo-50/50 px-2 py-0.5 text-sm font-semibold text-slate-900 outline-none w-44 shadow-xs"
+              className={`rounded-lg border-2 px-2 py-0.5 text-sm font-semibold outline-none w-44 ${
+                isDark
+                  ? 'border-blue-500/50 bg-[#1C1E26] text-white'
+                  : isMono
+                  ? 'border-[#242321] bg-[#EFECE4] text-[#242321]'
+                  : 'border-indigo-400 bg-indigo-50/50 text-slate-900'
+              }`}
             />
           </form>
         ) : (
@@ -103,9 +127,13 @@ export const TopNav: React.FC<TopNavProps> = ({
                 setTimeout(() => nameInputRef.current?.select(), 20);
               }}
               title="Click to rename project"
-              className="group flex items-center gap-1 rounded-lg px-2 py-1 hover:bg-slate-100 cursor-pointer transition min-w-0"
+              className={`group flex items-center gap-1 rounded-lg px-2 py-1 transition min-w-0 cursor-pointer ${
+                isDark ? 'hover:bg-[#1E202B]' : isMono ? 'hover:bg-[#EFECE4]' : 'hover:bg-slate-100'
+              }`}
             >
-              <h1 className="text-sm font-semibold text-slate-800 truncate max-w-[110px] lg:max-w-[160px]">
+              <h1 className={`text-sm font-semibold truncate max-w-[110px] lg:max-w-[160px] ${
+                isDark ? 'text-[#E2E4E9]' : isMono ? 'text-[#242321]' : 'text-slate-800'
+              }`}>
                 {canvasName || 'untitled board'}
               </h1>
               <MingIcon
@@ -119,7 +147,9 @@ export const TopNav: React.FC<TopNavProps> = ({
             <button
               onClick={() => onOpenProjectHub?.()}
               title="Switch or create new project board (1 tab = 1 project)"
-              className="flex items-center justify-center h-6 w-6 rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition shrink-0 cursor-pointer"
+              className={`flex items-center justify-center h-6 w-6 rounded-md transition shrink-0 cursor-pointer ${
+                isDark ? 'hover:bg-[#1E202B] text-slate-400 hover:text-white' : isMono ? 'hover:bg-[#EFECE4] text-slate-600 hover:text-slate-900' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'
+              }`}
             >
               <MingIcon name="down_line" size={14} />
             </button>
@@ -127,12 +157,16 @@ export const TopNav: React.FC<TopNavProps> = ({
         )}
 
         {/* Undo / Redo Buttons */}
-        <div className="flex items-center gap-0.5 border-l-2 border-slate-200 pl-1.5 shrink-0">
+        <div className={`flex items-center gap-0.5 border-l-2 pl-1.5 shrink-0 ${
+          isDark ? 'border-[#252730]' : isMono ? 'border-[#D8D4CA]' : 'border-slate-200'
+        }`}>
           <button
             onClick={onUndo}
             disabled={!canUndo}
             title="Undo (Ctrl+Z / Cmd+Z)"
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent transition active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+            className={`flex h-7 w-7 items-center justify-center rounded-lg transition active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-transparent ${
+              isDark ? 'text-slate-300 hover:bg-[#1E202B]' : isMono ? 'text-[#242321] hover:bg-[#EFECE4]' : 'text-slate-600 hover:bg-slate-100'
+            }`}
           >
             <MingIcon name="back_line" size={16} />
           </button>
@@ -140,22 +174,39 @@ export const TopNav: React.FC<TopNavProps> = ({
             onClick={onRedo}
             disabled={!canRedo}
             title="Redo (Ctrl+Shift+Z / Cmd+Shift+Z or Ctrl+Y)"
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent transition active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+            className={`flex h-7 w-7 items-center justify-center rounded-lg transition active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-transparent ${
+              isDark ? 'text-slate-300 hover:bg-[#1E202B]' : isMono ? 'text-[#242321] hover:bg-[#EFECE4]' : 'text-slate-600 hover:bg-slate-100'
+            }`}
           >
             <MingIcon name="forward_line" size={16} />
           </button>
         </div>
       </div>
 
-      {/* Center: Spotlight Search Trigger & Quick Status */}
+      {/* Center: Spotlight Search Trigger & Dynamic Status Capsule */}
       <div className="hidden md:flex items-center gap-2">
+        {isLoading && activeTask && (
+          <div
+            className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold border-2 transition-all ${
+              isDark
+                ? 'bg-[#181920] border-[#0050FF]/60 text-blue-300'
+                : isMono
+                ? 'bg-[#ECEAE4] border-[#242321] text-[#242321]'
+                : 'bg-blue-50 border-blue-200 text-[#0050FF]'
+            }`}
+          >
+            <MingIcon name="loading_3_line" size={14} className="animate-spin text-[#0050FF] shrink-0" />
+            <span className="truncate max-w-[200px] lg:max-w-[300px]">{activeTask.label}</span>
+          </div>
+        )}
+
         <button
           type="button"
           onClick={onOpenSearch}
           className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold border-2 transition-all cursor-pointer ${
-            theme === 'dark'
+            isDark
               ? 'bg-[#181920] border-[#282A36] text-[#8C90A0] hover:text-white hover:border-[#3E4254]'
-              : theme === 'mono'
+              : isMono
               ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#78756D] hover:text-[#242321] hover:border-[#A8A49A]'
               : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
           }`}
@@ -165,9 +216,9 @@ export const TopNav: React.FC<TopNavProps> = ({
           <span>Search cards...</span>
           <kbd
             className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${
-              theme === 'dark'
+              isDark
                 ? 'bg-[#22242D] border-[#2E3140] text-slate-400'
-                : theme === 'mono'
+                : isMono
                 ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#78756D]'
                 : 'bg-white border-slate-200 text-slate-500 shadow-2xs'
             }`}

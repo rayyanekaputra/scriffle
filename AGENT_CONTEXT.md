@@ -327,6 +327,12 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
+- **Global & Card-Level Loading Feedback (`LoadingContext.tsx`, `TopNav.tsx`, `ScreenerNode.tsx`, `ActionNode.tsx`, `WatcherNode.tsx`, `FileNode.tsx`, `page.tsx`)**:
+  - Centralized task queue manager with `runTracked`, `startTask`, `endTask`, `isNodeLoading`, and auto-timeout safety cleanup.
+  - Global 2px electric blue hairline progress bar and center status capsule in `TopNav.tsx` displaying live operation details with MingCute spinner.
+  - Card-level visual feedback: `ScreenerNode` (`🤖 Screening...` badge + pulse outline), `ActionNode` (`Running...` badge + pulse outline), `WatcherNode` (`⚡ Polling...` badge + pulse outline), and `FileNode` (`⏳ Generating...` badge).
+  - Wired to live/mock stream polling, AI screener queries, `.scriffle` file imports, and preset template loading.
+  - Unit test suite `loadingState.test.ts` (135 total passing unit tests).
 - **Control Panel Rebranding, Unified Data Stream & Theme-Aware Rank Badges (`WatcherNode.tsx`, `SimulationBar.tsx`, `TopNav.tsx`, `page.tsx`)**:
   - Implemented contrast-compliant rank capsule badges (#1 gold, #2 silver, #3 bronze, #4+ neutral) in `WatcherNode.tsx` across Light, Mono (warm-paper), and Dark (soft charcoal) modes.
   - Combined Market Data Sync and Auto-Polling Stream into a unified single-line **Market Data Stream** card with **Do Once** and **Stream Data** action buttons.
