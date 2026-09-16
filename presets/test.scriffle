@@ -1,0 +1,62 @@
+{
+  "format": "scriffle",
+  "version": "1.0.0",
+  "name": "TLKM Real-Time Monitor",
+  "createdAt": "2026-09-16T12:00:00.000Z",
+  "nodes": [
+    {
+      "id": "node-header",
+      "type": "text",
+      "position": { "x": 100, "y": 40 },
+      "config": {
+        "text": "📡 TLKM 5-Second Price Watcher",
+        "fontSize": "title",
+        "containerStyle": "callout",
+        "highlight": "yellow",
+        "width": 640
+      }
+    },
+    {
+      "id": "node-watcher-tlkm",
+      "type": "watcher",
+      "position": { "x": 100, "y": 150 },
+      "config": {
+        "symbol": "TLKM",
+        "metric": "price_change",
+        "interval": 5
+      }
+    },
+    {
+      "id": "node-cond-movement",
+      "type": "condition",
+      "position": { "x": 480, "y": 150 },
+      "config": {
+        "rule": "price_change != 0"
+      }
+    },
+    {
+      "id": "node-note-tlkm",
+      "type": "note",
+      "position": { "x": 840, "y": 150 },
+      "config": {
+        "content": "📊 TLKM Update:\nPrice: IDR ${price}\nChange: ${price_change}%\nVolume: ${volume}",
+        "template": "📊 TLKM Update:\nPrice: IDR ${price}\nChange: ${price_change}%\nVolume: ${volume}",
+        "color": "mint",
+        "width": 280,
+        "height": 180
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "from": "node-watcher-tlkm",
+      "to": "node-cond-movement"
+    },
+    {
+      "id": "edge-2",
+      "from": "node-cond-movement",
+      "to": "node-note-tlkm"
+    }
+  ]
+}

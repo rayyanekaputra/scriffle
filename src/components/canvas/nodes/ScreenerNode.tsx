@@ -6,6 +6,7 @@ import { ScreenerConfig, ScreenerCompanyResult } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
 import { useLoading } from '@/context/LoadingContext';
+import { QuickAddSourceHandle } from '../QuickAddSourceHandle';
 
 export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
@@ -175,7 +176,7 @@ export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`relative w-84 rounded-2xl border-2 p-4 transition-all duration-150 ${cardBg} ${cardBorder}`}
+      className={`relative w-84 rounded-2xl border-2 p-4 transition-all duration-150 group/node ${cardBg} ${cardBorder}`}
     >
       {/* Top Header */}
       <div
@@ -400,11 +401,12 @@ export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
         </span>
       </div>
 
-      {/* Flow Handles */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!w-3 !h-3 !bg-[#0050FF] !border-2 !border-white transition-transform hover:!scale-125"
+      {/* Flow Handles with Quick-Add [+] Connector */}
+      <QuickAddSourceHandle
+        nodeId={id || (data as any)?.id}
+        nodeType="screener"
+        nodeLabel={`Screener: ${queryPrompt}`}
+        selected={selected}
       />
       <Handle
         type="source"

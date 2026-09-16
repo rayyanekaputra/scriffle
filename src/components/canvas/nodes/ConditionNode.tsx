@@ -5,8 +5,9 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { ConditionConfig } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
+import { QuickAddSourceHandle } from '../QuickAddSourceHandle';
 
-export const ConditionNode = memo(({ data, selected }: NodeProps) => {
+export const ConditionNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
   const config = (data.config || {}) as ConditionConfig;
   const state = (data.state || {}) as any;
@@ -43,7 +44,7 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`relative w-68 rounded-2xl border-2 p-4 transition-all duration-150 ${containerBg} ${cardBorder}`}
+      className={`relative w-68 rounded-2xl border-2 p-4 transition-all duration-150 group/node ${containerBg} ${cardBorder}`}
     >
       {/* Input Handle */}
       <Handle
@@ -125,17 +126,12 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
         </div>
       </div>
 
-      {/* Output Handle */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        className={`!h-3.5 !w-3.5 !rounded-full !border-2 ${
-          isDark
-            ? '!border-[#181920] !bg-[#8E95A5]'
-            : isMono
-            ? '!border-[#FCFBF9] !bg-[#5A5852]'
-            : '!border-white !bg-[#FFD728]'
-        }`}
+      {/* Output Handle with Quick-Add [+] Connector */}
+      <QuickAddSourceHandle
+        nodeId={id || (data as any)?.id}
+        nodeType="condition"
+        nodeLabel={`Rule: ${config.rule || 'Condition'}`}
+        selected={selected}
       />
     </div>
   );

@@ -259,6 +259,7 @@ hackathon/
 - **Shift+Click / Ctrl+Click** → multi-select; **Shift+Drag** → box marquee select
 - **Figma-Style Selection Bounding Box (`SelectionBoundingBox.tsx`):** 8-point corner and edge midpoint handles with dashed outline and quick `Group` / `Ungroup` action buttons when 2+ elements are selected
 - **Group & Ungroup (`Cmd+G` / `Cmd+Shift+G`):** Cohesive multi-node dragging, group-aware copy & paste (`Cmd+C` / `Cmd+V`) preserving internal connectors and relative offsets
+- **Quick-Add Connected Node (`+` Handle & Popover):** Hovering any node's output handle reveals a floating `+` button, or dragging a connector onto empty canvas opens a contextual quick-add menu (`QuickAddPopover.tsx`) that automatically spawns and wires the next node with collision avoidance (`quickAddNavigator.ts`).
 - **Double-Click Isolation Mode:** Isolates group into focus mode with top banner to edit individual elements or make `Shift+Click` sub-selections (`Esc` to exit)
 - **Delete / Backspace** → bulk delete selected
 - **Ctrl+C / Ctrl+V** → Copy/paste nodes; **Ctrl+D** → Duplicate
@@ -488,7 +489,7 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **135 tests, 0 failures, 11 suites, ~140ms runtime**
+- **143 tests, 0 failures, 12 suites, ~140ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -503,6 +504,7 @@ src/__tests__/
     ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
     ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
+    ├── quickAddNavigator.test.ts     ← 8 tests — spatial offset collision calculation, node recommendations, inherited config
     ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
     ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
     ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)

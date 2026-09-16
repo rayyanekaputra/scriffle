@@ -6,6 +6,7 @@ import { WatcherConfig, MarketEvent } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
 import { useLoading } from '@/context/LoadingContext';
+import { QuickAddSourceHandle } from '../QuickAddSourceHandle';
 
 export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
@@ -84,7 +85,7 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`relative ${cardWidth} rounded-2xl border-2 p-4 transition-all duration-150 ${cardBg} ${cardBorder}`}
+      className={`relative ${cardWidth} rounded-2xl border-2 p-4 transition-all duration-150 group/node ${cardBg} ${cardBorder}`}
     >
       {/* Target / Input Handle */}
       <Handle
@@ -447,17 +448,12 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
         </div>
       </div>
 
-      {/* Output Handle */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        className={`!h-3.5 !w-3.5 !rounded-full !border-2 ${
-          isDark
-            ? '!border-[#181920] !bg-[#8E95A5]'
-            : isMono
-            ? '!border-[#FCFBF9] !bg-[#5A5852]'
-            : '!border-white !bg-[#0050FF]'
-        }`}
+      {/* Output Handle with Quick-Add [+] Connector */}
+      <QuickAddSourceHandle
+        nodeId={id || (data as any)?.id}
+        nodeType="watcher"
+        nodeLabel={isRadarMode ? (config.mode === 'top_losers' ? 'Top Losers' : 'Top Gainers') : config.symbol || 'Watcher'}
+        selected={selected}
       />
     </div>
   );

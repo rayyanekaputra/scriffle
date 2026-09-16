@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **135 unit tests across 11 test suites (100% green).**
+* **Master Unit Test Suite:** **143 unit tests across 12 test suites (100% green).**
 
 ---
 
@@ -55,6 +55,11 @@
 ---
 
 ### 2.2 Control Panel, Project Files & Whiteboard Interactions
+* **Quick-Add Connected Node & Auto-Wiring (`QuickAddHandle.tsx`, `QuickAddPopover.tsx`, `quickAddNavigator.ts`):**
+  * **Hover & Selection `[+]` Button:** Floating `+` button positioned 36px to the right of output handles on `WatcherNode`, `ConditionNode`, `ScreenerNode`, and `ActionNode` appears on hover/selection.
+  * **Drag-to-Empty-Canvas Connector Drop:** Releasing a connector line onto empty canvas (`onConnectEnd`) opens the Quick-Add popover at cursor coordinates.
+  * **Smart Recommendations & Collision Avoidance:** Recommends logical next nodes (e.g. `Watcher` $\rightarrow$ `Condition` / `Note` / `Action`) and calculates non-overlapping offsets (`+320px X`, staggering `+150px Y` if occupied).
+  * **Instant 1-Click Auto-Wiring:** Spawns target node, connects edge, focuses the card, and persists both in SQLite.
 * **Control Panel & Market Data Stream (`SimulationBar.tsx`):**
   * **Unified Stream Container:** Single-line layout offering **Do Once** (1-tick poll) and **Stream Data** (continuous per-node interval streaming) across Live API and Mock modes.
   * **Project File Operations:** 3-button actions for **New File** (creates fresh `/b/[uuid]` board), **Open File** (`.scriffle` / `.json`), and **Save File**.
@@ -86,6 +91,7 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`QUICK_ADD_CONNECTOR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/QUICK_ADD_CONNECTOR_PLAN.md): Quick-Add floating handle, drag-to-empty-canvas drop, and flow auto-wiring.
 * [`TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md): Top Movers 400 bug fix, structured error capture, and Watcher error UI.
 * [`CREDIT_COST_BADGES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/CREDIT_COST_BADGES_PLAN.md): Centralized pricing registry (`creditCosts.ts`), node badges, and burst warning notices.
 * [`WATCHER_CLEAN_INITIAL_STATE_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/WATCHER_CLEAN_INITIAL_STATE_PLAN.md): Watcher clean idle initial states and restore cleanliness.
@@ -140,6 +146,8 @@ hackathon/
 │   │   │   ├── MarketCanvas.tsx       # React Flow canvas, clipboard paste, context menus & drop events
 │   │   │   ├── ContextMenu.tsx        # Right-click context menus for canvas and nodes
 │   │   │   ├── SelectionBoundingBox.tsx # Figma-style 8-point bounding box handles & group pills
+│   │   │   ├── QuickAddSourceHandle.tsx # Output handle wrapper with floating [+] button
+│   │   │   ├── QuickAddPopover.tsx    # Contextual quick-add next node search popover
 │   │   │   └── nodes/
 │   │   │       ├── WatcherNode.tsx    # Watcher sticker + cycle counter + credit cost badge + error UI
 │   │   │       ├── ConditionNode.tsx  # Condition rule capsule
@@ -168,6 +176,7 @@ hackathon/
 │   │   ├── creditCosts.ts             # Centralized Sectors API credit pricing registry & burst warnings
 │   │   ├── mockData.ts                # Realistic market mocks
 │   │   ├── prisma.ts                  # Global Prisma client singleton
+│   │   ├── quickAddNavigator.ts       # Spatial placement collision resolution & smart node defaults
 │   │   └── utils.ts
 │   ├── server/
 │   │   └── services/
@@ -184,7 +193,7 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
-* **Run Unit Tests:** `bun test` (**135 tests across 11 suites, 100% green, ~140ms**)
+* **Run Unit Tests:** `bun test` (**143 tests across 12 suites, 100% green, ~140ms**)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
 * **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`

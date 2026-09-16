@@ -3,6 +3,32 @@
  > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
  
  ---
+
+## 0. Quick-Add Node Connector & Flow Auto-Wiring
+
+**Key Capabilities Implemented:**
+1. **Floating `[+]` Quick-Add Handle ([`QuickAddSourceHandle.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/QuickAddSourceHandle.tsx))**:
+   - Standard output handles across `WatcherNode`, `ConditionNode`, `ScreenerNode`, and `ActionNode` now feature a floating `+` button positioned `36px` to the right of the card edge.
+   - Appears dynamically on card hover or selection across Light, Mono (warm-paper), and Dark (soft charcoal) modes.
+   - Clean separation of the connection dot and plus button prevents any distortion of React Flow's native edge origin calculation.
+2. **Drag-to-Empty-Canvas Connector Drop ([`MarketCanvas.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/MarketCanvas.tsx))**:
+   - Releasing a connector line onto empty canvas triggers `onConnectEnd`, opening the Quick-Add popover directly at release coordinates.
+3. **Contextual Quick-Add Popover ([`QuickAddPopover.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/QuickAddPopover.tsx))**:
+   - Filterable search bar with keyboard navigation (`↑` / `↓` / `↵` / `Esc`).
+   - Recommends logical next nodes (e.g. from `Watcher`/`Screener` $\rightarrow$ suggests `Condition`, `Sticky Note`, `Action`).
+4. **Collision Avoidance & Spatial Placement ([`quickAddNavigator.ts`](file:///home/abzolute/Projects/hackathon/src/lib/quickAddNavigator.ts))**:
+   - Calculates target placement at `(source.x + 320, source.y)` and automatically staggers downwards (`+150px Y`) if space is occupied.
+   - Smartly inherits symbol names and templates (e.g. creating a report action from a `TLKM` watcher automatically sets `targetSymbol: 'TLKM'`).
+5. **Instant Node & Edge Auto-Wiring**:
+   - Spawns target node, connects edge, focuses the new card, and persists both in SQLite via `/api/canvas/nodes` and `/api/canvas/edges`.
+6. **Theme Customization Backlog Addition (`themes/*.scrifflemes`)**:
+   - Added `.conf`-based theme customizability to `context/BACKLOG.md` using Alacritty/Kitty style key-value pairs for financial analysts and non-web developers.
+7. **Unit Test Suite & Verification**:
+   - Added `src/__tests__/unit/quickAddNavigator.test.ts` (8 unit tests).
+   - **143 tests passing (100% green across 12 test suites)** in ~140ms.
+   - `bun run build` passes with 0 errors.
+
+---
  
 ## 0. UI Fixes: Control Panel Rebranding, Unified Data Stream & Theme-Aware Rank Badges
 
