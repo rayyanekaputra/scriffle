@@ -6,6 +6,12 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🎨 Scriffle Themes & `.conf`-Style Custom Theme Engine (`themeParser.ts`, `ThemeContext.tsx`, `ThemeModal.tsx`, `MarketCanvas.tsx`, `themes/*.scrifflemes`)**
+  - Designed and implemented Alacritty/Kitty-style `.scrifflemes` INI/conf parser, serializer, and CSS variables injector (`[data-theme="custom"]`).
+  - Added bundled terminal presets in `themes/` and `builtinThemes.ts` (⚡ **Bloomberg Terminal**, ❄️ **Nord Frost**, 📻 **Gruvbox Dark**, 🌃 **Tokyo Night**, ☀️ **Solarized Dark**).
+  - Built interactive `ThemeModal.tsx` with live color swatch previews, 1-click theme import/export, and seamless switching between standard environments (Light, Mono, Dark) and custom `.scrifflemes`.
+  - Added native drag-and-drop `.scrifflemes` / `.conf` file importing directly on `MarketCanvas.tsx` with automatic persistence in `localStorage`.
+  - Added unit test suite `themeEngine.test.ts` (151 total passing unit tests across 13 suites, 100% green).
 - [x] **⚡ Quick-Add Node Connector & Flow Auto-Wiring (`QuickAddHandle.tsx`, `QuickAddPopover.tsx`, `quickAddNavigator.ts`, `MarketCanvas.tsx`)**
   - Implemented floating `+` quick-add button on all output handles (`WatcherNode`, `ConditionNode`, `ScreenerNode`, `ActionNode`) that appears on card hover/selection.
   - Implemented drag-to-empty-canvas connector drop (`onConnectEnd` in `MarketCanvas.tsx`) to open quick-picker directly at release coordinates.
@@ -108,6 +114,13 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 ---
 
 ## 📌 Open Candidate Endpoints & Features
+
+### 🐛 BUG: Sticker Toolbar Preset Dropdown Clipped by Container Overflow (`NavToolbar.tsx`)
+- **Status**: 🛠️ In Progress / Fixing
+- **Priority**: High — clicking the chevron arrow on the Sticker button in `NavToolbar.tsx` opens preset menu inside an `overflow-x-auto` wrapper, clipping the menu out of view.
+- **Resolution**: Replace `overflow-x-auto` with `overflow-visible` on the main toolbar wrapper and ensure floating dropdown z-index is elevated above surrounding whiteboard chrome.
+
+---
 
 ### 🔥 BUG: `/v2/companies/top-changes/` Always Returns 400 & Silent Fallback
 - **Status**: ✅ Completed
@@ -230,7 +243,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 2. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
 3. ~~**⚡ Quick-Add Node Connector (`+` Port Handle & Flow Auto-Wiring)**~~ ✅ **Completed**
-4. **🎨 Simple `.conf`-Based Theme Customization Engine (`.scrifflemes` / `themes/` folder)**
+4. ~~**🎨 Simple `.conf`-Based Theme Customization Engine (`.scrifflemes` / `themes/` folder)**~~ ✅ **Completed**
    - **Concept**: Kitty/Alacritty-style simple key-value configuration file for custom themes (no CSS knowledge required).
    - **Target Audience**: Financial market researchers, quantitative analysts, and non-web developers who want custom branding or terminal-style aesthetics (e.g., Bloomberg Terminal amber, Cyberpunk neon, Gruvbox, Nord, Solarized).
    - **Dedicated Directory & Extension**: `themes/*.scrifflemes` (plain-text INI/conf format).

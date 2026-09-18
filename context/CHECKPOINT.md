@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **143 unit tests across 12 test suites (100% green).**
+* **Master Unit Test Suite:** **151 unit tests across 13 test suites (100% green).**
 
 ---
 
@@ -84,6 +84,11 @@
   * **`Shift + 0` / `Cmd + 0`:** Reset zoom to 100%.
   * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
   * **`Ctrl+C` / `Cmd+C` / `Ctrl+V` / `Cmd+V` / `Ctrl+D`:** Copy, paste, duplicate cards.
+* **Scriffle Themes Customization Engine (`.scrifflemes`):**
+  * **Alacritty / Kitty-Style Plain-Text Configs:** Easily create, customize, and share themes via `.scrifflemes` files without writing CSS.
+  * **Bundled Terminal Presets:** Includes ⚡ **Bloomberg Terminal**, ❄️ **Nord Frost**, 📻 **Gruvbox Dark**, 🌃 **Tokyo Night**, and ☀️ **Solarized Dark**.
+  * **Interactive Theme Modal (`ThemeModal.tsx`):** Live swatch preview card, 1-click import/export, and instant switching across built-in standard environments (Light, Mono, Dark) and custom themes.
+  * **Canvas Drag & Drop:** Dropping a `.scrifflemes` or `.conf` file directly on the canvas applies the theme immediately and persists it in `localStorage`.
 * **Sectors API Key & Live Watcher Polling:**
   * **Session-Only Storage:** Managed in temporary React client state. Automatically wiped on tab close or refresh. Never saved to SQLite and excluded from `.scriffle` exports.
   * **1-Click Live Poll Button:** Sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV and Top Movers from Sectors API v2.
@@ -91,6 +96,7 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`SCRIFFLE_THEMES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SCRIFFLE_THEMES_PLAN.md): Plain-text `.scrifflemes` custom theme engine, parser, presets, and drag-and-drop workflow.
 * [`QUICK_ADD_CONNECTOR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/QUICK_ADD_CONNECTOR_PLAN.md): Quick-Add floating handle, drag-to-empty-canvas drop, and flow auto-wiring.
 * [`TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md): Top Movers 400 bug fix, structured error capture, and Watcher error UI.
 * [`CREDIT_COST_BADGES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/CREDIT_COST_BADGES_PLAN.md): Centralized pricing registry (`creditCosts.ts`), node badges, and burst warning notices.

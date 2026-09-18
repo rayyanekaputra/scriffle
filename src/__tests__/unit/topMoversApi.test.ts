@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { getTopMarketMovers, TopMoversResult } from '@/server/services/sectorsApi';
 
 describe('getTopMarketMovers parameter building & error handling', () => {
@@ -20,7 +20,17 @@ describe('getTopMarketMovers parameter building & error handling', () => {
   });
 
   it('captures structured error metadata when API request fails in live mode', async () => {
-    // Provide a non-empty fake key that will cause network or auth failure
+    // Mock fetch to simulate instant 401 unauthorized response
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ detail: 'TOKEN_NOT_VALID' }), {
+          status: 401,
+          statusText: 'Unauthorized',
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+    );
+
     const result: TopMoversResult = await getTopMarketMovers('invalid_key_for_test', {
       nStock: 5,
       periods: '1d',
@@ -31,8 +41,10 @@ describe('getTopMarketMovers parameter building & error handling', () => {
     expect(result.gainers).toBeDefined();
     expect(result.losers).toBeDefined();
     expect(result.error).toBeDefined();
-    expect(typeof result.error?.code).toBe('number');
+    expect(result.error?.code).toBe(401);
     expect(typeof result.error?.message).toBe('string');
+
+    fetchSpy.mockRestore();
   });
 
   it('correctly normalizes parameter structure omitting "all" classifications', () => {

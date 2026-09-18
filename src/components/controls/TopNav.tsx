@@ -6,6 +6,7 @@ import { MingIcon } from '@/components/ui/MingIcon';
 import { Logo } from '@/components/ui/Logo';
 import { useTheme } from '@/context/ThemeContext';
 import { useLoading } from '@/context/LoadingContext';
+import { ThemeModal } from '@/components/canvas/controls/ThemeModal';
 
 interface TopNavProps {
   canvasName: string;
@@ -40,9 +41,10 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenSearch,
   onOpenShortcuts,
 }) => {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, activeCustomTheme } = useTheme();
   const { isLoading, activeTask } = useLoading();
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [tempName, setTempName] = useState(canvasName || 'untitled board');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -246,7 +248,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           <MingIcon name="question_line" size={16} />
         </button>
 
-        {/* 3-Mode Theme Switcher */}
+        {/* 4-Mode Theme Switcher with .scrifflemes Custom Theme support */}
         <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100/80 p-0.5 shrink-0">
           <button
             type="button"
@@ -289,6 +291,29 @@ export const TopNav: React.FC<TopNavProps> = ({
             <MingIcon name="moon_line" size={13} />
             <span className="hidden sm:inline whitespace-nowrap">Dark</span>
           </button>
+
+          {/* Custom Theme / Theme Engine Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsThemeModalOpen(true)}
+            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
+              theme === 'custom'
+                ? 'bg-blue-600 text-white shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title={
+              theme === 'custom' && activeCustomTheme
+                ? `Custom Theme: ${activeCustomTheme.metadata.name} (Click to change)`
+                : 'Open Custom Theme Engine (.scrifflemes)'
+            }
+          >
+            <MingIcon name="palette_line" size={13} />
+            <span className="hidden sm:inline whitespace-nowrap">
+              {theme === 'custom' && activeCustomTheme
+                ? activeCustomTheme.metadata.name.split(' ')[0]
+                : 'Themes'}
+            </span>
+          </button>
         </div>
 
         <button
@@ -317,6 +342,12 @@ export const TopNav: React.FC<TopNavProps> = ({
           <span className="whitespace-nowrap">Feed</span>
         </button>
       </div>
+
+      {/* Theme Customization Modal */}
+      <ThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+      />
     </header>
   );
 };

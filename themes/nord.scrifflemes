@@ -1,0 +1,40 @@
+# Scriffle Theme Configuration
+# Nord Palette (Arctic Frost)
+
+[metadata]
+name = "Nord Frost"
+author = "Arctic IceStudio"
+version = "1.0.0"
+mode_base = "dark"
+
+[canvas]
+background = #242933
+grid_dot = #3B4252
+selection_box = #88C0D0
+selection_box_fill = #88C0D018
+
+[ui]
+primary = #88C0D0
+surface = #2E3440
+surface_muted = #3B4252
+border = #434C5E
+border_active = #88C0D0
+text = #ECEFF4
+text_muted = #D8DEE9
+tape = #3B4252
+
+[nodes]
+surface_card = #2E3440
+border_card = #434C5E
+watcher = #A3BE8C
+condition = #EBCB8B
+alert = #BF616A
+screener = #81A1C1
+action = #B48EAD
+note_default = #3B4252
+text_default = #ECEFF4
+
+[edges]
+default = #4C566A
+active = #88C0D0
+selected = #EBCB8B

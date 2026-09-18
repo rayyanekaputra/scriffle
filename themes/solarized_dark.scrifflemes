@@ -1,0 +1,40 @@
+# Scriffle Theme Configuration
+# Solarized Dark (Precision Navy & Cyan)
+
+[metadata]
+name = "Solarized Dark"
+author = "Ethan Schoonover"
+version = "1.0.0"
+mode_base = "dark"
+
+[canvas]
+background = #00212B
+grid_dot = #073642
+selection_box = #2AA198
+selection_box_fill = #2AA19818
+
+[ui]
+primary = #2AA198
+surface = #002B36
+surface_muted = #073642
+border = #0E4856
+border_active = #2AA198
+text = #93A1A1
+text_muted = #657B83
+tape = #073642
+
+[nodes]
+surface_card = #002B36
+border_card = #0E4856
+watcher = #859900
+condition = #B58900
+alert = #DC322F
+screener = #268BD2
+action = #6C71C4
+note_default = #073642
+text_default = #93A1A1
+
+[edges]
+default = #586E75
+active = #2AA198
+selected = #B58900

@@ -90,7 +90,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   onOpenSearch,
   onOpenShortcuts,
 }) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme, importTheme } = useTheme();
   const { screenToFlowPosition, setCenter, fitView, zoomTo } = useReactFlow();
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 500, y: 300 });
 
@@ -664,9 +664,21 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             highlightedNodeIds.includes(e.to);
 
           const defaultStroke =
-            theme === 'dark' ? '#525668' : theme === 'mono' ? '#78756D' : '#0050FF';
+            theme === 'custom' && activeCustomTheme
+              ? activeCustomTheme.edges.default
+              : theme === 'dark'
+              ? '#525668'
+              : theme === 'mono'
+              ? '#78756D'
+              : '#0050FF';
           const highlightStroke =
-            theme === 'dark' ? '#A8ACB8' : theme === 'mono' ? '#242321' : '#6366F1';
+            theme === 'custom' && activeCustomTheme
+              ? activeCustomTheme.edges.active || activeCustomTheme.ui.primary
+              : theme === 'dark'
+              ? '#A8ACB8'
+              : theme === 'mono'
+              ? '#242321'
+              : '#6366F1';
 
           return {
             id: e.id,
@@ -685,7 +697,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         });
       });
     }
-  }, [canvasData, highlightedNodeIds, theme, setNodes, setEdges]);
+  }, [canvasData, highlightedNodeIds, theme, activeCustomTheme, setNodes, setEdges]);
 
   // Smooth camera pan & zoom when a node is focused from Activity Feed
   useEffect(() => {
@@ -1108,6 +1120,22 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           return;
         }
 
+        if (file.name.endsWith('.scrifflemes') || file.name.endsWith('.conf')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const rawContent = e.target?.result as string;
+            if (rawContent) {
+              try {
+                importTheme(rawContent);
+              } catch (err) {
+                console.error('Failed to import dropped .scrifflemes theme:', err);
+              }
+            }
+          };
+          reader.readAsText(file);
+          return;
+        }
+
         if (file.type.startsWith('image/')) {
           const reader = new FileReader();
           reader.onload = (e) => {
@@ -1123,7 +1151,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         }
       }
     },
-    [screenToFlowPosition, onAddNodeAtPosition, onRefresh]
+    [screenToFlowPosition, onAddNodeAtPosition, onRefresh, canvasData?.id, importTheme]
   );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -1140,18 +1168,35 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     [onDeleteNode]
   );
 
-  const bgColor =
-    theme === 'dark' ? '#0F1014' : theme === 'mono' ? '#F4F3EF' : '#F8F9FC';
-  const dotColor =
-    theme === 'dark' ? '#252732' : theme === 'mono' ? '#D1CEC4' : '#CBD5E1';
-  const miniMapNodeColor =
-    theme === 'dark' ? '#8E95A5' : theme === 'mono' ? '#1D4ED8' : '#0050FF';
-  const miniMapMaskColor =
-    theme === 'dark'
-      ? 'rgba(15, 16, 20, 0.85)'
-      : theme === 'mono'
-      ? 'rgba(236, 234, 228, 0.75)'
-      : 'rgba(241, 245, 249, 0.7)';
+  const isCustomTheme = theme === 'custom' && activeCustomTheme;
+  const bgColor = isCustomTheme
+    ? activeCustomTheme.canvas.background
+    : theme === 'dark'
+    ? '#0F1014'
+    : theme === 'mono'
+    ? '#F4F3EF'
+    : '#F8F9FC';
+  const dotColor = isCustomTheme
+    ? activeCustomTheme.canvas.grid_dot
+    : theme === 'dark'
+    ? '#252732'
+    : theme === 'mono'
+    ? '#D1CEC4'
+    : '#CBD5E1';
+  const miniMapNodeColor = isCustomTheme
+    ? activeCustomTheme.ui.primary
+    : theme === 'dark'
+    ? '#8E95A5'
+    : theme === 'mono'
+    ? '#1D4ED8'
+    : '#0050FF';
+  const miniMapMaskColor = isCustomTheme
+    ? 'rgba(0, 0, 0, 0.75)'
+    : theme === 'dark'
+    ? 'rgba(15, 16, 20, 0.85)'
+    : theme === 'mono'
+    ? 'rgba(236, 234, 228, 0.75)'
+    : 'rgba(241, 245, 249, 0.7)';
 
   const isHandMode = toolMode === 'hand';
 
