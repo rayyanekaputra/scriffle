@@ -8,15 +8,30 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ className = 'h-5 w-auto select-none' }) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
 
+  // In custom mode: uses theme text and primary accent color
   // In dark mode: soft off-white text (#E2E4E9)
   // In mono mode: deep warm charcoal (#242321)
   // In default light mode: sharp dark slate (#171717)
-  const textColor = theme === 'dark' ? '#E2E4E9' : theme === 'mono' ? '#242321' : '#171717';
+  const textColor =
+    theme === 'custom' && activeCustomTheme
+      ? activeCustomTheme.ui.text
+      : theme === 'dark'
+      ? '#E2E4E9'
+      : theme === 'mono'
+      ? '#242321'
+      : '#171717';
   
-  // Scriffle Blue square icon (soft reserved blue in dark/mono if desired, or #0051FF)
-  const squareColor = theme === 'dark' ? '#8E95A5' : theme === 'mono' ? '#1D4ED8' : '#0051FF';
+  // Scriffle icon square color
+  const squareColor =
+    theme === 'custom' && activeCustomTheme
+      ? activeCustomTheme.ui.primary
+      : theme === 'dark'
+      ? '#8E95A5'
+      : theme === 'mono'
+      ? '#1D4ED8'
+      : '#0051FF';
 
   return (
     <svg

@@ -28,13 +28,14 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
   onSelectType,
   onClose,
 }) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const popoverRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   // Get recommendations prioritized by sourceNodeType

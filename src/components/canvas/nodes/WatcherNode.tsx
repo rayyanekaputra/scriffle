@@ -9,7 +9,6 @@ import { useLoading } from '@/context/LoadingContext';
 import { QuickAddSourceHandle } from '../QuickAddSourceHandle';
 
 export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme } = useTheme();
   const { isNodeLoading } = useLoading();
   const config = (data.config || {}) as WatcherConfig;
   const state = (data.state || {}) as any;
@@ -38,7 +37,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
         ? [lastVal]
         : []);
 
-  const isDark = theme === 'dark';
+  const { theme, activeCustomTheme } = useTheme();
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   const isError = state.status === 'error' || !!state.error;
@@ -75,7 +76,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
     ? 'border-[#0050FF]'
     : 'border-slate-300 hover:border-slate-400';
 
-  const cardBg = isDark
+  const cardBg = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-node-card-bg)] text-[var(--custom-ui-text)]'
+    : isDark
     ? 'bg-[#181920] text-[#E2E4E9]'
     : isMono
     ? 'bg-[#FCFBF9] text-[#242321]'
@@ -235,7 +238,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
                 <div
                   key={`${mover.symbol}-${idx}`}
                   className={`flex items-center justify-between rounded-xl px-2.5 py-2 border transition-colors ${
-                    isDark
+                    isCustom && activeCustomTheme
+                      ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)] hover:border-[var(--custom-ui-border-active)]'
+                      : isDark
                       ? 'bg-[#14151B] border-[#252732] hover:border-[#343746]'
                       : isMono
                       ? 'bg-[#F4F3EF] border-[#E2DFD6] hover:border-[#D0CCC1]'
@@ -331,7 +336,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
           ) : (
             <div
               className={`rounded-xl p-3 text-center border ${
-                isDark
+                isCustom && activeCustomTheme
+                  ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)] text-[var(--custom-ui-text-muted)]'
+                  : isDark
                   ? 'bg-[#14151B] border-[#252732] text-[#8C90A0]'
                   : isMono
                   ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
@@ -346,7 +353,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
         <div className="mt-3 space-y-2 text-xs">
           <div
             className={`flex items-center justify-between rounded-xl p-2.5 border ${
-              isDark
+              isCustom && activeCustomTheme
+                ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)]'
+                : isDark
                 ? 'bg-[#14151B] border-[#252732]'
                 : isMono
                 ? 'bg-[#F4F3EF] border-[#E2DFD6]'
@@ -355,7 +364,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
           >
             <span
               className={
-                isDark
+                isCustom && activeCustomTheme
+                  ? 'text-[var(--custom-ui-text-muted)] font-medium'
+                  : isDark
                   ? 'text-[#8C90A0] font-medium'
                   : isMono
                   ? 'text-[#78756D] font-medium'
@@ -366,7 +377,13 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
             </span>
             <span
               className={`font-bold ${
-                isDark ? 'text-[#E2E4E9]' : isMono ? 'text-[#242321]' : 'text-slate-900'
+                isCustom && activeCustomTheme
+                  ? 'text-[var(--custom-ui-text)]'
+                  : isDark
+                  ? 'text-[#E2E4E9]'
+                  : isMono
+                  ? 'text-[#242321]'
+                  : 'text-slate-900'
               }`}
             >
               {lastVal.price ? `Rp ${lastVal.price.toLocaleString('id-ID')}` : 'Waiting for tick'}
@@ -376,7 +393,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
           {priceChange !== null && (
             <div
               className={`flex items-center justify-between rounded-xl p-2.5 border ${
-                isDark
+                isCustom && activeCustomTheme
+                  ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)]'
+                  : isDark
                   ? 'bg-[#14151B] border-[#252732]'
                   : isMono
                   ? 'bg-[#F4F3EF] border-[#E2DFD6]'

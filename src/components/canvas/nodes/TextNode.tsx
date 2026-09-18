@@ -13,7 +13,10 @@ import { useTheme } from '@/context/ThemeContext';
 import { TextFormatToolbar } from './text/TextFormatToolbar';
 
 export const TextNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
+  const isMono = theme === 'mono';
   const { deleteElements, getNodes } = useReactFlow();
   const config = (data.config || {}) as TextConfig;
 
@@ -37,9 +40,6 @@ export const TextNode = memo(({ id, data, selected }: NodeProps) => {
   const deselectedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Track whether this node was selected on the previous render (for single-click-to-edit).
   const wasSelectedRef = useRef<boolean>(false);
-
-  const isDark = theme === 'dark';
-  const isMono = theme === 'mono';
 
   // Sync state with upstream config
   useEffect(() => {

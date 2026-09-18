@@ -23,8 +23,9 @@ export const QuickAddSourceHandle: React.FC<QuickAddSourceHandleProps> = ({
   className = '',
   id,
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { theme, activeCustomTheme } = useTheme();
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   const handleClickPlus = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -49,13 +50,17 @@ export const QuickAddSourceHandle: React.FC<QuickAddSourceHandleProps> = ({
     }
   };
 
-  const handleBorder = isDark
+  const handleBorder = isCustom && activeCustomTheme
+    ? '!border-[var(--custom-node-card-bg)] !bg-[var(--custom-ui-primary)]'
+    : isDark
     ? '!border-[#181920] !bg-[#8E95A5]'
     : isMono
     ? '!border-[#FCFBF9] !bg-[#5A5852]'
     : '!border-white !bg-[#0050FF]';
 
-  const plusBtnBg = isDark
+  const plusBtnBg = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface)] border-[var(--custom-ui-border)] text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-primary)] hover:text-white hover:border-[var(--custom-ui-primary)]'
+    : isDark
     ? 'bg-[#222530] border-[#3F4252] text-[#E2E4E9] hover:bg-[#0050FF] hover:text-white hover:border-[#0050FF]'
     : isMono
     ? 'bg-[#EFECE4] border-[#D8D4CA] text-[#242321] hover:bg-[#242321] hover:text-white hover:border-[#242321]'

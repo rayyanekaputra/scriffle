@@ -20,31 +20,30 @@ describe('getTopMarketMovers parameter building & error handling', () => {
   });
 
   it('captures structured error metadata when API request fails in live mode', async () => {
-    // Mock fetch to simulate instant 401 unauthorized response
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ detail: 'TOKEN_NOT_VALID' }), {
-          status: 401,
-          statusText: 'Unauthorized',
-          headers: { 'Content-Type': 'application/json' },
-        })
-      )
-    );
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ detail: 'TOKEN_NOT_VALID' }), {
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    const result: TopMoversResult = await getTopMarketMovers('invalid_key_for_test', {
-      nStock: 5,
-      periods: '1d',
-      classifications: 'all',
-    });
+    try {
+      const result: TopMoversResult = await getTopMarketMovers('invalid_key_for_test', {
+        nStock: 5,
+        periods: '1d',
+        classifications: 'all',
+      });
 
-    expect(result.isLive).toBe(false);
-    expect(result.gainers).toBeDefined();
-    expect(result.losers).toBeDefined();
-    expect(result.error).toBeDefined();
-    expect(result.error?.code).toBe(401);
-    expect(typeof result.error?.message).toBe('string');
-
-    fetchSpy.mockRestore();
+      expect(result.isLive).toBe(false);
+      expect(result.gainers).toBeDefined();
+      expect(result.losers).toBeDefined();
+      expect(result.error).toBeDefined();
+      expect(result.error?.code).toBe(401);
+      expect(typeof result.error?.message).toBe('string');
+    } finally {
+      globalThis.fetch = origFetch;
+    }
   });
 
   it('correctly normalizes parameter structure omitting "all" classifications', () => {

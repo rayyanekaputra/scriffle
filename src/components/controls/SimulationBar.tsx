@@ -32,14 +32,15 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   onApiKeyChange,
   onPollMarket,
 }) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const { runTracked } = useLoading();
   const [loading, setLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const scriffleInputRef = React.useRef<HTMLInputElement>(null);
 
   const isLiveMode = Boolean(apiKey && apiKey.trim().length > 0);
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   const handleScriffleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,27 +80,33 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
 
   if (!isOpen) return null;
 
-  const asideBg = isDark
+  const asideBg = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface)] border-[var(--custom-ui-border)] text-[var(--custom-ui-text)]'
+    : isDark
     ? 'bg-[#14151B] border-[#252730] text-[#E2E4E9]'
     : isMono
     ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#242321]'
     : 'bg-white border-slate-200 text-slate-900';
 
-  const cardContainer = isDark
+  const cardContainer = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface)] border-[var(--custom-ui-border)]'
+    : isDark
     ? 'bg-[#181920] border-[#282A36]'
     : isMono
     ? 'bg-[#F4F3EF] border-[#D8D4CA]'
     : 'bg-slate-50/90 border-slate-200';
 
-  const subCard = isDark
+  const subCard = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface)] border-[var(--custom-ui-border)] text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
+    : isDark
     ? 'bg-[#14151B] border-[#252732] text-[#D8DAE2] hover:bg-[#1E202B]'
     : isMono
     ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321] hover:bg-[#EFECE4]'
     : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50';
 
-  const textHeading = isDark ? 'text-[#E2E4E9]' : isMono ? 'text-[#242321]' : 'text-slate-800';
-  const textMuted = isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500';
-  const iconColor = isDark ? 'text-[#BAC0D0]' : isMono ? 'text-[#242321]' : 'text-slate-600';
+  const textHeading = isCustom && activeCustomTheme ? 'text-[var(--custom-ui-text)]' : isDark ? 'text-[#E2E4E9]' : isMono ? 'text-[#242321]' : 'text-slate-800';
+  const textMuted = isCustom && activeCustomTheme ? 'text-[var(--custom-ui-text-muted)]' : isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500';
+  const iconColor = isCustom && activeCustomTheme ? 'text-[var(--custom-ui-text)]' : isDark ? 'text-[#BAC0D0]' : isMono ? 'text-[#242321]' : 'text-slate-600';
 
   return (
     <aside className={`w-72 border-r-2 p-4 flex flex-col h-full z-30 transition-colors ${asideBg}`}>

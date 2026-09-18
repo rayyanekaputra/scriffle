@@ -52,7 +52,11 @@
    - Coral: `#FF5B79` (Alert nodes)
    - Lavender: `#8B5CF6`
    - Canvas bg: `#F8F9FC` with dotted grid `#CBD5E1`
-8. **3 Themes:** Light (default), Mono (warm-paper `#F4F3EF`), Dark (soft charcoal `#0F1014`) — implemented via `[data-theme]` CSS tokens
+8. **3 Themes + Custom Theme Engine:** Light (default), Mono (warm-paper `#F4F3EF`), Dark (soft charcoal `#0F1014`), and Custom `.scrifflemes` plain-text themes (Bloomberg, Nord, Gruvbox, Tokyo Night, Solarized Dark) — implemented via `[data-theme]` CSS tokens and CSS variables.
+9. **Single-Surface Container Rule (Zero "Cropped" Inner Rectangles):**
+   - `<div>` containers and `<button>` elements inside them must share a single, cohesive background color in idle state (buttons default to `bg-transparent` via base CSS reset).
+   - Never wrap an interactive card button in an outer padded `<div>` with `p-3` if the card itself can be a single direct `<button>` element. This prevents inner hover boxes and disjointed padding rectangles.
+   - Backgrounds change strictly as a whole unit or on hover/active states — never creating awkward nested contrast rectangles inside cards or modals.
 
 ---
 

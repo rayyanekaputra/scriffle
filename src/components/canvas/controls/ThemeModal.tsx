@@ -46,10 +46,10 @@ export const ThemeModal: React.FC<ThemeModalProps> = ({
     : 'border-slate-200';
 
   const iconBoxClass = isDark
-    ? 'border-[#282A36] bg-[#1E2028] text-blue-400'
+    ? 'border-[#282A36] bg-[#1E2028] text-slate-300'
     : isMono
-    ? 'border-[#D8D4CA] bg-[#F4F3EF] text-[#1D4ED8]'
-    : 'border-slate-200 bg-blue-50 text-blue-600';
+    ? 'border-[#D8D4CA] bg-[#F4F3EF] text-[#242321]'
+    : 'border-slate-200 bg-slate-100 text-slate-800';
 
   const textMutedClass = isDark
     ? 'text-[#8E919E]'
@@ -74,12 +74,6 @@ export const ThemeModal: React.FC<ThemeModalProps> = ({
     : isMono
     ? 'border-[#1D4ED8] bg-[#EAE7DF] text-[#242321] ring-2 ring-[#1D4ED8]/20'
     : 'border-blue-600 bg-blue-50/70 text-slate-900 ring-2 ring-blue-500/20';
-
-  const swatchBoxClass = isDark
-    ? 'border-[#252730] bg-[#14151B]'
-    : isMono
-    ? 'border-[#D8D4CA] bg-[#ECEAE4]'
-    : 'border-slate-200 bg-white';
 
   const buttonSecondaryClass = isDark
     ? 'border-[#282A36] bg-[#1A1B22] text-[#E2E4E9] hover:bg-[#22242D] hover:border-[#3E4254]'
@@ -139,7 +133,7 @@ export const ThemeModal: React.FC<ThemeModalProps> = ({
         <div className="mt-5 space-y-5 max-h-[60vh] overflow-y-auto pr-1">
           {/* Section 1: Standard Modes */}
           <div>
-            <label className={`text-xs font-bold uppercase ${sectionLabelClass}`}>
+            <label className={`text-xs font-bold ${sectionLabelClass}`}>
               Standard Environments
             </label>
             <div className="mt-2.5 grid grid-cols-3 gap-2.5">
@@ -208,7 +202,7 @@ export const ThemeModal: React.FC<ThemeModalProps> = ({
           {/* Section 2: Scriffle Theme Presets (.scrifflemes) */}
           <div>
             <div className="flex items-center justify-between">
-              <label className={`text-xs font-bold uppercase ${sectionLabelClass}`}>
+              <label className={`text-xs font-bold ${sectionLabelClass}`}>
                 Terminal & Custom Presets (.scrifflemes)
               </label>
               <span className={`text-[11px] ${textMutedClass}`}>
@@ -219,65 +213,62 @@ export const ThemeModal: React.FC<ThemeModalProps> = ({
               {customThemes.map((t) => {
                 const isSelected = theme === 'custom' && activeCustomTheme?.id === t.id;
                 return (
-                  <div
+                  <button
                     key={t.id}
-                    className={`group relative flex flex-col justify-between rounded-xl border-2 p-3 transition-all ${
+                    type="button"
+                    onClick={() => setTheme('custom', t)}
+                    className={`group relative flex flex-col justify-between rounded-xl border-2 p-3 text-left transition-all cursor-pointer ${
                       isSelected ? cardActiveClass : cardIdleClass
                     }`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setTheme('custom', t)}
-                      className="flex flex-col items-start w-full text-left cursor-pointer"
-                    >
-                      <div className="flex w-full items-center justify-between">
-                        <span className="text-xs font-bold truncate">
-                          {t.metadata.name}
-                        </span>
-                        {isSelected && (
-                          <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[9px] font-bold text-white">
-                            Active
-                          </span>
-                        )}
-                      </div>
-                      <span className={`text-[10px] truncate ${textMutedClass}`}>
-                        {t.metadata.author || 'Custom'}
+                    <div className="flex w-full items-center justify-between">
+                      <span className="text-xs font-bold truncate">
+                        {t.metadata.name}
                       </span>
+                      {isSelected && (
+                        <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[9px] font-bold text-white">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-[10px] truncate ${textMutedClass}`}>
+                      {t.metadata.author || 'Custom'}
+                    </span>
 
-                      {/* Swatch Preview */}
-                      <div className={`mt-2.5 flex w-full items-center gap-1 rounded-md border p-1 ${swatchBoxClass}`}>
-                        <div
-                          className="h-3.5 flex-1 rounded-xs"
-                          style={{ backgroundColor: t.canvas.background }}
-                          title={`Canvas: ${t.canvas.background}`}
-                        />
-                        <div
-                          className="h-3.5 flex-1 rounded-xs"
-                          style={{ backgroundColor: t.ui.primary }}
-                          title={`Primary: ${t.ui.primary}`}
-                        />
-                        <div
-                          className="h-3.5 flex-1 rounded-xs"
-                          style={{ backgroundColor: t.nodes.watcher || '#10B981' }}
-                          title={`Watcher: ${t.nodes.watcher}`}
-                        />
-                        <div
-                          className="h-3.5 flex-1 rounded-xs"
-                          style={{ backgroundColor: t.nodes.condition || '#FFD728' }}
-                          title={`Condition: ${t.nodes.condition}`}
-                        />
-                        <div
-                          className="h-3.5 flex-1 rounded-xs"
-                          style={{ backgroundColor: t.nodes.surface_card }}
-                          title={`Card: ${t.nodes.surface_card}`}
-                        />
-                      </div>
-                    </button>
+                    {/* Continuous Sleek Palette Pill Bar */}
+                    <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full border border-black/10 dark:border-white/10 pointer-events-none">
+                      <div
+                        className="h-full flex-1"
+                        style={{ backgroundColor: t.canvas.background }}
+                        title={`Canvas: ${t.canvas.background}`}
+                      />
+                      <div
+                        className="h-full flex-1"
+                        style={{ backgroundColor: t.ui.primary }}
+                        title={`Primary: ${t.ui.primary}`}
+                      />
+                      <div
+                        className="h-full flex-1"
+                        style={{ backgroundColor: t.nodes.watcher || '#10B981' }}
+                        title={`Watcher: ${t.nodes.watcher}`}
+                      />
+                      <div
+                        className="h-full flex-1"
+                        style={{ backgroundColor: t.nodes.condition || '#FFD728' }}
+                        title={`Condition: ${t.nodes.condition}`}
+                      />
+                      <div
+                        className="h-full flex-1"
+                        style={{ backgroundColor: t.nodes.surface_card }}
+                        title={`Card: ${t.nodes.surface_card}`}
+                      />
+                    </div>
 
-                    {/* Delete button if user custom (not builtin) */}
+                    {/* Delete action if user custom (not builtin) */}
                     {!t.isBuiltin && (
-                      <button
-                        type="button"
+                      <span
+                        role="button"
+                        tabIndex={0}
                         onClick={(e) => {
                           e.stopPropagation();
                           deleteCustomTheme(t.id);
@@ -285,9 +276,9 @@ export const ThemeModal: React.FC<ThemeModalProps> = ({
                         className="mt-2 text-[10px] text-rose-500 hover:text-rose-700 underline self-end cursor-pointer"
                       >
                         Delete
-                      </button>
+                      </span>
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>

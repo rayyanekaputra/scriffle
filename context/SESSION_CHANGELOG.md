@@ -1,8 +1,33 @@
-# 📋 Session Changelog — 2026-09-16
+# 📋 Session Changelog — 2026-09-18
  
  > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
  
  ---
+
+## 1. Scriffle Themes Engine (`.scrifflemes`) & UI Theme Consistency Overhaul
+
+**Key Capabilities & Fixes Implemented:**
+1. **Plain-Text `.scrifflemes` Theme Format & Engine**:
+   - Implemented standard INI/conf parser, serializer, color sanitizer, and CSS variable generator in [`themeParser.ts`](file:///home/abzolute/Projects/hackathon/src/lib/themeParser.ts).
+   - Bundled 5 starter presets in [`themes/`](file:///home/abzolute/Projects/hackathon/themes/) and [`builtinThemes.ts`](file:///home/abzolute/Projects/hackathon/src/lib/builtinThemes.ts): **Bloomberg Terminal**, **Nord**, **Gruvbox**, **Tokyo Night**, **Solarized Dark**.
+   - Added full custom theme state management, import/export, and local storage persistence in [`ThemeContext.tsx`](file:///home/abzolute/Projects/hackathon/src/context/ThemeContext.tsx).
+2. **Interactive Theme Customization Modal ([`ThemeModal.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/controls/ThemeModal.tsx))**:
+   - Replaced awkward square box swatches with a sleek continuous borderless palette pill bar.
+   - Fixed top-left icon color alignment to match the active theme.
+   - Enforced strict **no ALL CAPS** and **no spaced letters** formatting across all labels and tabs per `AGENT_CONTEXT.md`.
+3. **Canvas Element & Node Custom Theme Synchronization**:
+   - Extended dynamic theme adaptation across all node types (`WatcherNode`, `ConditionNode`, `ActionNode`, `ScreenerNode`, `NoteNode`, `TextNode`, `FileNode`, `AlertNode`) checking both base mode and custom theme tokens.
+   - Updated `Logo.tsx` to dynamically adopt active custom theme accent and text colors.
+   - Updated `SelectionBoundingBox.tsx` and `QuickAddSourceHandle.tsx` to read custom theme selection and accent tokens.
+   - Updated `NavToolbar.tsx` Move and Hand button styling and set `overflow-visible` to prevent clipping the sticker presets dropdown.
+   - Updated `QuickAddPopover.tsx` and `ContextMenu.tsx` to respect custom themes.
+4. **Single-Surface Container & Button Hover Unification**:
+   - Added global `button { background-color: transparent; }` base reset in [`globals.css`](file:///home/abzolute/Projects/hackathon/src/app/globals.css) to eliminate default user-agent button background artifacts.
+   - Refactored custom theme presets in [`ThemeModal.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/controls/ThemeModal.tsx) into direct single `<button>` elements, eliminating the nested `<div p-3><button>` hierarchy and resolving the inner "cropped" hover box discrepancy.
+   - Added `isCustom` custom theme background support to [`NoteNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/NoteNode.tsx).
+5. **Verification & Tests**:
+   - 151 unit tests passing (100% green across 13 test suites).
+   - `bun run build` passes with zero errors.
 
 ## 0. Quick-Add Node Connector & Flow Auto-Wiring
 
