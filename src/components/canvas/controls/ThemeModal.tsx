@@ -72,7 +72,7 @@ export const ThemeModal: React.FC<ThemeModalProps> = ({
   const cardActiveClass = isDark
     ? 'border-blue-500 bg-[#1E2232] text-white ring-2 ring-blue-500/20'
     : isMono
-    ? 'border-[#1D4ED8] bg-[#EAE7DF] text-[#242321] ring-2 ring-[#1D4ED8]/20'
+    ? 'border-[#242321] bg-[#EAE7DF] text-[#242321] ring-2 ring-[#242321]/20'
     : 'border-blue-600 bg-blue-50/70 text-slate-900 ring-2 ring-blue-500/20';
 
   const buttonSecondaryClass = isDark
@@ -168,7 +168,7 @@ export const ThemeModal: React.FC<ThemeModalProps> = ({
                 <div className="flex w-full items-center justify-between">
                   <span className="text-lg">📜</span>
                   {theme === 'mono' && (
-                    <span className="rounded-full bg-[#1D4ED8] px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    <span className="rounded-full bg-[#242321] px-1.5 py-0.5 text-[10px] font-bold text-white">
                       Active
                     </span>
                   )}

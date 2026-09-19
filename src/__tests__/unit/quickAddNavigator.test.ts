@@ -94,4 +94,10 @@ describe('quickAddNavigator — Spatial Calculation & Smart Recommendations', ()
     expect(stickerConfig.emoji).toBe('🔻');
     expect(stickerConfig.color).toBe('rose');
   });
+
+  it('standardizes action node icon to flash_line (zap) and not play_line', () => {
+    const actionOption = ALL_QUICK_ADD_NODES.find((opt) => opt.type === 'action');
+    expect(actionOption).toBeDefined();
+    expect(actionOption?.icon).toBe('flash_line');
+  });
 });

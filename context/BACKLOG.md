@@ -296,6 +296,22 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ### Candidate QoL Features
 
+#### 0. 🐛 Reported Bugs & Regressions (New)
+
+- [x] **[BUG] ActionNode icon inconsistency — standardize on Zap (`QuickAddPopover.tsx`, `NavToolbar.tsx`, `quickAddNavigator.ts`)**:
+  - Standardized everywhere on `flash_line` (MingCute zap icon), removing `play_line`.
+- [x] **[BUG — HIGH PRIORITY REGRESSION] Quick-connect no longer auto-wires edge after adding a new node via Quick-Add (`nodes/route.ts`, `MarketCanvas.tsx`)**:
+  - Updated `POST /api/canvas/nodes` to accept client-provided `id`, ensuring the ID generated on the frontend matches the database record so `POST /api/canvas/edges` doesn't fail foreign-key constraints.
+- [x] **[BUG] Sticker dropdown arrow container in NavToolbar is not vertically aligned with peer items (`NavToolbar.tsx`)**:
+  - Applied `items-stretch` and matching `border-y border-r border-l` on the chevron button.
+- [x] **[BUG] Mono theme active-state highlight in theme chooser is incorrect (`TopNav.tsx`, `ThemeModal.tsx`)**:
+  - Fixed active and inactive styling in Mono mode (`bg-[#FCFBF9] text-[#242321] border-[#D8D4CA] shadow-2xs`) in `TopNav.tsx` and updated Mono card active badge in `ThemeModal.tsx`.
+
+- [ ] **[IDEATION] Discord & Telegram alert delivery channels for `AlertNode`**:
+  - Explore Discord webhooks and Telegram Bot API as optional downstream alert channels from `AlertNode`. Both are free (no per-message cost). Discord: server webhook URL only. Telegram: @BotFather bot token + `chat_id`.
+  - **Open questions**: Where do credentials live (node config vs `.env`-style store)? New `AlertNode` action types (`discord_webhook`, `telegram_message`) or a dedicated `ChannelNode`?
+  - **No implementation planned yet** — ideation and feasibility research phase only.
+
 #### 1. 🏷️ Sticker & Visual Annotation Modernization (FigJam-inspired)
 - [ ] **In-Place Editable Sticker Component (`StickerNode.tsx`)**:
   - Replace static `STICKER_META` lookup (`bullish`/`bearish`) with inline stateful config (`emoji`, `label`, `color`).

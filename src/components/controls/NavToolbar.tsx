@@ -265,7 +265,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         </button>
 
         {/* Sticker Element & Dropdown Menu */}
-        <div ref={stickerMenuRef} className="relative shrink-0 flex items-center">
+        <div ref={stickerMenuRef} className="relative shrink-0 flex items-stretch">
           <button
             onClick={() => handleAddAtCenter('sticker', { emoji: '🚀', label: 'Breakout', color: 'blue' })}
             className={`flex items-center gap-1.5 rounded-l-xl border-y border-l px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
@@ -276,7 +276,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
           </button>
           <button
             onClick={() => setShowStickerMenu(!showStickerMenu)}
-            className={`flex items-center justify-center rounded-r-xl border px-1.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+            className={`flex items-center justify-center rounded-r-xl border-y border-r border-l border-l-slate-200/50 dark:border-l-slate-700/50 px-1.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
             title="Choose sticker preset"
           >
             <MingIcon name="down_line" size={13} />

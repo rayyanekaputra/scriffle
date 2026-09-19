@@ -18,25 +18,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required edge fields' }, { status: 400 });
     }
 
-    const edge = await prisma.edge.upsert({
+    const existing = await prisma.edge.findFirst({
       where: {
-        fromId_toId_fromHandle: {
-          fromId: from,
-          toId: to,
-          fromHandle: resolvedFromHandle,
-        },
-      },
-      create: {
-        canvasId: targetCanvasId,
         fromId: from,
         toId: to,
         fromHandle: resolvedFromHandle,
-        toHandle: resolvedToHandle,
-      },
-      update: {
-        toHandle: resolvedToHandle,
       },
     });
+
+    let edge;
+    if (existing) {
+      edge = await prisma.edge.update({
+        where: { id: existing.id },
+        data: {
+          toHandle: resolvedToHandle,
+        },
+      });
+    } else {
+      edge = await prisma.edge.create({
+        data: {
+          canvasId: targetCanvasId,
+          fromId: from,
+          toId: to,
+          fromHandle: resolvedFromHandle,
+          toHandle: resolvedToHandle,
+        },
+      });
+    }
 
     return NextResponse.json({
       id: edge.id,

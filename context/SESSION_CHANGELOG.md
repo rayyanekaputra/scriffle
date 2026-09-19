@@ -1,8 +1,30 @@
-# 📋 Session Changelog — 2026-09-18
- 
- > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
- 
- ---
+# 📋 Session Changelog — 2026-09-19
+
+> **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
+
+---
+
+## 0. Immediate Bug Fixes & Regressions Resolved
+
+**Key Fixes Implemented:**
+1. **[HIGH PRIORITY] Quick-Connect Auto-Wiring Regression Resolved (`nodes/route.ts`, `MarketCanvas.tsx`)**:
+   - Fixed `POST /api/canvas/nodes` to accept and preserve client-generated UUIDs (`id: id || undefined`), eliminating the mismatch between frontend generated node IDs and server node records.
+   - Restored instant auto-wiring of edges when adding downstream nodes via Quick-Add (`+` handles and connector drop).
+2. **ActionNode Icon Standardized on Zap (`quickAddNavigator.ts`, `ALL_QUICK_ADD_NODES`)**:
+   - Standardized the Action node icon in `ALL_QUICK_ADD_NODES` to `flash_line` (MingCute Zap) instead of `play_line`.
+   - Verified icon consistency across `QuickAddPopover.tsx`, `NavToolbar.tsx`, `ContextMenu.tsx`, `ActionNode.tsx`, and `ActivityFeed.tsx`.
+3. **Sticker Preset Dropdown Container Alignment in NavToolbar (`NavToolbar.tsx`)**:
+   - Applied `items-stretch` and harmonized borders (`border-y border-r border-l`) on the sticker preset chevron button, aligning the baseline of the dropdown arrow container with all peer toolbar buttons.
+4. **Mono Theme Active-State Highlight & Contrast in Theme Chooser (`TopNav.tsx`, `ThemeModal.tsx`)**:
+   - Styled the Mono mode button in `TopNav.tsx` with high-contrast active styling (`bg-[#FCFBF9] text-[#242321] border-[#D8D4CA] shadow-2xs`) and improved inactive button contrast across all themes.
+   - Updated Mono mode active card border and badge in `ThemeModal.tsx` (`bg-[#242321] text-white border-[#242321]`).
+5. **Unit Tests**:
+   - Added unit test in `quickAddNavigator.test.ts` verifying Action node icon is standardized to `flash_line`.
+   - 169 unit tests passing (100% green across 15 test suites).
+
+---
+
+
 
 ## 0. Self-Documenting Edge Labels & Condition Badges
 

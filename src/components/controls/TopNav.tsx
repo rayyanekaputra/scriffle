@@ -266,10 +266,14 @@ export const TopNav: React.FC<TopNavProps> = ({
             onClick={() => setTheme('light')}
             className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
               theme === 'light'
-                ? 'bg-white text-slate-900 shadow-2xs'
+                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/80'
                 : isCustom
-                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)]'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
+                : isDark
+                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+                : isMono
+                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
             }`}
             title="Light Mode (Default Colorful)"
           >
@@ -282,10 +286,14 @@ export const TopNav: React.FC<TopNavProps> = ({
             onClick={() => setTheme('mono')}
             className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
               theme === 'mono'
-                ? 'bg-white text-blue-600 shadow-2xs'
+                ? 'bg-[#FCFBF9] text-[#242321] shadow-2xs border border-[#D8D4CA]'
                 : isCustom
-                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)]'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
+                : isDark
+                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+                : isMono
+                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
             }`}
             title="Monochrome Light (Black & White + Scriffle Blue)"
           >
@@ -298,10 +306,14 @@ export const TopNav: React.FC<TopNavProps> = ({
             onClick={() => setTheme('dark')}
             className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
               theme === 'dark'
-                ? 'bg-black text-white shadow-2xs'
+                ? 'bg-[#282A36] text-white shadow-2xs border border-[#3E4254]'
                 : isCustom
-                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)]'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
+                : isDark
+                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+                : isMono
+                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
             }`}
             title="Monochrome Dark (Pure Black & White)"
           >
@@ -315,8 +327,12 @@ export const TopNav: React.FC<TopNavProps> = ({
             onClick={() => setIsThemeModalOpen(true)}
             className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
               theme === 'custom'
-                ? 'bg-[var(--custom-ui-primary)] text-white shadow-2xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-[var(--custom-ui-primary)] text-white shadow-2xs border border-[var(--custom-ui-primary)]'
+                : isDark
+                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+                : isMono
+                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
             }`}
             title={
               theme === 'custom' && activeCustomTheme

@@ -27,7 +27,7 @@ export const ALL_QUICK_ADD_NODES: QuickAddOption[] = [
   {
     type: 'action',
     label: 'Action',
-    icon: 'play_line',
+    icon: 'flash_line',
     description: 'Automate fundamental PDF reports & canvas mutations',
     color: '#0050FF',
   },
