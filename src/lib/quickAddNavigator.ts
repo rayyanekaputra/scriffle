@@ -192,7 +192,13 @@ export function getDefaultConfigForQuickAdd(
         channel: 'ui',
         message: isFalseBranch
           ? '${symbol} condition not met (${price_change}%)'
-          : 'Market condition triggered!',
+          : '🚀 ${symbol} Breakout: +${price_change}% at Rp${price}',
+        template: isFalseBranch
+          ? '${symbol} condition not met (${price_change}%)'
+          : '🚀 ${symbol} Breakout: +${price_change}% at Rp${price}',
+        messageTemplate: isFalseBranch
+          ? '${symbol} condition not met (${price_change}%)'
+          : '🚀 ${symbol} Breakout: +${price_change}% at Rp${price}',
       };
     case 'watcher':
       return {

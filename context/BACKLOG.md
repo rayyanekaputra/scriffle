@@ -6,6 +6,12 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🎮 Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**
+  - Implemented Discord Webhook dispatch service (`src/server/services/discordWebhook.ts`) supporting URL validation, dynamic sentiment embed colors (Mint `#10B981` for gains, Coral `#FF5B79` for drops, Electric Blue `#0050FF` for neutral), structured ticker metrics (Price, Change %, Volume, Prev Close), canvas board name, and 6s timeout protection.
+  - Built dedicated `/api/alert/test-webhook` endpoint and interactive "⚡ Send Test Ping" button with live spinner and success/failure feedback banner in `EditNodeModal.tsx`.
+  - Added webhook URL persistence awareness notice, inline "Save Alert Settings" button, and Discord channel badge pills in `AlertNode.tsx`.
+  - Integrated into `graphEngine.ts` across single-event triggers, Top Movers radar alerts, and AI Screener outputs.
+  - Added unit test suite `discordWebhook.test.ts` (179 total passing unit tests across 16 suites, 100% green).
 - [x] **🔀 Condition Node Dual Outputs & False Branching (`ConditionNode.tsx`, `QuickAddSourceHandle.tsx`, `graphEngine.ts`, `edgeLabels.ts`, `LabeledEdge.tsx`, `MarketCanvas.tsx`, `conditionBranching.test.ts`)**
   - Added dual output connection handles to `ConditionNode`: upper `True` port (Emerald green `#10B981` @ `36%` Y) and lower `False` port (Rose `#FF5B79` @ `72%` Y) with dedicated Quick-Add `[+]` triggers.
   - Implemented handle-filtered BFS traversal in `graphEngine.ts`: routes market events to matching `fromHandle` edges (`'true'` vs `'false'`), with legacy fallback defaulting to `'true'`.
@@ -307,10 +313,9 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [x] **[BUG] Mono theme active-state highlight in theme chooser is incorrect (`TopNav.tsx`, `ThemeModal.tsx`)**:
   - Fixed active and inactive styling in Mono mode (`bg-[#FCFBF9] text-[#242321] border-[#D8D4CA] shadow-2xs`) in `TopNav.tsx` and updated Mono card active badge in `ThemeModal.tsx`.
 
-- [ ] **[IDEATION] Discord & Telegram alert delivery channels for `AlertNode`**:
-  - Explore Discord webhooks and Telegram Bot API as optional downstream alert channels from `AlertNode`. Both are free (no per-message cost). Discord: server webhook URL only. Telegram: @BotFather bot token + `chat_id`.
-  - **Open questions**: Where do credentials live (node config vs `.env`-style store)? New `AlertNode` action types (`discord_webhook`, `telegram_message`) or a dedicated `ChannelNode`?
-  - **No implementation planned yet** — ideation and feasibility research phase only.
+- [x] **Discord Webhook alert delivery for `AlertNode` (`discordWebhook.ts`, `/api/alert/test-webhook`, `AlertNode.tsx`)**
+- [ ] **[IDEATION] Telegram Bot alert delivery for `AlertNode`**:
+  - Explore Telegram Bot API as downstream alert channel (@BotFather bot token + `chat_id`). Queued for future exploration.
 
 #### 1. 🏷️ Sticker & Visual Annotation Modernization (FigJam-inspired)
 - [ ] **In-Place Editable Sticker Component (`StickerNode.tsx`)**:

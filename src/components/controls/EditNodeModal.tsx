@@ -20,14 +20,64 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
 }) => {
   const { theme } = useTheme();
   const [config, setConfig] = useState<any>({});
+  const [testingWebhook, setTestingWebhook] = useState(false);
+  const [testWebhookResult, setTestWebhookResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     if (node?.config) {
       setConfig({ ...node.config });
+      setTestWebhookResult(null);
     }
   }, [node]);
 
   if (!isOpen || !node) return null;
+
+  const handleTestDiscordWebhook = async () => {
+    if (!config.discordWebhookUrl) {
+      setTestWebhookResult({
+        success: false,
+        message: 'Please enter a Discord Webhook URL before testing.',
+      });
+      return;
+    }
+
+    setTestingWebhook(true);
+    setTestWebhookResult(null);
+
+    try {
+      const res = await fetch('/api/alert/test-webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: 'discord',
+          webhookUrl: config.discordWebhookUrl,
+          template: config.template || config.messageTemplate,
+          botName: config.botName,
+          includeMarketStats: config.includeMarketStats !== false,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTestWebhookResult({
+          success: true,
+          message: data.message || 'Test alert delivered to Discord channel successfully!',
+        });
+      } else {
+        setTestWebhookResult({
+          success: false,
+          message: data.error || 'Failed to deliver test alert to Discord.',
+        });
+      }
+    } catch (err: any) {
+      setTestWebhookResult({
+        success: false,
+        message: err.message || 'Network error while testing webhook.',
+      });
+    } finally {
+      setTestingWebhook(false);
+    }
+  };
 
   const handleSave = () => {
     onSave(node.id, config);
@@ -550,24 +600,156 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
                 >
                   <option value="ui">UI Toast (In-App)</option>
+                  <option value="discord">Discord Webhook (Direct Channel)</option>
                   <option value="telegram">Telegram Bot (Webhook)</option>
                   <option value="webhook">Custom HTTP Endpoint</option>
                 </select>
               </div>
 
               <div>
-                <label className={`font-bold block mb-1 ${labelColor}`}>Custom Toast Message Template</label>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Alert Message / Template</label>
                 <input
                   type="text"
-                  value={config.template || ''}
-                  onChange={(e) => setConfig({ ...config, template: e.target.value })}
-                  placeholder="e.g. 🚀 ${symbol} Breakout: +${price_change}% at Rp${price}"
+                  value={
+                    config.template !== undefined && config.template !== ''
+                      ? config.template
+                      : config.messageTemplate !== undefined && config.messageTemplate !== ''
+                      ? config.messageTemplate
+                      : '🚀 ${symbol} Breakout: +${price_change}% at Rp${price}'
+                  }
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      template: e.target.value,
+                      messageTemplate: e.target.value,
+                    })
+                  }
+                  placeholder="🚀 ${symbol} Breakout: +${price_change}% at Rp${price}"
                   className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
                 />
                 <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
                   Variables: ${'{symbol}'}, ${'{price}'}, ${'{price_change}'}, ${'{volume}'}, ${'{timestamp}'}
                 </span>
               </div>
+
+              {config.channel === 'discord' && (
+                <div className="space-y-3 pt-2 border-t border-dashed border-slate-200">
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>
+                      Discord Webhook URL <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="url"
+                      value={config.discordWebhookUrl || ''}
+                      onChange={(e) => setConfig({ ...config, discordWebhookUrl: e.target.value })}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className={`w-full rounded-xl border-2 p-2.5 font-mono text-xs focus:outline-none ${inputBg}`}
+                    />
+                    <span className={`text-[11px] block mt-1 ${secondaryColor}`}>
+                      From Discord Channel Settings &gt; Integrations &gt; Webhooks &gt; Copy Webhook URL
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Bot Display Name (Optional)</label>
+                    <input
+                      type="text"
+                      value={config.botName || ''}
+                      onChange={(e) => setConfig({ ...config, botName: e.target.value })}
+                      placeholder="Scriffle Market Bot"
+                      className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="inc-stats"
+                      checked={config.includeMarketStats !== false}
+                      onChange={(e) => setConfig({ ...config, includeMarketStats: e.target.checked })}
+                      className="rounded"
+                    />
+                    <label htmlFor="inc-stats" className={`text-xs font-semibold cursor-pointer select-none ${labelColor}`}>
+                      Include rich financial embed card (price, % change, volume)
+                    </label>
+                  </div>
+
+                  {/* Test Webhook Button & Status */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={handleTestDiscordWebhook}
+                      disabled={testingWebhook || !config.discordWebhookUrl}
+                      className={`w-full flex items-center justify-center gap-2 rounded-xl border-2 py-2 px-3 text-xs font-bold transition cursor-pointer ${
+                        testingWebhook || !config.discordWebhookUrl
+                          ? 'opacity-50 cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
+                          : isDark
+                          ? 'border-[#383B4A] bg-[#1E2235] text-[#818CF8] hover:bg-[#282D46]'
+                          : isMono
+                          ? 'border-[#D8D4CA] bg-[#EFECE4] text-[#4F46E5] hover:bg-[#EAE7DF]'
+                          : 'border-indigo-200 bg-indigo-50 text-[#5865F2] hover:bg-indigo-100'
+                      }`}
+                    >
+                      <MingIcon
+                        name={testingWebhook ? 'loading_line' : 'send_plane_line'}
+                        size={14}
+                        className={testingWebhook ? 'animate-spin' : ''}
+                      />
+                      <span>{testingWebhook ? 'Sending Test Ping...' : '⚡ Send Test Ping to Discord'}</span>
+                    </button>
+
+                    {testWebhookResult && (
+                      <div
+                        className={`mt-2 rounded-xl p-2.5 text-xs border flex items-start gap-2 ${
+                          testWebhookResult.success
+                            ? isDark
+                              ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
+                              : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                            : isDark
+                            ? 'bg-rose-950/40 border-rose-800/60 text-rose-300'
+                            : 'bg-rose-50 border-rose-200 text-rose-800'
+                        }`}
+                      >
+                        <MingIcon
+                          name={testWebhookResult.success ? 'check_circle_line' : 'close_circle_line'}
+                          size={16}
+                          className="shrink-0 mt-0.5"
+                        />
+                        <span className="leading-snug">{testWebhookResult.message}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Persistence Awareness Notice */}
+                  <div
+                    className={`rounded-xl p-3 text-xs leading-relaxed border ${
+                      isDark
+                        ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]'
+                        : isMono
+                        ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                    }`}
+                  >
+                    💡 <strong>Webhook Persistence:</strong> This webhook URL stays saved on this Alert card and persists across sessions, board switches, and in downloaded <code>.scriffle</code> project files.
+                  </div>
+
+                  {/* Immediate Save Button */}
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    className={`w-full rounded-xl py-2 px-3 text-xs font-bold transition active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
+                      isDark
+                        ? 'bg-[#818CF8] text-[#0F1014] hover:bg-[#9FA8FA]'
+                        : isMono
+                        ? 'bg-[#0050FF] text-white hover:bg-[#0040D0]'
+                        : 'bg-[#5865F2] text-white hover:bg-[#4752C4]'
+                    }`}
+                  >
+                    <MingIcon name="save_line" size={14} />
+                    <span>Save Alert Settings</span>
+                  </button>
+                </div>
+              )}
             </>
           )}
 

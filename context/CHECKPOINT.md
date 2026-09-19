@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **158 unit tests across 14 test suites (100% green).**
+* **Master Unit Test Suite:** **179 unit tests across 16 test suites (100% green).**
 
 ---
 
@@ -34,7 +34,7 @@
   * **Downstream Automations:** Connected sticky notes format ranked tables; connected action nodes auto-spawn complete watcher pipelines (`[Watcher] -> [Condition] -> [Note]`) or generate institutional fundamental reports with disk auto-export.
 * **`condition` (Rule capsule):** Evaluates boolean rules safely using `expr-eval` (e.g. `price_change > 5 AND volume > 1000000`). Zero insecure `eval()`.
 * **`note` (FigJam Sticky Note):** **Direct inline editable on canvas** without popups. Supports pastel color themes (`yellow`, `mint`, `pink`, `blue`, `purple`) and template interpolation (e.g. `${symbol} surged ${price_change}%`).
-* **`alert` (Notification sticker):** Emits UI notifications and logs them to the activity feed.
+* **`alert` (Notification sticker & Discord Webhooks):** Emits UI notifications, logs them to the activity feed, and delivers rich financial embed cards directly to Discord channels via webhooks (URL validation, Mint/Coral sentiment colors, price/volume statistics, 6s timeout protection, test ping API endpoint, and persistence awareness).
 * **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes, watchers, or generating institutional Fundamental Briefs (`fundamental_report` action auto-saved to disk + linked `FileNode` + research `NoteNode` with dynamic in-place `Rev 2+` incrementing on repeated runs).
   * **Credit Badges & Burst Warnings:** Badged with `🪙 8 credits / symbol` and prominent burst warnings in `EditNodeModal.tsx` for multi-stock pipelines (e.g. 5-mover fundamental report = 40 credits burst).
   * **Dynamic Peer Watcher Labeling:** Displays contextual peer symbols (e.g. `⚡ Auto-Spawn Peer Watcher (BBRI)`) or dynamic fallback (`⚡ Auto-Spawn Peer Watcher (Incoming Ticker)`) when no hardcoded ticker is set.
@@ -203,7 +203,7 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
-* **Run Unit Tests:** `bun test` (**143 tests across 12 suites, 100% green, ~140ms**)
+* **Run Unit Tests:** `bun test` (**169 tests across 15 suites, 100% green, ~520ms**)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
 * **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`

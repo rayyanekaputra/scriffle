@@ -66,8 +66,11 @@ export interface NoteConfig {
 }
 
 export interface AlertConfig {
-  channel: 'ui' | 'telegram' | 'webhook';
+  channel: 'ui' | 'discord' | 'telegram' | 'webhook';
   messageTemplate?: string;
+  discordWebhookUrl?: string;
+  botName?: string;
+  includeMarketStats?: boolean;
 }
 
 export interface ActionConfig {

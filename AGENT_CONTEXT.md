@@ -358,7 +358,12 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
-- **Global & Card-Level Loading Feedback (`LoadingContext.tsx`, `TopNav.tsx`, `ScreenerNode.tsx`, `ActionNode.tsx`, `WatcherNode.tsx`, `FileNode.tsx`, `page.tsx`)**:
+- **Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**:
+  - Implemented Discord Webhook dispatch service with URL format validation (`https://discord.com/api/webhooks/...`), rich financial embed cards with dynamic sentiment colors (Mint `#10B981` for gains, Coral `#FF5B79` for losses, Electric Blue `#0050FF` for neutral), ticker metrics, volume, canvas board name, and 6s timeout protection.
+  - Added dedicated `/api/alert/test-webhook` test ping endpoint and interactive "⚡ Send Test Ping" button with live spinner in `EditNodeModal.tsx`.
+  - Added webhook persistence awareness notice, inline "Save Alert Settings" button, and Discord channel badge pills in `AlertNode.tsx`.
+  - Integrated into `graphEngine.ts` across single-event triggers, Top Movers radar alerts, and AI Screener outputs.
+  - Unit test suite `discordWebhook.test.ts` (179 total passing unit tests, 100% green).
   - Centralized task queue manager with `runTracked`, `startTask`, `endTask`, `isNodeLoading`, and auto-timeout safety cleanup.
   - Global 2px electric blue hairline progress bar and center status capsule in `TopNav.tsx` displaying live operation details with MingCute spinner.
   - Card-level visual feedback: `ScreenerNode` (`🤖 Screening...` badge + pulse outline), `ActionNode` (`Running...` badge + pulse outline), `WatcherNode` (`⚡ Polling...` badge + pulse outline), and `FileNode` (`⏳ Generating...` badge).
@@ -524,7 +529,7 @@ src/__tests__/
     ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
     ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
-    ├── quickAddNavigator.test.ts     ← 9 tests — spatial offset collision calculation, node recommendations, inherited config & false-branch defaults
+    ├── quickAddNavigator.test.ts     ← 10 tests — spatial offset collision calculation, node recommendations, inherited config & false-branch defaults, standardized zap icon
     ├── themeEngine.test.ts           ← 8 tests — .scrifflemes INI parser, serializer, color sanitizer, and CSS variables mapper
     ├── edgeLabels.test.ts            ← 8 tests — contextual edge label auto-inference with sourceHandle true/false resolution
     ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite

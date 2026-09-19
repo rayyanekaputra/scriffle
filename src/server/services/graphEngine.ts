@@ -8,6 +8,7 @@ import {
   MOCK_TOP_LOSERS,
 } from './sectorsApi';
 import { exportReportToDisk } from './reportExporter';
+import { sendDiscordAlert } from './discordWebhook';
 
 export interface GraphExecutionResult {
   triggeredNodes: string[];
@@ -507,9 +508,30 @@ export async function executeGraphForEvent(
       logs.push(`Sticky note updated: "${updatedContent.slice(0, 45)}..."`);
     } else if (node.type === 'alert') {
       triggeredNodes.push(node.id);
-      const alertMsg = nodeConfig.messageTemplate
-        ? interpolateTemplate(nodeConfig.messageTemplate, curEvent)
-        : `Alert: ${curEvent.symbol} price change is ${curEvent.price_change}%`;
+      const defaultAlertTemplate = '🚀 ${symbol} Breakout: +${price_change}% at Rp${price}';
+      const rawAlertTemplate = nodeConfig.template || nodeConfig.messageTemplate || defaultAlertTemplate;
+      const alertMsg = interpolateTemplate(rawAlertTemplate, curEvent);
+
+      let webhookStatus: 'success' | 'failed' | undefined;
+      let webhookError: string | undefined;
+
+      if (nodeConfig.channel === 'discord' && nodeConfig.discordWebhookUrl) {
+        try {
+          const res = await sendDiscordAlert({
+            webhookUrl: nodeConfig.discordWebhookUrl,
+            customMessage: alertMsg,
+            marketEvent: curEvent,
+            canvasName: canvas.name,
+            botName: nodeConfig.botName,
+            includeMarketStats: nodeConfig.includeMarketStats !== false,
+          });
+          webhookStatus = res.success ? 'success' : 'failed';
+          webhookError = res.error;
+        } catch (err: any) {
+          webhookStatus = 'failed';
+          webhookError = err.message;
+        }
+      }
 
       await prisma.node.update({
         where: { id: node.id },
@@ -517,6 +539,8 @@ export async function executeGraphForEvent(
           stateJson: JSON.stringify({
             status: 'passed',
             lastTriggeredAt: curEvent.timestamp || new Date().toLocaleTimeString(),
+            lastWebhookStatus: webhookStatus,
+            lastWebhookError: webhookError,
           }),
         },
       });
@@ -524,12 +548,12 @@ export async function executeGraphForEvent(
       await prisma.log.create({
         data: {
           canvasId,
-          eventSummary: alertMsg,
+          eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
           triggeredNodes: JSON.stringify([node.id]),
-          detailsJson: JSON.stringify(curEvent),
+          detailsJson: JSON.stringify({ ...curEvent, webhookStatus, webhookError }),
         },
       });
-      logs.push(`Notification fired: ${alertMsg}`);
+      logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
     } else if (node.type === 'action') {
       triggeredNodes.push(node.id);
       await prisma.node.update({
@@ -1064,9 +1088,30 @@ export async function executeGraphForRadarWatcher(
     } else if (targetNode.type === 'alert') {
       triggeredNodes.push(targetNode.id);
       const isGainer = (top1.price_change || 0) >= 0;
-      const alertMsg = targetCfg.messageTemplate
-        ? interpolateTemplate(targetCfg.messageTemplate, top1)
-        : `Leaderboard Alert: Top 1 ${isGainer ? 'Gainer' : 'Loser'} is ${top1.symbol} (${top1.price_change >= 0 ? '+' : ''}${top1.price_change}%)`;
+      const defaultRadarAlertTemplate = `Leaderboard Alert: Top 1 ${isGainer ? 'Gainer' : 'Loser'} is \${symbol} (\${price_change}%)`;
+      const rawRadarTemplate = targetCfg.template || targetCfg.messageTemplate || defaultRadarAlertTemplate;
+      const alertMsg = interpolateTemplate(rawRadarTemplate, top1);
+
+      let webhookStatus: 'success' | 'failed' | undefined;
+      let webhookError: string | undefined;
+
+      if (targetCfg.channel === 'discord' && targetCfg.discordWebhookUrl) {
+        try {
+          const res = await sendDiscordAlert({
+            webhookUrl: targetCfg.discordWebhookUrl,
+            customMessage: alertMsg,
+            marketEvent: top1,
+            canvasName: canvas.name,
+            botName: targetCfg.botName,
+            includeMarketStats: targetCfg.includeMarketStats !== false,
+          });
+          webhookStatus = res.success ? 'success' : 'failed';
+          webhookError = res.error;
+        } catch (err: any) {
+          webhookStatus = 'failed';
+          webhookError = err.message;
+        }
+      }
 
       await prisma.node.update({
         where: { id: targetNode.id },
@@ -1074,6 +1119,8 @@ export async function executeGraphForRadarWatcher(
           stateJson: JSON.stringify({
             status: 'passed',
             lastTriggeredAt: new Date().toLocaleTimeString(),
+            lastWebhookStatus: webhookStatus,
+            lastWebhookError: webhookError,
           }),
         },
       });
@@ -1081,12 +1128,12 @@ export async function executeGraphForRadarWatcher(
       await prisma.log.create({
         data: {
           canvasId,
-          eventSummary: alertMsg,
+          eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
           triggeredNodes: JSON.stringify([targetNode.id]),
-          detailsJson: JSON.stringify(movers),
+          detailsJson: JSON.stringify({ movers, webhookStatus, webhookError }),
         },
       });
-      logs.push(`Notification fired: ${alertMsg}`);
+      logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
     } else if (targetNode.type === 'condition') {
       // Evaluate condition for each mover and propagate
       for (const mover of movers) {
@@ -1511,12 +1558,46 @@ export async function executeGraphForScreener(
       triggeredNodes.push(targetNode.id);
       const alertMsg = `✨ AI Screener found ${results.length} companies matching "${screenerCfg.query || 'query'}"`;
 
+      let webhookStatus: 'success' | 'failed' | undefined;
+      let webhookError: string | undefined;
+
+      if (targetCfg.channel === 'discord' && targetCfg.discordWebhookUrl) {
+        try {
+          const topComp = results[0];
+          const topEvent: MarketEvent | undefined = topComp ? {
+            symbol: topComp.symbol,
+            price: topComp.price || 0,
+            prevPrice: topComp.price || 0,
+            price_change: 0,
+            volume: 0,
+            avg_volume: 0,
+            timestamp: new Date().toLocaleTimeString(),
+          } : undefined;
+
+          const res = await sendDiscordAlert({
+            webhookUrl: targetCfg.discordWebhookUrl,
+            customMessage: alertMsg,
+            marketEvent: topEvent,
+            canvasName: canvas.name,
+            botName: targetCfg.botName,
+            includeMarketStats: targetCfg.includeMarketStats !== false,
+          });
+          webhookStatus = res.success ? 'success' : 'failed';
+          webhookError = res.error;
+        } catch (err: any) {
+          webhookStatus = 'failed';
+          webhookError = err.message;
+        }
+      }
+
       await prisma.node.update({
         where: { id: targetNode.id },
         data: {
           stateJson: JSON.stringify({
             status: 'passed',
             lastTriggeredAt: new Date().toLocaleTimeString(),
+            lastWebhookStatus: webhookStatus,
+            lastWebhookError: webhookError,
           }),
         },
       });
@@ -1524,12 +1605,12 @@ export async function executeGraphForScreener(
       await prisma.log.create({
         data: {
           canvasId,
-          eventSummary: alertMsg,
+          eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
           triggeredNodes: JSON.stringify([targetNode.id]),
-          detailsJson: JSON.stringify(results),
+          detailsJson: JSON.stringify({ results, webhookStatus, webhookError }),
         },
       });
-      logs.push(`Notification fired: ${alertMsg}`);
+      logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
     } else if (targetNode.type === 'watcher') {
       triggeredNodes.push(targetNode.id);
       if (results.length > 0) {

@@ -4,7 +4,30 @@
 
 ---
 
-## 0. Immediate Bug Fixes & Regressions Resolved
+## 0. Native Discord Webhook Integration & Rich Financial Embed Cards
+
+**Key Capabilities Implemented:**
+1. **Discord Webhook Service ([`src/server/services/discordWebhook.ts`](file:///home/abzolute/Projects/hackathon/src/server/services/discordWebhook.ts))**:
+   - Webhook URL format validation (`isValidDiscordWebhookUrl`) supporting `discord.com`, `discordapp.com`, `canary`, and `ptb` subdomains.
+   - Dynamic sentiment color embeds: Mint `#10B981` (0x10B981) for gains/breakouts, Coral `#FF5B79` (0xFF5B79) for losses/drops, and Electric Blue `#0050FF` (0x0050FF) for neutral alerts.
+   - Rich embed fields: Ticker symbol, Last Price (`Rp 10.450`), Change (`+6.20%`), Volume (`45.2M shares`), Previous Close, Canvas Board name, ISO timestamp, and Scriffle bot branding.
+   - 6-second timeout protection using `AbortController` and detailed HTTP status/error message capture.
+2. **Interactive Test Ping API ([`src/app/api/alert/test-webhook/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/alert/test-webhook/route.ts))**:
+   - `POST /api/alert/test-webhook` endpoint allowing 1-click verification of Discord Webhook URLs directly from the UI.
+3. **Graph Engine BFS Integration ([`src/server/services/graphEngine.ts`](file:///home/abzolute/Projects/hackathon/src/server/services/graphEngine.ts))**:
+   - Updated `node.type === 'alert'` handling across single-event triggers, Top Movers radar processing, and AI Screener pipelines to dispatch to Discord when `channel: 'discord'`.
+   - Records `lastWebhookStatus` (`'success'` | `'failed'`) and `lastWebhookError` in SQLite `stateJson` and logs `[Discord] <Message>` to the Activity Feed.
+4. **Card UI & Property Editor ([`AlertNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/AlertNode.tsx) & [`EditNodeModal.tsx`](file:///home/abzolute/Projects/hackathon/src/components/controls/EditNodeModal.tsx))**:
+   - Added `Discord` channel badge pill with indigo accent `#5865F2` on `AlertNode.tsx` and delivery status feedback (`✓ Delivered to Discord` / `⚠ Webhook Failed`).
+   - Displays the alert message template preview directly on the `AlertNode.tsx` card (showing `🚀 ${symbol} Breakout: +${price_change}% at Rp${price}` even when left default).
+   - In `EditNodeModal.tsx`, pre-populates the input with the standard template if left default so users can immediately inspect and edit dynamic variables.
+   - Added Discord channel option, Webhook URL input, custom Bot Name, rich embed toggle, interactive **"⚡ Send Test Ping"** button with live spinner, awareness callout regarding URL persistence, and an explicit **"💾 Save Alert Settings"** button.
+5. **Unit Tests ([`src/__tests__/unit/discordWebhook.test.ts`](file:///home/abzolute/Projects/hackathon/src/__tests__/unit/discordWebhook.test.ts))**:
+   - 10 unit test scenarios covering URL validation, payload formatting, color selection, error capture, and network timeouts (179 passing tests across 16 test suites, 100% green).
+
+---
+
+## 1. Immediate Bug Fixes & Regressions Resolved
 
 **Key Fixes Implemented:**
 1. **[HIGH PRIORITY] Quick-Connect Auto-Wiring Regression Resolved (`nodes/route.ts`, `MarketCanvas.tsx`)**:
