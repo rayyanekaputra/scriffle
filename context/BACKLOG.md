@@ -116,9 +116,8 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 ## 📌 Open Candidate Endpoints & Features
 
 ### 🐛 BUG: Sticker Toolbar Preset Dropdown Clipped by Container Overflow (`NavToolbar.tsx`)
-- **Status**: 🛠️ In Progress / Fixing
-- **Priority**: High — clicking the chevron arrow on the Sticker button in `NavToolbar.tsx` opens preset menu inside an `overflow-x-auto` wrapper, clipping the menu out of view.
-- **Resolution**: Replace `overflow-x-auto` with `overflow-visible` on the main toolbar wrapper and ensure floating dropdown z-index is elevated above surrounding whiteboard chrome.
+- **Status**: ✅ Completed
+- **Resolution**: Replaced `overflow-x-auto` with `overflow-visible` on the main toolbar wrapper in [`NavToolbar.tsx`](file:///home/abzolute/Projects/hackathon/src/components/controls/NavToolbar.tsx) and elevated the dropdown `z-50` position above whiteboard chrome.
 
 ---
 
