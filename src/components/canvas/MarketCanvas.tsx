@@ -28,6 +28,7 @@ import { ImageNode } from './nodes/ImageNode';
 import { StickerNode } from './nodes/StickerNode';
 import { FileNode } from './nodes/FileNode';
 import { ScreenerNode } from './nodes/ScreenerNode';
+import { LabeledEdge } from './edges/LabeledEdge';
 import { ContextMenu } from './ContextMenu';
 import { SelectionBoundingBox } from './SelectionBoundingBox';
 import { QuickAddPopover } from './QuickAddPopover';
@@ -113,6 +114,14 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     []
   );
 
+  const edgeTypes = useMemo(
+    () => ({
+      default: LabeledEdge,
+      labeled: LabeledEdge,
+    }),
+    []
+  );
+
   const initialNodes: Node[] = useMemo(() => {
     if (!canvasData?.nodes) return [];
     return canvasData.nodes.map((n) => {
@@ -137,6 +146,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       id: e.id,
       source: e.from,
       target: e.to,
+      type: 'labeled',
       animated: true,
       interactionWidth: 24,
       style: { stroke: '#0050FF', strokeWidth: 2.5, cursor: 'pointer' },
@@ -684,6 +694,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             id: e.id,
             source: e.from,
             target: e.to,
+            type: 'labeled',
             selected: selectionMap.has(e.id) ? selectionMap.get(e.id) : false,
             animated: true,
             interactionWidth: 24,
@@ -788,6 +799,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         addEdge(
           {
             ...params,
+            type: 'labeled',
             animated: true,
             interactionWidth: 24,
             style: { stroke: edgeStroke, strokeWidth: 2.5, cursor: 'pointer' },
@@ -897,6 +909,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         id: newEdgeId,
         source: sourceNodeId,
         target: newId,
+        type: 'labeled',
         animated: true,
         interactionWidth: 24,
         style: { stroke: edgeStroke, strokeWidth: 2.5, cursor: 'pointer' },
@@ -1262,6 +1275,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={{ type: 'labeled' }}
         panOnDrag={isHandMode ? true : [1, 2]}
         nodesDraggable={!isHandMode}
         nodesConnectable={!isHandMode}

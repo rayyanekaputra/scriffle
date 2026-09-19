@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **151 unit tests across 13 test suites (100% green).**
+* **Master Unit Test Suite:** **158 unit tests across 14 test suites (100% green).**
 
 ---
 
@@ -55,6 +55,10 @@
 ---
 
 ### 2.2 Control Panel, Project Files & Whiteboard Interactions
+* **Self-Documenting Edge Labels & Condition Badges (`edgeLabels.ts`, `LabeledEdge.tsx`):**
+  * **Contextual Auto-Inference:** Connectors automatically display smart semantic badge pills (`Watcher` $\rightarrow$ `Condition` = `"on tick"`, `Condition` $\rightarrow$ `Action`/`Note`/`Alert` = `"if true"` with green indicator dot, `Screener` $\rightarrow$ `*` = `"discovered"` / `"pipe results"` / `"summary"`, `Action` $\rightarrow$ `*` = `"generates"` / `"brief"` / `"spawns"`).
+  * **Theme-Aware Rendering:** Adapts to Light, Mono (warm-paper), Dark (soft charcoal), and Custom `.scrifflemes` themes.
+  * **Hover & Editing Actions:** Hovering reveals a quick `×` delete button to sever connectors; clicking opens an inline input to edit/rename labels.
 * **Quick-Add Connected Node & Auto-Wiring (`QuickAddHandle.tsx`, `QuickAddPopover.tsx`, `quickAddNavigator.ts`):**
   * **Hover & Selection `[+]` Button:** Floating `+` button positioned 36px to the right of output handles on `WatcherNode`, `ConditionNode`, `ScreenerNode`, and `ActionNode` appears on hover/selection.
   * **Drag-to-Empty-Canvas Connector Drop:** Releasing a connector line onto empty canvas (`onConnectEnd`) opens the Quick-Add popover at cursor coordinates.

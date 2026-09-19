@@ -303,8 +303,14 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - Quick transparency vs bordered card toggle.
 
 #### 2. ⚡ Automation & Flow Building (n8n-inspired)
-- [ ] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
-- [ ] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on surge"`, `"export"`) to make automation pathways self-documenting.
+- [x] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
+- [x] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on tick"`, `"discovered"`, `"generates"`) to make automation pathways self-documenting.
+- [ ] **Condition Node Dual Outputs & "False" Branching (`ConditionNode.tsx`, `graphEngine.ts`, `edgeLabels.ts`)**:
+  - Add dual output connection handles to `ConditionNode` cards:
+    - **`True` Output Port (Green dot / top-right)**: Fires when `expr-eval` boolean rule evaluates to `true` (renders with `"if true"` edge badge).
+    - **`False` Output Port (Rose/Slate dot / bottom-right)**: Fires when `expr-eval` rule evaluates to `false` (renders with `"if false"` / `"on fail"` edge badge).
+  - Graph engine updates in `graphEngine.ts`: inspect `edge.sourceHandle` (`'true'` vs `'false'`) and route downstream executions according to the boolean outcome (e.g. `[Condition: price_change > 5%] -> (true) -> [Surge Alert]`, `[Condition: price_change > 5%] -> (false) -> [Log Neutral Note]`).
+  - Unit tests covering true/false handle edge routing in `graphEngine`.
 - [ ] **Live Signal Flow Pulses**: Visual pulsing packet animating along connecting edges when a watcher or condition triggers downstream nodes.
 
 #### 2. 🗂️ Spatial Board Organization (FigJam × Miro-inspired)

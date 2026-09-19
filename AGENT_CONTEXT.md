@@ -319,10 +319,20 @@ hackathon/
 - Visual credit cost pills on `ActionNode` (`🪙 8 credits / symbol` or `⚡ 0 credits (local)`), `WatcherNode`, and `ScreenerNode` (`🪙 3 AI credits / query`)
 - Edit modal callouts with multi-stock burst warnings (e.g. 5-mover fundamental report = 40 credits burst)
 
-### Theme Switcher (3 modes)
+### Theme Switcher (3 modes) & Custom Themes Engine (`.scrifflemes`)
 - **Light** (default): Full multicolor FigJam
 - **Mono** (Warm-Paper): `#F4F3EF` canvas, warm graphite borders
 - **Dark** (Soft Charcoal): `#0F1014` canvas, low-contrast borders, soft silver text
+- **Custom Themes Engine**: INI-style plain-text configuration parser & serializer in `themeParser.ts`, bundled presets in `themes/` (⚡ **Bloomberg Terminal**, ❄️ **Nord Frost**, 📻 **Gruvbox Dark**, 🌃 **Tokyo Night**, ☀️ **Solarized Dark**), interactive palette pill bar in `ThemeModal.tsx`, and canvas drag-and-drop `.scrifflemes` importing.
+
+### Quick-Add Connected Node & Flow Auto-Wiring
+- **Floating `[+]` Output Handle**: 36px offset floating `+` button on `WatcherNode`, `ConditionNode`, `ScreenerNode`, and `ActionNode` visible on card hover/selection.
+- **Drag-to-Empty Canvas Drop**: Releasing a connector line onto empty canvas triggers `onConnectEnd`, opening the Quick-Add popover at cursor coordinates.
+- **Smart Placement & Inheritance**: Contextual node recommendations and automatic spatial collision avoidance (`+320px X`, staggering `+150px Y` if occupied) with automatic ticker symbol and template inheritance (`quickAddNavigator.ts`).
+
+### Self-Documenting Edge Labels & Condition Badges
+- **Contextual Auto-Inference**: Computes smart badges on connectors: `Watcher` $\rightarrow$ `Condition` (`"on tick"`), `Condition` $\rightarrow$ `Action`/`Note`/`Alert` (`"if true"` with green status dot), `Screener` $\rightarrow$ `*` (`"discovered"` / `"pipe results"` / `"summary"`), `Action` $\rightarrow$ `*` (`"generates"` / `"brief"` / `"spawns"`).
+- **Interactive Labeled Edge (`LabeledEdge.tsx`)**: Theme-aware badge pill across all 4 theme environments, hover/selection `×` delete action, and inline label editing.
 
 ### Control Panel & Data Streaming
 - **Control Panel Drawer (`SimulationBar.tsx`)**: Rebranded from Demo Controls to institutional Control Panel with clean single-line headers.
@@ -489,11 +499,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 135 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 158 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **143 tests, 0 failures, 12 suites, ~140ms runtime**
+- **158 tests, 0 failures, 14 suites, ~640ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -509,6 +519,8 @@ src/__tests__/
     ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
     ├── quickAddNavigator.test.ts     ← 8 tests — spatial offset collision calculation, node recommendations, inherited config
+    ├── themeEngine.test.ts           ← 8 tests — .scrifflemes INI parser, serializer, color sanitizer, and CSS variables mapper
+    ├── edgeLabels.test.ts            ← 7 tests — contextual edge label auto-inference and override resolution
     ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
     ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
     ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)

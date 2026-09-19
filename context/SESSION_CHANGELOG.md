@@ -4,6 +4,29 @@
  
  ---
 
+## 0. Self-Documenting Edge Labels & Condition Badges
+
+**Key Capabilities Implemented:**
+1. **Contextual Edge Label Inference ([`edgeLabels.ts`](file:///home/abzolute/Projects/hackathon/src/lib/edgeLabels.ts))**:
+   - Automatically computes contextual flow badges between connected nodes:
+     - `Watcher` $\rightarrow$ `Condition`: `"on tick"`
+     - `Condition` $\rightarrow$ `Action` / `Note` / `Alert`: `"if true"` (with green dot indicator)
+     - `Screener` $\rightarrow$ `Watcher` / `Action` / `Note`: `"discovered"` / `"pipe results"` / `"summary"`
+     - `Action` $\rightarrow$ `File` / `Note` / `Watcher`: `"generates"` / `"brief"` / `"spawns"`
+   - Supports custom edge labels and editing.
+2. **Interactive Labeled Edge Component ([`LabeledEdge.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/edges/LabeledEdge.tsx))**:
+   - Uses `BaseEdge` and `EdgeLabelRenderer` with smooth 16px corner radius.
+   - Theme-aware styling across Light, Mono (warm-paper), Dark (soft charcoal), and Custom `.scrifflemes`.
+   - Hover and selection interactions with inline label editing (`Enter` / `Esc` commit) and quick `×` delete button.
+3. **Canvas Wiring ([`MarketCanvas.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/MarketCanvas.tsx))**:
+   - Integrated `edgeTypes={{ default: LabeledEdge, labeled: LabeledEdge }}` and `defaultEdgeOptions={{ type: 'labeled' }}`.
+4. **Unit Tests & Build Verification**:
+   - Added unit test suite `edgeLabels.test.ts` (7 new tests).
+   - 158 total unit tests passing (100% green across 14 test suites).
+   - Production build compiled with zero errors.
+
+---
+
 ## 1. Scriffle Themes Engine (`.scrifflemes`) & UI Theme Consistency Overhaul
 
 **Key Capabilities & Fixes Implemented:**
