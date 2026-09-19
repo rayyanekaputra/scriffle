@@ -4,7 +4,9 @@ import { prisma } from '@/lib/prisma';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { canvasId, from, to } = body;
+    const { canvasId, from, to, fromHandle, sourceHandle, toHandle, targetHandle } = body;
+    const resolvedFromHandle = fromHandle !== undefined ? fromHandle : sourceHandle !== undefined ? sourceHandle : null;
+    const resolvedToHandle = toHandle !== undefined ? toHandle : targetHandle !== undefined ? targetHandle : null;
 
     let targetCanvasId = canvasId;
     if (!targetCanvasId) {
@@ -18,17 +20,22 @@ export async function POST(req: Request) {
 
     const edge = await prisma.edge.upsert({
       where: {
-        fromId_toId: {
+        fromId_toId_fromHandle: {
           fromId: from,
           toId: to,
+          fromHandle: resolvedFromHandle,
         },
       },
       create: {
         canvasId: targetCanvasId,
         fromId: from,
         toId: to,
+        fromHandle: resolvedFromHandle,
+        toHandle: resolvedToHandle,
       },
-      update: {},
+      update: {
+        toHandle: resolvedToHandle,
+      },
     });
 
     return NextResponse.json({
@@ -36,6 +43,8 @@ export async function POST(req: Request) {
       canvasId: edge.canvasId,
       from: edge.fromId,
       to: edge.toId,
+      fromHandle: edge.fromHandle,
+      toHandle: edge.toHandle,
     });
   } catch (error: any) {
     console.error('Error creating edge:', error);

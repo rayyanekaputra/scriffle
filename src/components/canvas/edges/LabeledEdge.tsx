@@ -19,10 +19,21 @@ export interface LabeledEdgeData {
   [key: string]: any;
 }
 
-export const LabeledEdge: React.FC<EdgeProps> = ({
+export interface CustomEdgeProps extends EdgeProps {
+  sourceHandle?: string | null;
+  targetHandle?: string | null;
+  sourceHandleId?: string | null;
+  targetHandleId?: string | null;
+}
+
+export const LabeledEdge: React.FC<CustomEdgeProps> = ({
   id,
   source,
   target,
+  sourceHandle,
+  targetHandle,
+  sourceHandleId,
+  targetHandleId,
   sourceX,
   sourceY,
   targetX,
@@ -34,6 +45,7 @@ export const LabeledEdge: React.FC<EdgeProps> = ({
   data,
   selected,
 }) => {
+  const resolvedSourceHandle = sourceHandle || sourceHandleId || null;
   const { theme, activeCustomTheme } = useTheme();
   const { setEdges, getNode } = useReactFlow();
   const [isHovered, setIsHovered] = useState(false);
@@ -59,30 +71,38 @@ export const LabeledEdge: React.FC<EdgeProps> = ({
   const currentLabel = resolveEdgeLabel(
     (data as LabeledEdgeData)?.label || customLabel,
     sourceNodeType,
-    targetNodeType
+    targetNodeType,
+    resolvedSourceHandle
   );
 
   const isCustom = theme === 'custom' && activeCustomTheme;
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';
 
+  const isConditionTrue = currentLabel === 'if true';
+  const isConditionFalse = currentLabel === 'if false';
+
   // Badge pill styling based on theme
   let badgeBg = 'bg-white border-slate-300 text-slate-700 shadow-none';
   let badgeHover = 'hover:border-slate-400 hover:text-slate-900';
-  let conditionPill = 'text-[#0050FF] font-bold';
+  let truePillClass = 'text-[#0050FF] font-bold';
+  let falsePillClass = 'text-rose-600 font-bold';
 
   if (isCustom) {
     badgeBg = 'bg-[var(--custom-ui-surface)] border-[var(--custom-ui-border)] text-[var(--custom-ui-text)]';
     badgeHover = 'hover:border-[var(--custom-ui-primary)]';
-    conditionPill = 'text-[var(--custom-ui-primary)] font-bold';
+    truePillClass = 'text-[var(--custom-ui-primary)] font-bold';
+    falsePillClass = 'text-rose-500 font-bold';
   } else if (isDark) {
     badgeBg = 'bg-[#181920] border-[#2E3140] text-slate-200';
     badgeHover = 'hover:border-slate-500 hover:text-white';
-    conditionPill = 'text-blue-400 font-bold';
+    truePillClass = 'text-blue-400 font-bold';
+    falsePillClass = 'text-rose-400 font-bold';
   } else if (isMono) {
     badgeBg = 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321]';
     badgeHover = 'hover:border-[#9E9B90] hover:text-black';
-    conditionPill = 'text-[#242321] font-black';
+    truePillClass = 'text-[#242321] font-black';
+    falsePillClass = 'text-rose-700 font-bold';
   }
 
   // Handle deleting edge
@@ -105,8 +125,6 @@ export const LabeledEdge: React.FC<EdgeProps> = ({
     }
   };
 
-  const isConditionEdge = currentLabel === 'if true';
-
   return (
     <>
       <BaseEdge
@@ -117,11 +135,15 @@ export const LabeledEdge: React.FC<EdgeProps> = ({
           stroke: selected || isHovered
             ? isCustom
               ? activeCustomTheme.ui.primary
+              : isConditionFalse
+              ? '#FF5B79'
               : '#0050FF'
             : isDark
             ? '#3A3D4D'
             : isMono
             ? '#8E8B82'
+            : isConditionFalse
+            ? '#FF5B79'
             : '#94A3B8',
           strokeWidth: selected || isHovered ? 2.5 : 2,
           transition: 'stroke 0.15s ease, stroke-width 0.15s ease',
@@ -151,16 +173,19 @@ export const LabeledEdge: React.FC<EdgeProps> = ({
             />
           ) : currentLabel || isHovered || selected ? (
             <div
-              className={`flex items-center gap-1 rounded-full border-2 px-2.5 py-0.5 text-[11px] font-semibold transition-all duration-150 cursor-pointer ${badgeBg} ${badgeHover} ${
+              className={`flex items-center gap-1.5 rounded-full border-2 px-2.5 py-0.5 text-[11px] font-semibold transition-all duration-150 cursor-pointer ${badgeBg} ${badgeHover} ${
                 selected ? 'ring-2 ring-[#0050FF]/20 border-[#0050FF]' : ''
               }`}
               onClick={() => setIsEditing(true)}
               title="Click to edit label"
             >
-              {isConditionEdge && (
+              {isConditionTrue && (
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
               )}
-              <span className={isConditionEdge ? conditionPill : 'font-medium'}>
+              {isConditionFalse && (
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
+              )}
+              <span className={isConditionTrue ? truePillClass : isConditionFalse ? falsePillClass : 'font-medium'}>
                 {currentLabel || 'Add label'}
               </span>
 

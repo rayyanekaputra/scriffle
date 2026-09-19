@@ -193,6 +193,8 @@ export interface CanvasEdgeData {
   canvasId: string;
   from: string; // source node ID
   to: string;   // target node ID
+  fromHandle?: string | null; // 'true' | 'false' | null (null = legacy, treated as 'true' at runtime)
+  toHandle?: string | null;
 }
 
 export interface MarketEvent {

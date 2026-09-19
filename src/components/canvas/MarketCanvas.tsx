@@ -146,6 +146,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       id: e.id,
       source: e.from,
       target: e.to,
+      sourceHandle: e.fromHandle ?? null,
+      targetHandle: e.toHandle ?? null,
       type: 'labeled',
       animated: true,
       interactionWidth: 24,
@@ -172,6 +174,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     sourceNodeId: string;
     sourceNodeType?: NodeType | null;
     sourceNodeLabel?: string;
+    sourceHandleId?: string | null;
     screenX: number;
     screenY: number;
     targetFlowPos?: { x: number; y: number } | null;
@@ -193,6 +196,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         sourceNodeId: detail.nodeId,
         sourceNodeType: detail.sourceNodeType || (sourceNode?.type as NodeType),
         sourceNodeLabel: detail.sourceNodeLabel || sourceNode?.type,
+        sourceHandleId: detail.sourceHandleId ?? null,
         screenX: detail.screenPosition?.x ?? (window.innerWidth / 2),
         screenY: detail.screenPosition?.y ?? (window.innerHeight / 2),
         targetFlowPos: detail.targetFlowPos || null,
@@ -694,6 +698,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             id: e.id,
             source: e.from,
             target: e.to,
+            sourceHandle: e.fromHandle ?? null,
+            targetHandle: e.toHandle ?? null,
             type: 'labeled',
             selected: selectionMap.has(e.id) ? selectionMap.get(e.id) : false,
             animated: true,
@@ -816,6 +822,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             canvasId: canvasData?.id,
             from: params.source,
             to: params.target,
+            fromHandle: params.sourceHandle ?? null,
+            toHandle: params.targetHandle ?? null,
           }),
         });
         onRefresh?.();
@@ -841,6 +849,9 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         const flowPos = screenToFlowPosition({ x: clientX, y: clientY });
 
         const fromNode = connectionState.fromNode;
+        const fromHandle = connectionState.fromHandle;
+        const sourceHandleId = typeof fromHandle === 'string' ? fromHandle : fromHandle?.id || null;
+
         const data: any = fromNode.data || {};
         const cfg: any = data.config || {};
         const label =
@@ -855,6 +866,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           sourceNodeId: fromNode.id,
           sourceNodeType: fromNode.type as NodeType,
           sourceNodeLabel: label,
+          sourceHandleId,
           screenX: clientX,
           screenY: clientY,
           targetFlowPos: flowPos,
@@ -886,6 +898,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
       const defaultConfig = getDefaultConfigForQuickAdd(type, {
         type: sourceNode.type as NodeType,
         config: sourceNode.data?.config,
+        sourceHandleId: quickAdd.sourceHandleId,
       });
 
       const newId = crypto.randomUUID();
@@ -909,6 +922,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         id: newEdgeId,
         source: sourceNodeId,
         target: newId,
+        sourceHandle: quickAdd.sourceHandleId ?? null,
         type: 'labeled',
         animated: true,
         interactionWidth: 24,
@@ -942,6 +956,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
             id: newEdgeId,
             from: sourceNodeId,
             to: newId,
+            fromHandle: quickAdd.sourceHandleId ?? null,
           }),
         });
 
@@ -1352,6 +1367,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           sourceNodeId={quickAdd.sourceNodeId}
           sourceNodeType={quickAdd.sourceNodeType}
           sourceNodeLabel={quickAdd.sourceNodeLabel}
+          sourceHandleId={quickAdd.sourceHandleId}
           onSelectType={handleCreateAndConnectNode}
           onClose={() => setQuickAdd(null)}
         />

@@ -330,8 +330,14 @@ hackathon/
 - **Drag-to-Empty Canvas Drop**: Releasing a connector line onto empty canvas triggers `onConnectEnd`, opening the Quick-Add popover at cursor coordinates.
 - **Smart Placement & Inheritance**: Contextual node recommendations and automatic spatial collision avoidance (`+320px X`, staggering `+150px Y` if occupied) with automatic ticker symbol and template inheritance (`quickAddNavigator.ts`).
 
+### Condition Node Dual Outputs & False Branching
+- **Dual Output Handles**: `ConditionNode` hosts two distinct right-side connection ports: upper `True` port (Emerald green `#10B981` at `36%` Y) and lower `False` port (Rose `#FF5B79` at `72%` Y) with dedicated Quick-Add `[+]` action buttons.
+- **Dynamic Branch Execution**: `graphEngine.ts` inspects `edge.fromHandle` (`'true'` vs `'false'`). When the DSL boolean rule passes, only `true`-branch child nodes execute; when the rule fails, only `false`-branch child nodes execute.
+- **Self-Documenting Connectors**: Connectors originating from `True` render with an emerald dot + `"if true"` badge; connectors originating from `False` render with a rose dot + `"if false"` badge.
+- **Backward Compatibility**: Legacy edges without `fromHandle` (or `null`) cleanly default to `'true'` without breaking existing graphs.
+
 ### Self-Documenting Edge Labels & Condition Badges
-- **Contextual Auto-Inference**: Computes smart badges on connectors: `Watcher` $\rightarrow$ `Condition` (`"on tick"`), `Condition` $\rightarrow$ `Action`/`Note`/`Alert` (`"if true"` with green status dot), `Screener` $\rightarrow$ `*` (`"discovered"` / `"pipe results"` / `"summary"`), `Action` $\rightarrow$ `*` (`"generates"` / `"brief"` / `"spawns"`).
+- **Contextual Auto-Inference**: Computes smart badges on connectors: `Watcher` $\rightarrow$ `Condition` (`"on tick"`), `Condition` $\rightarrow$ `Action`/`Note`/`Alert` (`"if true"` with green status dot or `"if false"` with rose dot), `Screener` $\rightarrow$ `*` (`"discovered"` / `"pipe results"` / `"summary"`), `Action` $\rightarrow$ `*` (`"generates"` / `"brief"` / `"spawns"`).
 - **Interactive Labeled Edge (`LabeledEdge.tsx`)**: Theme-aware badge pill across all 4 theme environments, hover/selection `×` delete action, and inline label editing.
 
 ### Control Panel & Data Streaming
@@ -499,11 +505,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 158 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 168 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **158 tests, 0 failures, 14 suites, ~640ms runtime**
+- **168 tests, 0 failures, 15 suites, ~516ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -518,14 +524,15 @@ src/__tests__/
     ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
     ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
-    ├── quickAddNavigator.test.ts     ← 8 tests — spatial offset collision calculation, node recommendations, inherited config
+    ├── quickAddNavigator.test.ts     ← 9 tests — spatial offset collision calculation, node recommendations, inherited config & false-branch defaults
     ├── themeEngine.test.ts           ← 8 tests — .scrifflemes INI parser, serializer, color sanitizer, and CSS variables mapper
-    ├── edgeLabels.test.ts            ← 7 tests — contextual edge label auto-inference and override resolution
+    ├── edgeLabels.test.ts            ← 8 tests — contextual edge label auto-inference with sourceHandle true/false resolution
     ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
     ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
     ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)
     ├── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
-    └── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
+    ├── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
+    └── conditionBranching.test.ts    ← 8 tests — dual output routing (True vs False branch), legacy null handle fallback, multiple child fanout
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`

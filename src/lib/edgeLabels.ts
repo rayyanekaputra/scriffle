@@ -3,7 +3,11 @@ import { NodeType } from '@/types/canvas';
 /**
  * Auto-infers contextual edge badge labels based on source and target node types.
  */
-export function inferEdgeLabel(sourceType?: string | null, targetType?: string | null): string | null {
+export function inferEdgeLabel(
+  sourceType?: string | null,
+  targetType?: string | null,
+  sourceHandle?: string | null
+): string | null {
   if (!sourceType || !targetType) return null;
 
   const src = sourceType.toLowerCase() as NodeType;
@@ -11,10 +15,13 @@ export function inferEdgeLabel(sourceType?: string | null, targetType?: string |
 
   // Condition node downstream triggers
   if (src === 'condition') {
+    if (sourceHandle === 'false') {
+      return 'if false';
+    }
     if (tgt === 'action' || tgt === 'note' || tgt === 'alert') {
       return 'if true';
     }
-    return 'evaluates';
+    return 'if true';
   }
 
   // Watcher node streaming events
@@ -74,10 +81,11 @@ export function inferEdgeLabel(sourceType?: string | null, targetType?: string |
 export function resolveEdgeLabel(
   explicitLabel?: string | null,
   sourceType?: string | null,
-  targetType?: string | null
+  targetType?: string | null,
+  sourceHandle?: string | null
 ): string | null {
   if (explicitLabel && explicitLabel.trim().length > 0) {
     return explicitLabel.trim();
   }
-  return inferEdgeLabel(sourceType, targetType);
+  return inferEdgeLabel(sourceType, targetType, sourceHandle);
 }

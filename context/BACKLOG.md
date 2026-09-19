@@ -6,6 +6,13 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🔀 Condition Node Dual Outputs & False Branching (`ConditionNode.tsx`, `QuickAddSourceHandle.tsx`, `graphEngine.ts`, `edgeLabels.ts`, `LabeledEdge.tsx`, `MarketCanvas.tsx`, `conditionBranching.test.ts`)**
+  - Added dual output connection handles to `ConditionNode`: upper `True` port (Emerald green `#10B981` @ `36%` Y) and lower `False` port (Rose `#FF5B79` @ `72%` Y) with dedicated Quick-Add `[+]` triggers.
+  - Implemented handle-filtered BFS traversal in `graphEngine.ts`: routes market events to matching `fromHandle` edges (`'true'` vs `'false'`), with legacy fallback defaulting to `'true'`.
+  - Updated Prisma schema with `fromHandle String?` and compound unique key `[fromId, toId, fromHandle]` on `Edge`.
+  - Self-documenting edge label inference: `"if true"` (emerald dot + blue/emerald text) and `"if false"` (rose dot + rose/coral text).
+  - Quick-add navigator automatically seeds appropriate neutral/negative templates (e.g. `${symbol} held steady at ${price}`) and labels when adding from the `False` branch.
+  - Added unit test suite `conditionBranching.test.ts` (168 total passing unit tests across 15 suites, 100% green).
 - [x] **🎨 Scriffle Themes & `.conf`-Style Custom Theme Engine (`themeParser.ts`, `ThemeContext.tsx`, `ThemeModal.tsx`, `MarketCanvas.tsx`, `themes/*.scrifflemes`)**
   - Designed and implemented Alacritty/Kitty-style `.scrifflemes` INI/conf parser, serializer, and CSS variables injector (`[data-theme="custom"]`).
   - Added bundled terminal presets in `themes/` and `builtinThemes.ts` (⚡ **Bloomberg Terminal**, ❄️ **Nord Frost**, 📻 **Gruvbox Dark**, 🌃 **Tokyo Night**, ☀️ **Solarized Dark**).
@@ -305,7 +312,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 #### 2. ⚡ Automation & Flow Building (n8n-inspired)
 - [x] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
 - [x] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on tick"`, `"discovered"`, `"generates"`) to make automation pathways self-documenting.
-- [ ] **Condition Node Dual Outputs & "False" Branching (`ConditionNode.tsx`, `graphEngine.ts`, `edgeLabels.ts`)**:
+- [x] **Condition Node Dual Outputs & "False" Branching (`ConditionNode.tsx`, `graphEngine.ts`, `edgeLabels.ts`)**:
   - Add dual output connection handles to `ConditionNode` cards:
     - **`True` Output Port (Green dot / top-right)**: Fires when `expr-eval` boolean rule evaluates to `true` (renders with `"if true"` edge badge).
     - **`False` Output Port (Rose/Slate dot / bottom-right)**: Fires when `expr-eval` rule evaluates to `false` (renders with `"if false"` / `"on fail"` edge badge).

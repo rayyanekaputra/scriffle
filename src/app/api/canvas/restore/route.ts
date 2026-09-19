@@ -130,7 +130,9 @@ export async function POST(req: Request) {
         const toId = rawToId ? (idMap.get(String(rawToId)) || String(rawToId)) : undefined;
 
         if (fromId && toId && usedAssignedNodeIds.has(fromId) && usedAssignedNodeIds.has(toId)) {
-          const pairKey = `${fromId}->${toId}`;
+          const fromHandle = edge.fromHandle || edge.sourceHandle || null;
+          const toHandle = edge.toHandle || edge.targetHandle || null;
+          const pairKey = `${fromId}->${toId}->${fromHandle || ''}`;
           if (seenEdgePairs.has(pairKey)) continue;
           seenEdgePairs.add(pairKey);
 
@@ -145,6 +147,8 @@ export async function POST(req: Request) {
               canvasId,
               fromId,
               toId,
+              fromHandle,
+              toHandle,
             },
           });
           existingEdgeIdsInDb.add(edgeId);

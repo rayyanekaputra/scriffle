@@ -34,16 +34,18 @@ model Node {
 }
 
 model Edge {
-  id        String   @id @default(uuid())
-  canvasId  String
-  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  fromId    String
-  toId      String
-  fromNode  Node     @relation("FromNode", fields: [fromId], references: [id], onDelete: Cascade)
-  toNode    Node     @relation("ToNode", fields: [toId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  canvasId   String
+  canvas     Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  fromId     String
+  toId       String
+  fromHandle String?  // 'true' | 'false' | null (null = legacy, treated as 'true' at runtime)
+  toHandle   String?
+  fromNode   Node     @relation("FromNode", fields: [fromId], references: [id], onDelete: Cascade)
+  toNode     Node     @relation("ToNode", fields: [toId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
 
-  @@unique([fromId, toId])
+  @@unique([fromId, toId, fromHandle])
 }
 
 model MarketSnapshot {

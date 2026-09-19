@@ -6,10 +6,19 @@ describe('Edge Labels & Condition Badges Inference', () => {
     expect(inferEdgeLabel('condition', 'action')).toBe('if true');
     expect(inferEdgeLabel('condition', 'note')).toBe('if true');
     expect(inferEdgeLabel('condition', 'alert')).toBe('if true');
+    expect(inferEdgeLabel('condition', 'action', 'true')).toBe('if true');
   });
 
-  it('infers "evaluates" for condition to unspecified node types', () => {
-    expect(inferEdgeLabel('condition', 'text')).toBe('evaluates');
+  it('infers "if false" when condition connects with sourceHandle="false"', () => {
+    expect(inferEdgeLabel('condition', 'note', 'false')).toBe('if false');
+    expect(inferEdgeLabel('condition', 'alert', 'false')).toBe('if false');
+    expect(inferEdgeLabel('condition', 'action', 'false')).toBe('if false');
+    expect(inferEdgeLabel('condition', 'watcher', 'false')).toBe('if false');
+  });
+
+  it('infers "if true" for condition to unspecified node types with true or legacy handle', () => {
+    expect(inferEdgeLabel('condition', 'text')).toBe('if true');
+    expect(inferEdgeLabel('condition', 'text', 'true')).toBe('if true');
   });
 
   it('infers watcher streaming events properly', () => {
@@ -39,5 +48,6 @@ describe('Edge Labels & Condition Badges Inference', () => {
     expect(resolveEdgeLabel('on breakout surge', 'watcher', 'condition')).toBe('on breakout surge');
     expect(resolveEdgeLabel('', 'watcher', 'condition')).toBe('on tick');
     expect(resolveEdgeLabel(undefined, 'condition', 'action')).toBe('if true');
+    expect(resolveEdgeLabel(undefined, 'condition', 'note', 'false')).toBe('if false');
   });
 });

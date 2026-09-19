@@ -459,13 +459,24 @@ export async function executeGraphForEvent(
         },
       });
 
-      if (passed) {
-        triggeredNodes.push(node.id);
-        logs.push(`Condition matched: "${nodeConfig.rule}" for ${curEvent.symbol}`);
-      } else {
-        branchShouldContinue = false;
-        logs.push(`Condition not met: "${nodeConfig.rule}" for ${curEvent.symbol}`);
+      triggeredNodes.push(node.id);
+      logs.push(
+        passed
+          ? `Condition matched: "${nodeConfig.rule}" for ${curEvent.symbol} (routing True branch)`
+          : `Condition not met: "${nodeConfig.rule}" for ${curEvent.symbol} (routing False branch)`
+      );
+
+      // Enqueue outgoing edges matching the evaluation branch
+      const outgoing = canvas.edges.filter((e) => e.fromId === node.id);
+      for (const edge of outgoing) {
+        const handle = edge.fromHandle || 'true'; // null/legacy defaults to 'true'
+        if (passed && handle === 'true') {
+          queue.push({ nodeId: edge.toId, event: curEvent });
+        } else if (!passed && handle === 'false') {
+          queue.push({ nodeId: edge.toId, event: curEvent });
+        }
       }
+      branchShouldContinue = false;
     } else if (node.type === 'note') {
       triggeredNodes.push(node.id);
       const rawText = nodeConfig.template || nodeConfig.content || '';
@@ -673,6 +684,7 @@ export async function executeGraphForEvent(
               canvasId,
               fromId: condNode.id,
               toId: noteNode.id,
+              fromHandle: 'true',
             },
           });
 
@@ -1039,6 +1051,7 @@ export async function executeGraphForRadarWatcher(
                 canvasId,
                 fromId: condNode.id,
                 toId: noteNode.id,
+                fromHandle: 'true',
               },
             });
 
@@ -1484,6 +1497,7 @@ export async function executeGraphForScreener(
                 canvasId,
                 fromId: newCondition.id,
                 toId: newNote.id,
+                fromHandle: 'true',
               },
             });
 

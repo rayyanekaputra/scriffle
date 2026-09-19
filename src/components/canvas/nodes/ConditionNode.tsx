@@ -129,12 +129,25 @@ export const ConditionNode = memo(({ id, data, selected }: NodeProps) => {
         </div>
       </div>
 
-      {/* Output Handle with Quick-Add [+] Connector */}
+      {/* Dual Output Handles: True (Top-Right) & False (Bottom-Right) */}
       <QuickAddSourceHandle
         nodeId={id || (data as any)?.id}
         nodeType="condition"
-        nodeLabel={`Rule: ${config.rule || 'Condition'}`}
+        nodeLabel={`Rule: ${config.rule || 'Condition'} [True]`}
+        handleId="true"
+        variant="true"
         selected={selected}
+        positionStyle={{ top: '36%' }}
+      />
+
+      <QuickAddSourceHandle
+        nodeId={id || (data as any)?.id}
+        nodeType="condition"
+        nodeLabel={`Rule: ${config.rule || 'Condition'} [False]`}
+        handleId="false"
+        variant="false"
+        selected={selected}
+        positionStyle={{ top: '72%' }}
       />
     </div>
   );
