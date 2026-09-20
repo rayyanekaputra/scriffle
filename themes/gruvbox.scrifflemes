@@ -1,0 +1,40 @@
+# Scriffle Theme Configuration
+# Gruvbox Dark (Warm Sand & Amber)
+
+[metadata]
+name = "Gruvbox Dark"
+author = "morhetz"
+version = "1.0.0"
+mode_base = "dark"
+
+[canvas]
+background = #1D2021
+grid_dot = #32302F
+selection_box = #FE8019
+selection_box_fill = #FE801918
+
+[ui]
+primary = #FE8019
+surface = #282828
+surface_muted = #3C3836
+border = #504945
+border_active = #FE8019
+text = #EBDBB2
+text_muted = #A89984
+tape = #3C3836
+
+[nodes]
+surface_card = #282828
+border_card = #504945
+watcher = #B8BB26
+condition = #FABD2F
+alert = #FB4934
+screener = #83A598
+action = #D3869B
+note_default = #32302F
+text_default = #EBDBB2
+
+[edges]
+default = #665C54
+active = #FE8019
+selected = #FABD2F

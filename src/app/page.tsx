@@ -387,6 +387,8 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         id: e.id,
         from: e.from,
         to: e.to,
+        fromHandle: e.fromHandle ?? null,
+        toHandle: e.toHandle ?? null,
       })),
     };
 

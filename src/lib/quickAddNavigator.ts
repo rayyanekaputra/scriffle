@@ -27,7 +27,7 @@ export const ALL_QUICK_ADD_NODES: QuickAddOption[] = [
   {
     type: 'action',
     label: 'Action',
-    icon: 'play_line',
+    icon: 'flash_line',
     description: 'Automate fundamental PDF reports & canvas mutations',
     color: '#0050FF',
   },
@@ -156,10 +156,11 @@ export function calculateQuickAddPosition(
  */
 export function getDefaultConfigForQuickAdd(
   targetType: NodeType,
-  sourceNode?: { type: NodeType; config?: any }
+  sourceNode?: { type: NodeType; config?: any; sourceHandleId?: string | null }
 ): any {
   const sourceCfg = sourceNode?.config || {};
   const symbol = sourceCfg.symbol || 'BBCA';
+  const isFalseBranch = sourceNode?.sourceHandleId === 'false';
 
   switch (targetType) {
     case 'condition':
@@ -167,6 +168,13 @@ export function getDefaultConfigForQuickAdd(
         rule: 'price_change > 0',
       };
     case 'note':
+      if (isFalseBranch) {
+        return {
+          color: 'pink',
+          content: '${symbol} held steady at ${price} (${price_change}%)',
+          template: '${symbol} held steady at ${price} (${price_change}%)',
+        };
+      }
       return {
         color: 'yellow',
         content: sourceNode?.type === 'watcher'
@@ -182,7 +190,15 @@ export function getDefaultConfigForQuickAdd(
     case 'alert':
       return {
         channel: 'ui',
-        message: 'Market condition triggered!',
+        message: isFalseBranch
+          ? '${symbol} condition not met (${price_change}%)'
+          : '🚀 ${symbol} Breakout: +${price_change}% at Rp${price}',
+        template: isFalseBranch
+          ? '${symbol} condition not met (${price_change}%)'
+          : '🚀 ${symbol} Breakout: +${price_change}% at Rp${price}',
+        messageTemplate: isFalseBranch
+          ? '${symbol} condition not met (${price_change}%)'
+          : '🚀 ${symbol} Breakout: +${price_change}% at Rp${price}',
       };
     case 'watcher':
       return {
@@ -210,9 +226,9 @@ export function getDefaultConfigForQuickAdd(
       };
     case 'sticker':
       return {
-        emoji: '🚀',
-        label: 'Breakout Ready',
-        color: 'mint',
+        emoji: isFalseBranch ? '🔻' : '🚀',
+        label: isFalseBranch ? 'Neutral / Ignored' : 'Breakout Ready',
+        color: isFalseBranch ? 'rose' : 'mint',
       };
     default:
       return {};

@@ -75,4 +75,29 @@ describe('quickAddNavigator — Spatial Calculation & Smart Recommendations', ()
     const conditionConfig = getDefaultConfigForQuickAdd('condition', sourceNode);
     expect(conditionConfig.rule).toBe('price_change > 0');
   });
+
+  it('generates appropriate defaults for false branch connections', () => {
+    const falseSourceNode = {
+      type: 'condition' as const,
+      config: { rule: 'price_change > 5' },
+      sourceHandleId: 'false',
+    };
+
+    const noteConfig = getDefaultConfigForQuickAdd('note', falseSourceNode);
+    expect(noteConfig.color).toBe('pink');
+    expect(noteConfig.content).toContain('held steady');
+
+    const alertConfig = getDefaultConfigForQuickAdd('alert', falseSourceNode);
+    expect(alertConfig.message).toContain('condition not met');
+
+    const stickerConfig = getDefaultConfigForQuickAdd('sticker', falseSourceNode);
+    expect(stickerConfig.emoji).toBe('🔻');
+    expect(stickerConfig.color).toBe('rose');
+  });
+
+  it('standardizes action node icon to flash_line (zap) and not play_line', () => {
+    const actionOption = ALL_QUICK_ADD_NODES.find((opt) => opt.type === 'action');
+    expect(actionOption).toBeDefined();
+    expect(actionOption?.icon).toBe('flash_line');
+  });
 });

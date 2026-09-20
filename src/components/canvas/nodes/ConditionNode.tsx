@@ -8,17 +8,20 @@ import { useTheme } from '@/context/ThemeContext';
 import { QuickAddSourceHandle } from '../QuickAddSourceHandle';
 
 export const ConditionNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const config = (data.config || {}) as ConditionConfig;
   const state = (data.state || {}) as any;
   const status = state.status || 'idle';
   const isPassed = status === 'passed';
   const isFailed = status === 'failed';
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
-  const containerBg = isDark
+  const containerBg = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-node-card-bg)] text-[var(--custom-ui-text)]'
+    : isDark
     ? 'bg-[#181920] text-[#E2E4E9]'
     : isMono
     ? 'bg-[#FCFBF9] text-[#242321]'
@@ -126,12 +129,25 @@ export const ConditionNode = memo(({ id, data, selected }: NodeProps) => {
         </div>
       </div>
 
-      {/* Output Handle with Quick-Add [+] Connector */}
+      {/* Dual Output Handles: True (Top-Right) & False (Bottom-Right) */}
       <QuickAddSourceHandle
         nodeId={id || (data as any)?.id}
         nodeType="condition"
-        nodeLabel={`Rule: ${config.rule || 'Condition'}`}
+        nodeLabel={`Rule: ${config.rule || 'Condition'} [True]`}
+        handleId="true"
+        variant="true"
         selected={selected}
+        positionStyle={{ top: '36%' }}
+      />
+
+      <QuickAddSourceHandle
+        nodeId={id || (data as any)?.id}
+        nodeType="condition"
+        nodeLabel={`Rule: ${config.rule || 'Condition'} [False]`}
+        handleId="false"
+        variant="false"
+        selected={selected}
+        positionStyle={{ top: '72%' }}
       />
     </div>
   );

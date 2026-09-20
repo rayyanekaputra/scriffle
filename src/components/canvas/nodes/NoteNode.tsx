@@ -23,7 +23,7 @@ const COLOR_OPTIONS: Array<'yellow' | 'mint' | 'pink' | 'blue' | 'purple'> = [
 ];
 
 export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const config = (data.config || {}) as NoteConfig;
   const state = (data.state || {}) as any;
   const isPassed = state.status === 'passed';
@@ -34,7 +34,8 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   useEffect(() => {
@@ -106,7 +107,9 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
   const customWidth = config.width ? `${config.width}px` : undefined;
   const customHeight = config.height ? `${config.height}px` : undefined;
 
-  const cardStyle = isDark
+  const cardStyle = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)] text-[var(--custom-ui-text)]'
+    : isDark
     ? 'bg-[#181920] border-[#282A36] text-[#E2E4E9]'
     : isMono
     ? 'bg-[#FCFBF9] border-[#D1CEC4] text-[#242321]'

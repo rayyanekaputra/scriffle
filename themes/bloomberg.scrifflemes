@@ -1,0 +1,40 @@
+# Scriffle Theme Configuration
+# Bloomberg Terminal (Amber & Matrix Green)
+
+[metadata]
+name = "Bloomberg Terminal"
+author = "Scriffle Core"
+version = "1.0.0"
+mode_base = "dark"
+
+[canvas]
+background = #121212
+grid_dot = #2A2A2A
+selection_box = #FF8C00
+selection_box_fill = #FF8C0018
+
+[ui]
+primary = #FF8C00
+surface = #1A1A1A
+surface_muted = #242424
+border = #333333
+border_active = #FF8C00
+text = #FF9E00
+text_muted = #B07200
+tape = #262014
+
+[nodes]
+surface_card = #181818
+border_card = #2E2E2E
+watcher = #00C853
+condition = #FFAB00
+alert = #FF3D00
+screener = #FF8C00
+action = #D500F9
+note_default = #222018
+text_default = #FF9E00
+
+[edges]
+default = #734800
+active = #FF8C00
+selected = #FFD600

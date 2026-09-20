@@ -92,6 +92,8 @@ export async function GET(req: Request) {
       canvasId: edge.canvasId,
       from: edge.fromId,
       to: edge.toId,
+      fromHandle: edge.fromHandle ?? null,
+      toHandle: edge.toHandle ?? null,
     }));
 
     const formattedLogs: ExecutionLog[] = canvas.logs.map((log: any) => {

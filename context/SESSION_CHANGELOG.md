@@ -1,8 +1,101 @@
-# 📋 Session Changelog — 2026-09-16
- 
- > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
- 
- ---
+# 📋 Session Changelog — 2026-09-19
+
+> **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
+
+---
+
+## 0. Native Discord Webhook Integration & Rich Financial Embed Cards
+
+**Key Capabilities Implemented:**
+1. **Discord Webhook Service ([`src/server/services/discordWebhook.ts`](file:///home/abzolute/Projects/hackathon/src/server/services/discordWebhook.ts))**:
+   - Webhook URL format validation (`isValidDiscordWebhookUrl`) supporting `discord.com`, `discordapp.com`, `canary`, and `ptb` subdomains.
+   - Dynamic sentiment color embeds: Mint `#10B981` (0x10B981) for gains/breakouts, Coral `#FF5B79` (0xFF5B79) for losses/drops, and Electric Blue `#0050FF` (0x0050FF) for neutral alerts.
+   - Rich embed fields: Ticker symbol, Last Price (`Rp 10.450`), Change (`+6.20%`), Volume (`45.2M shares`), Previous Close, Canvas Board name, ISO timestamp, and Scriffle bot branding.
+   - 6-second timeout protection using `AbortController` and detailed HTTP status/error message capture.
+2. **Interactive Test Ping API ([`src/app/api/alert/test-webhook/route.ts`](file:///home/abzolute/Projects/hackathon/src/app/api/alert/test-webhook/route.ts))**:
+   - `POST /api/alert/test-webhook` endpoint allowing 1-click verification of Discord Webhook URLs directly from the UI.
+3. **Graph Engine BFS Integration ([`src/server/services/graphEngine.ts`](file:///home/abzolute/Projects/hackathon/src/server/services/graphEngine.ts))**:
+   - Updated `node.type === 'alert'` handling across single-event triggers, Top Movers radar processing, and AI Screener pipelines to dispatch to Discord when `channel: 'discord'`.
+   - Records `lastWebhookStatus` (`'success'` | `'failed'`) and `lastWebhookError` in SQLite `stateJson` and logs `[Discord] <Message>` to the Activity Feed.
+4. **Card UI & Property Editor ([`AlertNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/AlertNode.tsx) & [`EditNodeModal.tsx`](file:///home/abzolute/Projects/hackathon/src/components/controls/EditNodeModal.tsx))**:
+   - Added `Discord` channel badge pill with indigo accent `#5865F2` on `AlertNode.tsx` and delivery status feedback (`✓ Delivered to Discord` / `⚠ Webhook Failed`).
+   - Displays the alert message template preview directly on the `AlertNode.tsx` card (showing `🚀 ${symbol} Breakout: +${price_change}% at Rp${price}` even when left default).
+   - In `EditNodeModal.tsx`, pre-populates the input with the standard template if left default so users can immediately inspect and edit dynamic variables.
+   - Added Discord channel option, Webhook URL input, custom Bot Name, rich embed toggle, interactive **"⚡ Send Test Ping"** button with live spinner, awareness callout regarding URL persistence, and an explicit **"💾 Save Alert Settings"** button.
+5. **Unit Tests ([`src/__tests__/unit/discordWebhook.test.ts`](file:///home/abzolute/Projects/hackathon/src/__tests__/unit/discordWebhook.test.ts))**:
+   - 10 unit test scenarios covering URL validation, payload formatting, color selection, error capture, and network timeouts (179 passing tests across 16 test suites, 100% green).
+
+---
+
+## 1. Immediate Bug Fixes & Regressions Resolved
+
+**Key Fixes Implemented:**
+1. **[HIGH PRIORITY] Quick-Connect Auto-Wiring Regression Resolved (`nodes/route.ts`, `MarketCanvas.tsx`)**:
+   - Fixed `POST /api/canvas/nodes` to accept and preserve client-generated UUIDs (`id: id || undefined`), eliminating the mismatch between frontend generated node IDs and server node records.
+   - Restored instant auto-wiring of edges when adding downstream nodes via Quick-Add (`+` handles and connector drop).
+2. **ActionNode Icon Standardized on Zap (`quickAddNavigator.ts`, `ALL_QUICK_ADD_NODES`)**:
+   - Standardized the Action node icon in `ALL_QUICK_ADD_NODES` to `flash_line` (MingCute Zap) instead of `play_line`.
+   - Verified icon consistency across `QuickAddPopover.tsx`, `NavToolbar.tsx`, `ContextMenu.tsx`, `ActionNode.tsx`, and `ActivityFeed.tsx`.
+3. **Sticker Preset Dropdown Container Alignment in NavToolbar (`NavToolbar.tsx`)**:
+   - Applied `items-stretch` and harmonized borders (`border-y border-r border-l`) on the sticker preset chevron button, aligning the baseline of the dropdown arrow container with all peer toolbar buttons.
+4. **Mono Theme Active-State Highlight & Contrast in Theme Chooser (`TopNav.tsx`, `ThemeModal.tsx`)**:
+   - Styled the Mono mode button in `TopNav.tsx` with high-contrast active styling (`bg-[#FCFBF9] text-[#242321] border-[#D8D4CA] shadow-2xs`) and improved inactive button contrast across all themes.
+   - Updated Mono mode active card border and badge in `ThemeModal.tsx` (`bg-[#242321] text-white border-[#242321]`).
+5. **Unit Tests**:
+   - Added unit test in `quickAddNavigator.test.ts` verifying Action node icon is standardized to `flash_line`.
+   - 169 unit tests passing (100% green across 15 test suites).
+
+---
+
+
+
+## 0. Self-Documenting Edge Labels & Condition Badges
+
+**Key Capabilities Implemented:**
+1. **Contextual Edge Label Inference ([`edgeLabels.ts`](file:///home/abzolute/Projects/hackathon/src/lib/edgeLabels.ts))**:
+   - Automatically computes contextual flow badges between connected nodes:
+     - `Watcher` $\rightarrow$ `Condition`: `"on tick"`
+     - `Condition` $\rightarrow$ `Action` / `Note` / `Alert`: `"if true"` (with green dot indicator)
+     - `Screener` $\rightarrow$ `Watcher` / `Action` / `Note`: `"discovered"` / `"pipe results"` / `"summary"`
+     - `Action` $\rightarrow$ `File` / `Note` / `Watcher`: `"generates"` / `"brief"` / `"spawns"`
+   - Supports custom edge labels and editing.
+2. **Interactive Labeled Edge Component ([`LabeledEdge.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/edges/LabeledEdge.tsx))**:
+   - Uses `BaseEdge` and `EdgeLabelRenderer` with smooth 16px corner radius.
+   - Theme-aware styling across Light, Mono (warm-paper), Dark (soft charcoal), and Custom `.scrifflemes`.
+   - Hover and selection interactions with inline label editing (`Enter` / `Esc` commit) and quick `×` delete button.
+3. **Canvas Wiring ([`MarketCanvas.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/MarketCanvas.tsx))**:
+   - Integrated `edgeTypes={{ default: LabeledEdge, labeled: LabeledEdge }}` and `defaultEdgeOptions={{ type: 'labeled' }}`.
+4. **Unit Tests & Build Verification**:
+   - Added unit test suite `edgeLabels.test.ts` (7 new tests).
+   - 158 total unit tests passing (100% green across 14 test suites).
+   - Production build compiled with zero errors.
+
+---
+
+## 1. Scriffle Themes Engine (`.scrifflemes`) & UI Theme Consistency Overhaul
+
+**Key Capabilities & Fixes Implemented:**
+1. **Plain-Text `.scrifflemes` Theme Format & Engine**:
+   - Implemented standard INI/conf parser, serializer, color sanitizer, and CSS variable generator in [`themeParser.ts`](file:///home/abzolute/Projects/hackathon/src/lib/themeParser.ts).
+   - Bundled 5 starter presets in [`themes/`](file:///home/abzolute/Projects/hackathon/themes/) and [`builtinThemes.ts`](file:///home/abzolute/Projects/hackathon/src/lib/builtinThemes.ts): **Bloomberg Terminal**, **Nord**, **Gruvbox**, **Tokyo Night**, **Solarized Dark**.
+   - Added full custom theme state management, import/export, and local storage persistence in [`ThemeContext.tsx`](file:///home/abzolute/Projects/hackathon/src/context/ThemeContext.tsx).
+2. **Interactive Theme Customization Modal ([`ThemeModal.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/controls/ThemeModal.tsx))**:
+   - Replaced awkward square box swatches with a sleek continuous borderless palette pill bar.
+   - Fixed top-left icon color alignment to match the active theme.
+   - Enforced strict **no ALL CAPS** and **no spaced letters** formatting across all labels and tabs per `AGENT_CONTEXT.md`.
+3. **Canvas Element & Node Custom Theme Synchronization**:
+   - Extended dynamic theme adaptation across all node types (`WatcherNode`, `ConditionNode`, `ActionNode`, `ScreenerNode`, `NoteNode`, `TextNode`, `FileNode`, `AlertNode`) checking both base mode and custom theme tokens.
+   - Updated `Logo.tsx` to dynamically adopt active custom theme accent and text colors.
+   - Updated `SelectionBoundingBox.tsx` and `QuickAddSourceHandle.tsx` to read custom theme selection and accent tokens.
+   - Updated `NavToolbar.tsx` Move and Hand button styling and set `overflow-visible` to prevent clipping the sticker presets dropdown.
+   - Updated `QuickAddPopover.tsx` and `ContextMenu.tsx` to respect custom themes.
+4. **Single-Surface Container & Button Hover Unification**:
+   - Added global `button { background-color: transparent; }` base reset in [`globals.css`](file:///home/abzolute/Projects/hackathon/src/app/globals.css) to eliminate default user-agent button background artifacts.
+   - Refactored custom theme presets in [`ThemeModal.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/controls/ThemeModal.tsx) into direct single `<button>` elements, eliminating the nested `<div p-3><button>` hierarchy and resolving the inner "cropped" hover box discrepancy.
+   - Added `isCustom` custom theme background support to [`NoteNode.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/nodes/NoteNode.tsx).
+5. **Verification & Tests**:
+   - 151 unit tests passing (100% green across 13 test suites).
+   - `bun run build` passes with zero errors.
 
 ## 0. Quick-Add Node Connector & Flow Auto-Wiring
 

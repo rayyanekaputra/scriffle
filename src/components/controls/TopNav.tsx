@@ -6,6 +6,7 @@ import { MingIcon } from '@/components/ui/MingIcon';
 import { Logo } from '@/components/ui/Logo';
 import { useTheme } from '@/context/ThemeContext';
 import { useLoading } from '@/context/LoadingContext';
+import { ThemeModal } from '@/components/canvas/controls/ThemeModal';
 
 interface TopNavProps {
   canvasName: string;
@@ -40,9 +41,10 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenSearch,
   onOpenShortcuts,
 }) => {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, activeCustomTheme } = useTheme();
   const { isLoading, activeTask } = useLoading();
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [tempName, setTempName] = useState(canvasName || 'untitled board');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,10 +62,13 @@ export const TopNav: React.FC<TopNavProps> = ({
     }
   };
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
-  const headerBg = isDark
+  const headerBg = isCustom && activeCustomTheme
+    ? 'border-[var(--custom-ui-border)] bg-[var(--custom-ui-surface)] text-[var(--custom-ui-text)]'
+    : isDark
     ? 'border-[#252730] bg-[#14151B] text-[#E2E4E9]'
     : isMono
     ? 'border-[#D8D4CA] bg-[#FCFBF9] text-[#242321]'
@@ -246,15 +251,29 @@ export const TopNav: React.FC<TopNavProps> = ({
           <MingIcon name="question_line" size={16} />
         </button>
 
-        {/* 3-Mode Theme Switcher */}
-        <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100/80 p-0.5 shrink-0">
+        {/* 4-Mode Theme Switcher with .scrifflemes Custom Theme support */}
+        <div className={`flex items-center rounded-xl border p-0.5 shrink-0 ${
+          isCustom && activeCustomTheme
+            ? 'border-[var(--custom-ui-border)] bg-transparent'
+            : isDark
+            ? 'border-[#282A36] bg-[#181920]'
+            : isMono
+            ? 'border-[#D8D4CA] bg-[#EAE7DF]/60'
+            : 'border-slate-200 bg-slate-100/80'
+        }`}>
           <button
             type="button"
             onClick={() => setTheme('light')}
             className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
               theme === 'light'
-                ? 'bg-white text-slate-900 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/80'
+                : isCustom
+                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
+                : isDark
+                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+                : isMono
+                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
             }`}
             title="Light Mode (Default Colorful)"
           >
@@ -267,8 +286,14 @@ export const TopNav: React.FC<TopNavProps> = ({
             onClick={() => setTheme('mono')}
             className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
               theme === 'mono'
-                ? 'bg-white text-blue-600 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-[#FCFBF9] text-[#242321] shadow-2xs border border-[#D8D4CA]'
+                : isCustom
+                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
+                : isDark
+                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+                : isMono
+                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
             }`}
             title="Monochrome Light (Black & White + Scriffle Blue)"
           >
@@ -281,13 +306,46 @@ export const TopNav: React.FC<TopNavProps> = ({
             onClick={() => setTheme('dark')}
             className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
               theme === 'dark'
-                ? 'bg-black text-white shadow-2xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-[#282A36] text-white shadow-2xs border border-[#3E4254]'
+                : isCustom
+                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
+                : isDark
+                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+                : isMono
+                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
             }`}
             title="Monochrome Dark (Pure Black & White)"
           >
             <MingIcon name="moon_line" size={13} />
             <span className="hidden sm:inline whitespace-nowrap">Dark</span>
+          </button>
+
+          {/* Custom Theme / Theme Engine Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsThemeModalOpen(true)}
+            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
+              theme === 'custom'
+                ? 'bg-[var(--custom-ui-primary)] text-white shadow-2xs border border-[var(--custom-ui-primary)]'
+                : isDark
+                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+                : isMono
+                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
+            }`}
+            title={
+              theme === 'custom' && activeCustomTheme
+                ? `Custom Theme: ${activeCustomTheme.metadata.name} (Click to change)`
+                : 'Open Custom Theme Engine (.scrifflemes)'
+            }
+          >
+            <MingIcon name="palette_line" size={13} />
+            <span className="hidden sm:inline whitespace-nowrap">
+              {theme === 'custom' && activeCustomTheme
+                ? activeCustomTheme.metadata.name.split(' ')[0]
+                : 'Themes'}
+            </span>
           </button>
         </div>
 
@@ -295,7 +353,11 @@ export const TopNav: React.FC<TopNavProps> = ({
           onClick={onToggleControls}
           className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border-2 transition-all whitespace-nowrap shrink-0 cursor-pointer ${
             isControlsOpen
-              ? 'bg-slate-900 text-white border-slate-900'
+              ? isCustom && activeCustomTheme
+                ? 'bg-[var(--custom-ui-primary)] text-white border-[var(--custom-ui-primary)]'
+                : 'bg-slate-900 text-white border-slate-900'
+              : isCustom && activeCustomTheme
+              ? 'bg-transparent text-[var(--custom-ui-text)] border-[var(--custom-ui-border)] hover:bg-[var(--custom-ui-surface-muted)]'
               : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
           }`}
           title="Toggle Control Panel"
@@ -308,7 +370,11 @@ export const TopNav: React.FC<TopNavProps> = ({
           onClick={onToggleFeed}
           className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border-2 transition-all whitespace-nowrap shrink-0 cursor-pointer ${
             isFeedOpen
-              ? 'bg-slate-900 text-white border-slate-900'
+              ? isCustom && activeCustomTheme
+                ? 'bg-[var(--custom-ui-primary)] text-white border-[var(--custom-ui-primary)]'
+                : 'bg-slate-900 text-white border-slate-900'
+              : isCustom && activeCustomTheme
+              ? 'bg-transparent text-[var(--custom-ui-text)] border-[var(--custom-ui-border)] hover:bg-[var(--custom-ui-surface-muted)]'
               : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
           }`}
           title="Toggle Right Activity Feed Sidebar"
@@ -317,6 +383,12 @@ export const TopNav: React.FC<TopNavProps> = ({
           <span className="whitespace-nowrap">Feed</span>
         </button>
       </div>
+
+      {/* Theme Customization Modal */}
+      <ThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+      />
     </header>
   );
 };

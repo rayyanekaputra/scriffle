@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { canvasId, type, position, config } = body;
+    const { canvasId, id, type, position, config } = body;
 
     let targetCanvasId = canvasId;
     if (!targetCanvasId) {
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
 
     const node = await prisma.node.create({
       data: {
+        ...(id ? { id } : {}),
         canvasId: targetCanvasId,
         type,
         positionX: position?.x || 100,

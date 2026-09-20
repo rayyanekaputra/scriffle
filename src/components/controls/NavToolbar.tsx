@@ -17,7 +17,6 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
   onSetToolMode,
   onAddNode,
 }) => {
-  const { theme } = useTheme();
   const [showStickerMenu, setShowStickerMenu] = useState(false);
   const stickerMenuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,8 +62,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
     onAddNode(type, config, pos);
   };
 
-  const isDark = theme === 'dark';
-  const isMono = theme === 'mono';
+
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -104,40 +102,65 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
     }
   };
 
-  const containerBg = isDark
+  const { theme, activeCustomTheme } = useTheme();
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
+  const isMono = theme === 'mono';
+
+  const containerBg = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface)]/95 border-[var(--custom-ui-border)] text-[var(--custom-ui-text)] shadow-2xl backdrop-blur-md'
+    : isDark
     ? 'bg-[#181920]/95 border-[#282A36] text-[#E2E4E9] shadow-2xl backdrop-blur-md'
     : isMono
     ? 'bg-[#FCFBF9]/95 border-[#D8D4CA] text-[#242321] shadow-2xl backdrop-blur-md'
     : 'bg-white/95 border-slate-200 text-slate-800 shadow-2xl backdrop-blur-md';
 
-  const buttonClass = isDark
+  const buttonClass = isCustom && activeCustomTheme
+    ? 'text-[var(--custom-ui-text)] bg-transparent hover:bg-[var(--custom-ui-surface-muted)] border-[var(--custom-ui-border)]'
+    : isDark
     ? 'text-[#BAC0D0] hover:text-white hover:bg-[#22242D] border-[#2E3140]'
     : isMono
     ? 'text-[#4A4741] hover:text-[#242321] hover:bg-[#EFECE4] border-[#D8D4CA]'
     : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200';
 
-  const activeModeClass = isDark
+  const activeModeClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-primary)] text-white shadow-sm'
+    : isDark
     ? 'bg-[#2E3140] text-white shadow-sm'
     : isMono
     ? 'bg-[#242321] text-white shadow-sm'
     : 'bg-slate-900 text-white shadow-sm';
 
-  const inactiveModeClass = isDark
+  const inactiveModeClass = isCustom && activeCustomTheme
+    ? 'text-[var(--custom-ui-text-muted)] bg-transparent hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
+    : isDark
     ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
     : isMono
     ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100';
 
-  const dividerClass = isDark ? 'bg-[#282A36]' : isMono ? 'bg-[#D8D4CA]' : 'bg-slate-200';
+  const dividerClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-border)]'
+    : isDark
+    ? 'bg-[#282A36]'
+    : isMono
+    ? 'bg-[#D8D4CA]'
+    : 'bg-slate-200';
 
   return (
     <div className="pointer-events-none fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center max-w-[calc(100vw-32px)]">
       <div
-        className={`pointer-events-auto flex items-center gap-1 rounded-2xl border-2 p-1.5 transition-all duration-150 whitespace-nowrap overflow-x-auto select-none ${containerBg}`}
+        className={`pointer-events-auto flex items-center gap-1 rounded-2xl border-2 p-1.5 transition-all duration-150 whitespace-nowrap overflow-visible select-none ${containerBg}`}
       >
         {/* Interaction Modes: Move (V) & Hand (H) */}
         <div className={`flex items-center shrink-0 rounded-xl border p-0.5 ${
-          isDark ? 'border-[#2E3140] bg-[#121318]' : isMono ? 'border-[#D8D4CA] bg-[#EAE7DF]/50' : 'border-slate-200 bg-slate-100/70'
+          isCustom && activeCustomTheme
+            ? 'border-[var(--custom-ui-border)] bg-transparent'
+            : isDark
+            ? 'border-[#2E3140] bg-[#121318]'
+            : isMono
+            ? 'border-[#D8D4CA] bg-[#EAE7DF]/50'
+            : 'border-slate-200 bg-slate-100/70'
         }`}>
           <button
             type="button"
@@ -242,7 +265,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         </button>
 
         {/* Sticker Element & Dropdown Menu */}
-        <div ref={stickerMenuRef} className="relative shrink-0 flex items-center">
+        <div ref={stickerMenuRef} className="relative shrink-0 flex items-stretch">
           <button
             onClick={() => handleAddAtCenter('sticker', { emoji: '🚀', label: 'Breakout', color: 'blue' })}
             className={`flex items-center gap-1.5 rounded-l-xl border-y border-l px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
@@ -253,7 +276,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
           </button>
           <button
             onClick={() => setShowStickerMenu(!showStickerMenu)}
-            className={`flex items-center justify-center rounded-r-xl border px-1.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+            className={`flex items-center justify-center rounded-r-xl border-y border-r border-l border-l-slate-200/50 dark:border-l-slate-700/50 px-1.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
             title="Choose sticker preset"
           >
             <MingIcon name="down_line" size={13} />

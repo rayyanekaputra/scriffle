@@ -15,6 +15,7 @@ interface QuickAddPopoverProps {
   sourceNodeId: string;
   sourceNodeType?: NodeType | null;
   sourceNodeLabel?: string;
+  sourceHandleId?: string | null;
   onSelectType: (type: NodeType) => void;
   onClose: () => void;
 }
@@ -25,16 +26,18 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
   sourceNodeId,
   sourceNodeType,
   sourceNodeLabel,
+  sourceHandleId,
   onSelectType,
   onClose,
 }) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const popoverRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   // Get recommendations prioritized by sourceNodeType
@@ -217,7 +220,19 @@ export const QuickAddPopover: React.FC<QuickAddPopoverProps> = ({
             <MingIcon name="add_line" size={14} />
           </div>
           <div>
-            <h3 className={`text-xs font-bold leading-tight ${titleText}`}>Quick Add Next Node</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className={`text-xs font-bold leading-tight ${titleText}`}>Quick Add Next Node</h3>
+              {sourceHandleId === 'true' && (
+                <span className="rounded-full px-1.5 py-0.2 text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                  True
+                </span>
+              )}
+              {sourceHandleId === 'false' && (
+                <span className="rounded-full px-1.5 py-0.2 text-[9px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                  False
+                </span>
+              )}
+            </div>
             {sourceNodeLabel && (
               <span className={`text-[10px] font-medium ${mutedText}`}>
                 From {sourceNodeLabel}

@@ -16,10 +16,11 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
   onGroup,
   onUngroup,
 }) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const { x: vx, y: vy, zoom } = useViewport();
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   const selectedNodes = useMemo(() => nodes.filter((n) => n.selected), [nodes]);
@@ -68,8 +69,21 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
     (n) => (n.data as any)?.groupId || (n.data?.config as any)?._groupId
   );
 
-  const strokeColor = isDark ? '#8E95A5' : isMono ? '#242321' : '#0050FF';
-  const handleBg = isDark ? '#14151B' : '#FFFFFF';
+  const strokeColor =
+    isCustom && activeCustomTheme
+      ? activeCustomTheme.canvas.selection_box
+      : isDark
+      ? '#8E95A5'
+      : isMono
+      ? '#242321'
+      : '#0050FF';
+
+  const handleBg =
+    isCustom && activeCustomTheme
+      ? activeCustomTheme.ui.surface
+      : isDark
+      ? '#14151B'
+      : '#FFFFFF';
 
   return (
     <div

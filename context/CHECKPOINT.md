@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **143 unit tests across 12 test suites (100% green).**
+* **Master Unit Test Suite:** **179 unit tests across 16 test suites (100% green).**
 
 ---
 
@@ -34,7 +34,7 @@
   * **Downstream Automations:** Connected sticky notes format ranked tables; connected action nodes auto-spawn complete watcher pipelines (`[Watcher] -> [Condition] -> [Note]`) or generate institutional fundamental reports with disk auto-export.
 * **`condition` (Rule capsule):** Evaluates boolean rules safely using `expr-eval` (e.g. `price_change > 5 AND volume > 1000000`). Zero insecure `eval()`.
 * **`note` (FigJam Sticky Note):** **Direct inline editable on canvas** without popups. Supports pastel color themes (`yellow`, `mint`, `pink`, `blue`, `purple`) and template interpolation (e.g. `${symbol} surged ${price_change}%`).
-* **`alert` (Notification sticker):** Emits UI notifications and logs them to the activity feed.
+* **`alert` (Notification sticker & Discord Webhooks):** Emits UI notifications, logs them to the activity feed, and delivers rich financial embed cards directly to Discord channels via webhooks (URL validation, Mint/Coral sentiment colors, price/volume statistics, 6s timeout protection, test ping API endpoint, and persistence awareness).
 * **`action` (Mutation capsule):** Automatically mutates the canvas by inserting new connected sticky notes, watchers, or generating institutional Fundamental Briefs (`fundamental_report` action auto-saved to disk + linked `FileNode` + research `NoteNode` with dynamic in-place `Rev 2+` incrementing on repeated runs).
   * **Credit Badges & Burst Warnings:** Badged with `🪙 8 credits / symbol` and prominent burst warnings in `EditNodeModal.tsx` for multi-stock pipelines (e.g. 5-mover fundamental report = 40 credits burst).
   * **Dynamic Peer Watcher Labeling:** Displays contextual peer symbols (e.g. `⚡ Auto-Spawn Peer Watcher (BBRI)`) or dynamic fallback (`⚡ Auto-Spawn Peer Watcher (Incoming Ticker)`) when no hardcoded ticker is set.
@@ -55,6 +55,10 @@
 ---
 
 ### 2.2 Control Panel, Project Files & Whiteboard Interactions
+* **Self-Documenting Edge Labels & Condition Badges (`edgeLabels.ts`, `LabeledEdge.tsx`):**
+  * **Contextual Auto-Inference:** Connectors automatically display smart semantic badge pills (`Watcher` $\rightarrow$ `Condition` = `"on tick"`, `Condition` $\rightarrow$ `Action`/`Note`/`Alert` = `"if true"` with green indicator dot, `Screener` $\rightarrow$ `*` = `"discovered"` / `"pipe results"` / `"summary"`, `Action` $\rightarrow$ `*` = `"generates"` / `"brief"` / `"spawns"`).
+  * **Theme-Aware Rendering:** Adapts to Light, Mono (warm-paper), Dark (soft charcoal), and Custom `.scrifflemes` themes.
+  * **Hover & Editing Actions:** Hovering reveals a quick `×` delete button to sever connectors; clicking opens an inline input to edit/rename labels.
 * **Quick-Add Connected Node & Auto-Wiring (`QuickAddHandle.tsx`, `QuickAddPopover.tsx`, `quickAddNavigator.ts`):**
   * **Hover & Selection `[+]` Button:** Floating `+` button positioned 36px to the right of output handles on `WatcherNode`, `ConditionNode`, `ScreenerNode`, and `ActionNode` appears on hover/selection.
   * **Drag-to-Empty-Canvas Connector Drop:** Releasing a connector line onto empty canvas (`onConnectEnd`) opens the Quick-Add popover at cursor coordinates.
@@ -84,6 +88,11 @@
   * **`Shift + 0` / `Cmd + 0`:** Reset zoom to 100%.
   * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
   * **`Ctrl+C` / `Cmd+C` / `Ctrl+V` / `Cmd+V` / `Ctrl+D`:** Copy, paste, duplicate cards.
+* **Scriffle Themes Customization Engine (`.scrifflemes`):**
+  * **Alacritty / Kitty-Style Plain-Text Configs:** Easily create, customize, and share themes via `.scrifflemes` files without writing CSS.
+  * **Bundled Terminal Presets:** Includes ⚡ **Bloomberg Terminal**, ❄️ **Nord Frost**, 📻 **Gruvbox Dark**, 🌃 **Tokyo Night**, and ☀️ **Solarized Dark**.
+  * **Interactive Theme Modal (`ThemeModal.tsx`):** Live swatch preview card, 1-click import/export, and instant switching across built-in standard environments (Light, Mono, Dark) and custom themes.
+  * **Canvas Drag & Drop:** Dropping a `.scrifflemes` or `.conf` file directly on the canvas applies the theme immediately and persists it in `localStorage`.
 * **Sectors API Key & Live Watcher Polling:**
   * **Session-Only Storage:** Managed in temporary React client state. Automatically wiped on tab close or refresh. Never saved to SQLite and excluded from `.scriffle` exports.
   * **1-Click Live Poll Button:** Sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV and Top Movers from Sectors API v2.
@@ -91,6 +100,7 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`SCRIFFLE_THEMES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SCRIFFLE_THEMES_PLAN.md): Plain-text `.scrifflemes` custom theme engine, parser, presets, and drag-and-drop workflow.
 * [`QUICK_ADD_CONNECTOR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/QUICK_ADD_CONNECTOR_PLAN.md): Quick-Add floating handle, drag-to-empty-canvas drop, and flow auto-wiring.
 * [`TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md): Top Movers 400 bug fix, structured error capture, and Watcher error UI.
 * [`CREDIT_COST_BADGES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/CREDIT_COST_BADGES_PLAN.md): Centralized pricing registry (`creditCosts.ts`), node badges, and burst warning notices.
@@ -193,7 +203,7 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
-* **Run Unit Tests:** `bun test` (**143 tests across 12 suites, 100% green, ~140ms**)
+* **Run Unit Tests:** `bun test` (**169 tests across 15 suites, 100% green, ~520ms**)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
 * **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`

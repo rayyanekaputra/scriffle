@@ -9,7 +9,7 @@ import { useLoading } from '@/context/LoadingContext';
 import { QuickAddSourceHandle } from '../QuickAddSourceHandle';
 
 export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const { isNodeLoading, runTracked } = useLoading();
   const config = (data.config || {}) as ScreenerConfig;
   const state = (data.state || {}) as any;
@@ -21,7 +21,8 @@ export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const nodeIsLoading = isLoading || isNodeLoading(id);
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   const cardBorder = isDark
@@ -48,7 +49,9 @@ export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
     ? 'border-[#0050FF]'
     : 'border-slate-300 hover:border-slate-400';
 
-  const cardBg = isDark
+  const cardBg = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-node-card-bg)] text-[var(--custom-ui-text)]'
+    : isDark
     ? 'bg-[#181920] text-[#E2E4E9]'
     : isMono
     ? 'bg-[#FCFBF9] text-[#242321]'
@@ -259,7 +262,9 @@ export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
       <div className="mt-3 space-y-1.5">
         <div
           className={`p-2 rounded-xl border text-xs flex items-start gap-1.5 ${
-            isDark
+            isCustom && activeCustomTheme
+              ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)] text-[var(--custom-ui-text)]'
+              : isDark
               ? 'bg-[#1C1E26] border-[#292B38] text-[#C4C8D4]'
               : isMono
               ? 'bg-[#F5F3EC] border-[#E2DED4] text-[#4A4740]'
@@ -287,7 +292,13 @@ export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
           </span>
           <span
             className={`font-medium ${
-              isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-400'
+              isCustom && activeCustomTheme
+                ? 'text-[var(--custom-ui-text-muted)]'
+                : isDark
+                ? 'text-[#8C90A0]'
+                : isMono
+                ? 'text-[#78756D]'
+                : 'text-slate-400'
             }`}
           >
             Sectors API v2
@@ -305,7 +316,9 @@ export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
                 <div
                   key={stock.symbol || idx}
                   className={`flex items-center justify-between p-2 rounded-xl border text-xs transition-colors ${
-                    isDark
+                    isCustom && activeCustomTheme
+                      ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)] hover:border-[var(--custom-ui-border-active)]'
+                      : isDark
                       ? 'bg-[#15161C] border-[#232530] hover:border-[#333645]'
                       : isMono
                       ? 'bg-[#FAF8F3] border-[#E8E4D9] hover:border-[#D6D0C2]'

@@ -52,7 +52,11 @@
    - Coral: `#FF5B79` (Alert nodes)
    - Lavender: `#8B5CF6`
    - Canvas bg: `#F8F9FC` with dotted grid `#CBD5E1`
-8. **3 Themes:** Light (default), Mono (warm-paper `#F4F3EF`), Dark (soft charcoal `#0F1014`) — implemented via `[data-theme]` CSS tokens
+8. **3 Themes + Custom Theme Engine:** Light (default), Mono (warm-paper `#F4F3EF`), Dark (soft charcoal `#0F1014`), and Custom `.scrifflemes` plain-text themes (Bloomberg, Nord, Gruvbox, Tokyo Night, Solarized Dark) — implemented via `[data-theme]` CSS tokens and CSS variables.
+9. **Single-Surface Container Rule (Zero "Cropped" Inner Rectangles):**
+   - `<div>` containers and `<button>` elements inside them must share a single, cohesive background color in idle state (buttons default to `bg-transparent` via base CSS reset).
+   - Never wrap an interactive card button in an outer padded `<div>` with `p-3` if the card itself can be a single direct `<button>` element. This prevents inner hover boxes and disjointed padding rectangles.
+   - Backgrounds change strictly as a whole unit or on hover/active states — never creating awkward nested contrast rectangles inside cards or modals.
 
 ---
 
@@ -315,10 +319,26 @@ hackathon/
 - Visual credit cost pills on `ActionNode` (`🪙 8 credits / symbol` or `⚡ 0 credits (local)`), `WatcherNode`, and `ScreenerNode` (`🪙 3 AI credits / query`)
 - Edit modal callouts with multi-stock burst warnings (e.g. 5-mover fundamental report = 40 credits burst)
 
-### Theme Switcher (3 modes)
+### Theme Switcher (3 modes) & Custom Themes Engine (`.scrifflemes`)
 - **Light** (default): Full multicolor FigJam
 - **Mono** (Warm-Paper): `#F4F3EF` canvas, warm graphite borders
 - **Dark** (Soft Charcoal): `#0F1014` canvas, low-contrast borders, soft silver text
+- **Custom Themes Engine**: INI-style plain-text configuration parser & serializer in `themeParser.ts`, bundled presets in `themes/` (⚡ **Bloomberg Terminal**, ❄️ **Nord Frost**, 📻 **Gruvbox Dark**, 🌃 **Tokyo Night**, ☀️ **Solarized Dark**), interactive palette pill bar in `ThemeModal.tsx`, and canvas drag-and-drop `.scrifflemes` importing.
+
+### Quick-Add Connected Node & Flow Auto-Wiring
+- **Floating `[+]` Output Handle**: 36px offset floating `+` button on `WatcherNode`, `ConditionNode`, `ScreenerNode`, and `ActionNode` visible on card hover/selection.
+- **Drag-to-Empty Canvas Drop**: Releasing a connector line onto empty canvas triggers `onConnectEnd`, opening the Quick-Add popover at cursor coordinates.
+- **Smart Placement & Inheritance**: Contextual node recommendations and automatic spatial collision avoidance (`+320px X`, staggering `+150px Y` if occupied) with automatic ticker symbol and template inheritance (`quickAddNavigator.ts`).
+
+### Condition Node Dual Outputs & False Branching
+- **Dual Output Handles**: `ConditionNode` hosts two distinct right-side connection ports: upper `True` port (Emerald green `#10B981` at `36%` Y) and lower `False` port (Rose `#FF5B79` at `72%` Y) with dedicated Quick-Add `[+]` action buttons.
+- **Dynamic Branch Execution**: `graphEngine.ts` inspects `edge.fromHandle` (`'true'` vs `'false'`). When the DSL boolean rule passes, only `true`-branch child nodes execute; when the rule fails, only `false`-branch child nodes execute.
+- **Self-Documenting Connectors**: Connectors originating from `True` render with an emerald dot + `"if true"` badge; connectors originating from `False` render with a rose dot + `"if false"` badge.
+- **Backward Compatibility**: Legacy edges without `fromHandle` (or `null`) cleanly default to `'true'` without breaking existing graphs.
+
+### Self-Documenting Edge Labels & Condition Badges
+- **Contextual Auto-Inference**: Computes smart badges on connectors: `Watcher` $\rightarrow$ `Condition` (`"on tick"`), `Condition` $\rightarrow$ `Action`/`Note`/`Alert` (`"if true"` with green status dot or `"if false"` with rose dot), `Screener` $\rightarrow$ `*` (`"discovered"` / `"pipe results"` / `"summary"`), `Action` $\rightarrow$ `*` (`"generates"` / `"brief"` / `"spawns"`).
+- **Interactive Labeled Edge (`LabeledEdge.tsx`)**: Theme-aware badge pill across all 4 theme environments, hover/selection `×` delete action, and inline label editing.
 
 ### Control Panel & Data Streaming
 - **Control Panel Drawer (`SimulationBar.tsx`)**: Rebranded from Demo Controls to institutional Control Panel with clean single-line headers.
@@ -338,7 +358,12 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
-- **Global & Card-Level Loading Feedback (`LoadingContext.tsx`, `TopNav.tsx`, `ScreenerNode.tsx`, `ActionNode.tsx`, `WatcherNode.tsx`, `FileNode.tsx`, `page.tsx`)**:
+- **Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**:
+  - Implemented Discord Webhook dispatch service with URL format validation (`https://discord.com/api/webhooks/...`), rich financial embed cards with dynamic sentiment colors (Mint `#10B981` for gains, Coral `#FF5B79` for losses, Electric Blue `#0050FF` for neutral), ticker metrics, volume, canvas board name, and 6s timeout protection.
+  - Added dedicated `/api/alert/test-webhook` test ping endpoint and interactive "⚡ Send Test Ping" button with live spinner in `EditNodeModal.tsx`.
+  - Added webhook persistence awareness notice, inline "Save Alert Settings" button, and Discord channel badge pills in `AlertNode.tsx`.
+  - Integrated into `graphEngine.ts` across single-event triggers, Top Movers radar alerts, and AI Screener outputs.
+  - Unit test suite `discordWebhook.test.ts` (179 total passing unit tests, 100% green).
   - Centralized task queue manager with `runTracked`, `startTask`, `endTask`, `isNodeLoading`, and auto-timeout safety cleanup.
   - Global 2px electric blue hairline progress bar and center status capsule in `TopNav.tsx` displaying live operation details with MingCute spinner.
   - Card-level visual feedback: `ScreenerNode` (`🤖 Screening...` badge + pulse outline), `ActionNode` (`Running...` badge + pulse outline), `WatcherNode` (`⚡ Polling...` badge + pulse outline), and `FileNode` (`⏳ Generating...` badge).
@@ -485,11 +510,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 135 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 169 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **143 tests, 0 failures, 12 suites, ~140ms runtime**
+- **169 tests, 0 failures, 15 suites, ~520ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -504,12 +529,15 @@ src/__tests__/
     ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
     ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
-    ├── quickAddNavigator.test.ts     ← 8 tests — spatial offset collision calculation, node recommendations, inherited config
+    ├── quickAddNavigator.test.ts     ← 10 tests — spatial offset collision calculation, node recommendations, inherited config & false-branch defaults, standardized zap icon
+    ├── themeEngine.test.ts           ← 8 tests — .scrifflemes INI parser, serializer, color sanitizer, and CSS variables mapper
+    ├── edgeLabels.test.ts            ← 8 tests — contextual edge label auto-inference with sourceHandle true/false resolution
     ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
     ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
     ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)
     ├── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
-    └── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
+    ├── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
+    └── conditionBranching.test.ts    ← 8 tests — dual output routing (True vs False branch), legacy null handle fallback, multiple child fanout
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`

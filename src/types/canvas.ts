@@ -66,8 +66,11 @@ export interface NoteConfig {
 }
 
 export interface AlertConfig {
-  channel: 'ui' | 'telegram' | 'webhook';
+  channel: 'ui' | 'discord' | 'telegram' | 'webhook';
   messageTemplate?: string;
+  discordWebhookUrl?: string;
+  botName?: string;
+  includeMarketStats?: boolean;
 }
 
 export interface ActionConfig {
@@ -193,6 +196,8 @@ export interface CanvasEdgeData {
   canvasId: string;
   from: string; // source node ID
   to: string;   // target node ID
+  fromHandle?: string | null; // 'true' | 'false' | null (null = legacy, treated as 'true' at runtime)
+  toHandle?: string | null;
 }
 
 export interface MarketEvent {

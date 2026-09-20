@@ -5,6 +5,10 @@
     font-family: 'Stack Sans Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
+  button {
+    background-color: transparent;
+  }
+
   body {
     background-color: #f8f9fc;
     color: #0f172a;
@@ -20,6 +24,12 @@
   [data-theme="dark"] body {
     background-color: #0F1014;
     color: #E2E4E9;
+  }
+
+  /* Custom: Dynamic Scriffle Theme Engine */
+  [data-theme="custom"] body {
+    background-color: var(--custom-canvas-bg, #0F1014);
+    color: var(--custom-ui-text, #E2E4E9);
   }
 }
 
@@ -56,6 +66,11 @@
 [data-theme="dark"] .flat-tape {
   background-color: #242630;
   border: 1.5px solid #363847;
+}
+
+[data-theme="custom"] .flat-tape {
+  background-color: var(--custom-ui-tape, #242630);
+  border: 1.5px solid var(--custom-ui-border, #363847);
 }
 
 /* React Flow Connector (Edge) Styling */
@@ -113,6 +128,32 @@
 [data-theme="dark"] .react-flow__minimap {
   background-color: #14151B !important;
   border: 2px solid #282A36 !important;
+}
+
+/* Custom theme specific React Flow overrides */
+[data-theme="custom"] .react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--custom-edge-selected, #EF4444) !important;
+  stroke-width: 3.5px !important;
+}
+
+[data-theme="custom"] .react-flow__controls {
+  background-color: var(--custom-ui-surface, #14151B) !important;
+  border: 2px solid var(--custom-ui-border, #282A36) !important;
+}
+
+[data-theme="custom"] .react-flow__controls-button {
+  background-color: var(--custom-ui-surface, #14151B) !important;
+  border-bottom: 1px solid var(--custom-ui-border, #282A36) !important;
+  fill: var(--custom-ui-text, #A6AAB8) !important;
+}
+
+[data-theme="custom"] .react-flow__controls-button svg {
+  fill: var(--custom-ui-text, #A6AAB8) !important;
+}
+
+[data-theme="custom"] .react-flow__minimap {
+  background-color: var(--custom-ui-surface, #14151B) !important;
+  border: 2px solid var(--custom-ui-border, #282A36) !important;
 }
 
 /* Ensure Handles / Connection dots are always above the resize bounding box & corner handles */
@@ -240,4 +281,81 @@
   background-color: #191A22 !important;
   border-color: #2C2E3A !important;
   color: #E2E4E9 !important;
+}
+
+/* Dynamic Custom Theme Engine (Applies custom colors across UI & Cards) */
+[data-theme="custom"] header,
+[data-theme="custom"] aside {
+  background-color: var(--custom-ui-surface, #14151B) !important;
+  border-color: var(--custom-ui-border, #282A36) !important;
+  color: var(--custom-ui-text, #E2E4E9) !important;
+}
+
+[data-theme="custom"] header button,
+[data-theme="custom"] aside button {
+  background-color: transparent;
+  border-color: var(--custom-ui-border, #2C2E3A);
+  color: var(--custom-ui-text, #D8DAE2);
+}
+
+[data-theme="custom"] header button:hover,
+[data-theme="custom"] aside button:hover {
+  background-color: var(--custom-ui-surface-muted, #232530);
+  border-color: var(--custom-ui-border-active, #3B3E4E);
+}
+
+[data-theme="custom"] .bg-white,
+[data-theme="custom"] .bg-white\/95,
+[data-theme="custom"] .bg-white\/90 {
+  background-color: var(--custom-node-card-bg, #181818) !important;
+  border-color: var(--custom-node-card-border, #2E2E2E) !important;
+  color: var(--custom-ui-text, #E2E4E9) !important;
+}
+
+[data-theme="custom"] .bg-slate-50,
+[data-theme="custom"] .bg-slate-50\/90,
+[data-theme="custom"] .bg-slate-50\/80,
+[data-theme="custom"] .bg-slate-50\/70,
+[data-theme="custom"] .bg-slate-100,
+[data-theme="custom"] .bg-slate-100\/80,
+[data-theme="custom"] .bg-slate-100\/70,
+[data-theme="custom"] .bg-slate-200,
+[data-theme="custom"] .bg-indigo-50\/40,
+[data-theme="custom"] .bg-indigo-50\/50,
+[data-theme="custom"] .bg-blue-50 {
+  background-color: var(--custom-node-card-bg, #181818) !important;
+  border-color: var(--custom-ui-border, #282A36) !important;
+  color: var(--custom-ui-text, #E2E4E9) !important;
+}
+
+[data-theme="custom"] .border-slate-100,
+[data-theme="custom"] .border-slate-200,
+[data-theme="custom"] .border-slate-300,
+[data-theme="custom"] .border-slate-400,
+[data-theme="custom"] .border-slate-700,
+[data-theme="custom"] .border-slate-800,
+[data-theme="custom"] .border-indigo-100,
+[data-theme="custom"] .border-indigo-200 {
+  border-color: var(--custom-ui-border, #282A36) !important;
+}
+
+[data-theme="custom"] .text-slate-900,
+[data-theme="custom"] .text-slate-800,
+[data-theme="custom"] .text-slate-700,
+[data-theme="custom"] .text-indigo-950 {
+  color: var(--custom-ui-text, #E2E4E9) !important;
+}
+
+[data-theme="custom"] .text-slate-400,
+[data-theme="custom"] .text-slate-500,
+[data-theme="custom"] .text-slate-600,
+[data-theme="custom"] .text-indigo-400 {
+  color: var(--custom-ui-text-muted, #8C90A0) !important;
+}
+
+[data-theme="custom"] input,
+[data-theme="custom"] textarea {
+  background-color: var(--custom-node-card-bg, #181818) !important;
+  border-color: var(--custom-ui-border, #2C2E3A) !important;
+  color: var(--custom-ui-text, #E2E4E9) !important;
 }

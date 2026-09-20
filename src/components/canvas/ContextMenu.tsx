@@ -38,7 +38,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onDeleteElement,
   onDeleteEdge,
 }) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,7 +73,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     }
   };
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   const menuBg = isDark

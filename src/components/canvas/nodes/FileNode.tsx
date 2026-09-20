@@ -111,12 +111,13 @@ function resolveFileMeta(config: FileConfig): {
 }
 
 export const FileNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme } = useTheme();
+  const { theme, activeCustomTheme } = useTheme();
   const { isNodeLoading } = useLoading();
   const config = (data.config || {}) as FileConfig;
   const nodeLoading = isNodeLoading(id);
 
-  const isDark = theme === 'dark';
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
   const meta = resolveFileMeta(config);
@@ -142,7 +143,9 @@ export const FileNode = memo(({ id, data, selected }: NodeProps) => {
     ? 'border-[#0050FF] ring-2 ring-[#0050FF]/30 animate-pulse'
     : 'border-slate-300 hover:border-slate-400';
 
-  const cardBg = isDark
+  const cardBg = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-node-card-bg)] text-[var(--custom-ui-text)]'
+    : isDark
     ? 'bg-[#181920] text-[#E2E4E9]'
     : isMono
     ? 'bg-[#FCFBF9] text-[#242321]'

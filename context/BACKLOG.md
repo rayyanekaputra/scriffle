@@ -6,6 +6,25 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🎮 Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**
+  - Implemented Discord Webhook dispatch service (`src/server/services/discordWebhook.ts`) supporting URL validation, dynamic sentiment embed colors (Mint `#10B981` for gains, Coral `#FF5B79` for drops, Electric Blue `#0050FF` for neutral), structured ticker metrics (Price, Change %, Volume, Prev Close), canvas board name, and 6s timeout protection.
+  - Built dedicated `/api/alert/test-webhook` endpoint and interactive "⚡ Send Test Ping" button with live spinner and success/failure feedback banner in `EditNodeModal.tsx`.
+  - Added webhook URL persistence awareness notice, inline "Save Alert Settings" button, and Discord channel badge pills in `AlertNode.tsx`.
+  - Integrated into `graphEngine.ts` across single-event triggers, Top Movers radar alerts, and AI Screener outputs.
+  - Added unit test suite `discordWebhook.test.ts` (179 total passing unit tests across 16 suites, 100% green).
+- [x] **🔀 Condition Node Dual Outputs & False Branching (`ConditionNode.tsx`, `QuickAddSourceHandle.tsx`, `graphEngine.ts`, `edgeLabels.ts`, `LabeledEdge.tsx`, `MarketCanvas.tsx`, `conditionBranching.test.ts`)**
+  - Added dual output connection handles to `ConditionNode`: upper `True` port (Emerald green `#10B981` @ `36%` Y) and lower `False` port (Rose `#FF5B79` @ `72%` Y) with dedicated Quick-Add `[+]` triggers.
+  - Implemented handle-filtered BFS traversal in `graphEngine.ts`: routes market events to matching `fromHandle` edges (`'true'` vs `'false'`), with legacy fallback defaulting to `'true'`.
+  - Updated Prisma schema with `fromHandle String?` and compound unique key `[fromId, toId, fromHandle]` on `Edge`.
+  - Self-documenting edge label inference: `"if true"` (emerald dot + blue/emerald text) and `"if false"` (rose dot + rose/coral text).
+  - Quick-add navigator automatically seeds appropriate neutral/negative templates (e.g. `${symbol} held steady at ${price}`) and labels when adding from the `False` branch.
+  - Added unit test suite `conditionBranching.test.ts` (168 total passing unit tests across 15 suites, 100% green).
+- [x] **🎨 Scriffle Themes & `.conf`-Style Custom Theme Engine (`themeParser.ts`, `ThemeContext.tsx`, `ThemeModal.tsx`, `MarketCanvas.tsx`, `themes/*.scrifflemes`)**
+  - Designed and implemented Alacritty/Kitty-style `.scrifflemes` INI/conf parser, serializer, and CSS variables injector (`[data-theme="custom"]`).
+  - Added bundled terminal presets in `themes/` and `builtinThemes.ts` (⚡ **Bloomberg Terminal**, ❄️ **Nord Frost**, 📻 **Gruvbox Dark**, 🌃 **Tokyo Night**, ☀️ **Solarized Dark**).
+  - Built interactive `ThemeModal.tsx` with live color swatch previews, 1-click theme import/export, and seamless switching between standard environments (Light, Mono, Dark) and custom `.scrifflemes`.
+  - Added native drag-and-drop `.scrifflemes` / `.conf` file importing directly on `MarketCanvas.tsx` with automatic persistence in `localStorage`.
+  - Added unit test suite `themeEngine.test.ts` (151 total passing unit tests across 13 suites, 100% green).
 - [x] **⚡ Quick-Add Node Connector & Flow Auto-Wiring (`QuickAddHandle.tsx`, `QuickAddPopover.tsx`, `quickAddNavigator.ts`, `MarketCanvas.tsx`)**
   - Implemented floating `+` quick-add button on all output handles (`WatcherNode`, `ConditionNode`, `ScreenerNode`, `ActionNode`) that appears on card hover/selection.
   - Implemented drag-to-empty-canvas connector drop (`onConnectEnd` in `MarketCanvas.tsx`) to open quick-picker directly at release coordinates.
@@ -108,6 +127,12 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 ---
 
 ## 📌 Open Candidate Endpoints & Features
+
+### 🐛 BUG: Sticker Toolbar Preset Dropdown Clipped by Container Overflow (`NavToolbar.tsx`)
+- **Status**: ✅ Completed
+- **Resolution**: Replaced `overflow-x-auto` with `overflow-visible` on the main toolbar wrapper in [`NavToolbar.tsx`](file:///home/abzolute/Projects/hackathon/src/components/controls/NavToolbar.tsx) and elevated the dropdown `z-50` position above whiteboard chrome.
+
+---
 
 ### 🔥 BUG: `/v2/companies/top-changes/` Always Returns 400 & Silent Fallback
 - **Status**: ✅ Completed
@@ -230,7 +255,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 2. **Sections / Frame Containers** — FigJam/Miro-style structural clustering that groups and moves related cards together.
 3. ~~**⚡ Quick-Add Node Connector (`+` Port Handle & Flow Auto-Wiring)**~~ ✅ **Completed**
-4. **🎨 Simple `.conf`-Based Theme Customization Engine (`.scrifflemes` / `themes/` folder)**
+4. ~~**🎨 Simple `.conf`-Based Theme Customization Engine (`.scrifflemes` / `themes/` folder)**~~ ✅ **Completed**
    - **Concept**: Kitty/Alacritty-style simple key-value configuration file for custom themes (no CSS knowledge required).
    - **Target Audience**: Financial market researchers, quantitative analysts, and non-web developers who want custom branding or terminal-style aesthetics (e.g., Bloomberg Terminal amber, Cyberpunk neon, Gruvbox, Nord, Solarized).
    - **Dedicated Directory & Extension**: `themes/*.scrifflemes` (plain-text INI/conf format).
@@ -277,6 +302,21 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ### Candidate QoL Features
 
+#### 0. 🐛 Reported Bugs & Regressions (New)
+
+- [x] **[BUG] ActionNode icon inconsistency — standardize on Zap (`QuickAddPopover.tsx`, `NavToolbar.tsx`, `quickAddNavigator.ts`)**:
+  - Standardized everywhere on `flash_line` (MingCute zap icon), removing `play_line`.
+- [x] **[BUG — HIGH PRIORITY REGRESSION] Quick-connect no longer auto-wires edge after adding a new node via Quick-Add (`nodes/route.ts`, `MarketCanvas.tsx`)**:
+  - Updated `POST /api/canvas/nodes` to accept client-provided `id`, ensuring the ID generated on the frontend matches the database record so `POST /api/canvas/edges` doesn't fail foreign-key constraints.
+- [x] **[BUG] Sticker dropdown arrow container in NavToolbar is not vertically aligned with peer items (`NavToolbar.tsx`)**:
+  - Applied `items-stretch` and matching `border-y border-r border-l` on the chevron button.
+- [x] **[BUG] Mono theme active-state highlight in theme chooser is incorrect (`TopNav.tsx`, `ThemeModal.tsx`)**:
+  - Fixed active and inactive styling in Mono mode (`bg-[#FCFBF9] text-[#242321] border-[#D8D4CA] shadow-2xs`) in `TopNav.tsx` and updated Mono card active badge in `ThemeModal.tsx`.
+
+- [x] **Discord Webhook alert delivery for `AlertNode` (`discordWebhook.ts`, `/api/alert/test-webhook`, `AlertNode.tsx`)**
+- [ ] **[IDEATION] Telegram Bot alert delivery for `AlertNode`**:
+  - Explore Telegram Bot API as downstream alert channel (@BotFather bot token + `chat_id`). Queued for future exploration.
+
 #### 1. 🏷️ Sticker & Visual Annotation Modernization (FigJam-inspired)
 - [ ] **In-Place Editable Sticker Component (`StickerNode.tsx`)**:
   - Replace static `STICKER_META` lookup (`bullish`/`bearish`) with inline stateful config (`emoji`, `label`, `color`).
@@ -291,8 +331,14 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - Quick transparency vs bordered card toggle.
 
 #### 2. ⚡ Automation & Flow Building (n8n-inspired)
-- [ ] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
-- [ ] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on surge"`, `"export"`) to make automation pathways self-documenting.
+- [x] **Quick-Add Connector (`Tab` or `+` handle)**: Hovering a node's output handle shows a small `+` icon; clicking it or pressing `Tab` opens a quick-picker to auto-wire the next node (e.g., `Watcher` → `Condition` → `Note`) in 1 click.
+- [x] **Edge Labels & Condition Badges**: Custom edges with auto-inferred or custom pills (e.g., `"if true"`, `"on tick"`, `"discovered"`, `"generates"`) to make automation pathways self-documenting.
+- [x] **Condition Node Dual Outputs & "False" Branching (`ConditionNode.tsx`, `graphEngine.ts`, `edgeLabels.ts`)**:
+  - Add dual output connection handles to `ConditionNode` cards:
+    - **`True` Output Port (Green dot / top-right)**: Fires when `expr-eval` boolean rule evaluates to `true` (renders with `"if true"` edge badge).
+    - **`False` Output Port (Rose/Slate dot / bottom-right)**: Fires when `expr-eval` rule evaluates to `false` (renders with `"if false"` / `"on fail"` edge badge).
+  - Graph engine updates in `graphEngine.ts`: inspect `edge.sourceHandle` (`'true'` vs `'false'`) and route downstream executions according to the boolean outcome (e.g. `[Condition: price_change > 5%] -> (true) -> [Surge Alert]`, `[Condition: price_change > 5%] -> (false) -> [Log Neutral Note]`).
+  - Unit tests covering true/false handle edge routing in `graphEngine`.
 - [ ] **Live Signal Flow Pulses**: Visual pulsing packet animating along connecting edges when a watcher or condition triggers downstream nodes.
 
 #### 2. 🗂️ Spatial Board Organization (FigJam × Miro-inspired)
