@@ -132,7 +132,7 @@ export const QuickAddSourceHandle: React.FC<QuickAddSourceHandleProps> = ({
           onClick={handleClickPlus}
           title={`Quick add connected node (${isFalseVariant ? 'False branch' : isTrueVariant ? 'True branch' : 'output'})`}
           aria-label={`Quick add connected node (${isFalseVariant ? 'False branch' : isTrueVariant ? 'True branch' : 'output'})`}
-          className={`flex h-5 w-5 items-center justify-center rounded-full border-2 text-[10px] transition-all duration-150 cursor-pointer ${
+          className={`quick-add-handle-btn flex h-5 w-5 items-center justify-center rounded-full border-2 text-[10px] transition-all duration-150 cursor-pointer ${
             selected
               ? 'opacity-100 scale-100'
               : 'opacity-0 scale-90 group-hover/node:opacity-100 group-hover/node:scale-100'

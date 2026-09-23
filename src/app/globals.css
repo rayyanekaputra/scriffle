@@ -359,3 +359,33 @@
   border-color: var(--custom-ui-border, #2C2E3A) !important;
   color: var(--custom-ui-text, #E2E4E9) !important;
 }
+
+/* Tool Mode & Cursor Mapping Enforcement */
+[data-tool-mode="select"] .react-flow__pane {
+  cursor: default !important;
+}
+
+[data-tool-mode="select"] .react-flow__node {
+  cursor: pointer;
+}
+
+[data-tool-mode="hand"] .react-flow__pane {
+  cursor: grab !important;
+}
+
+[data-tool-mode="hand"] .react-flow__pane:active {
+  cursor: grabbing !important;
+}
+
+[data-tool-mode="hand"] .react-flow__node {
+  cursor: grab !important;
+}
+
+[data-tool-mode="hand"] .react-flow__node:active {
+  cursor: grabbing !important;
+}
+
+/* When Canvas is Locked against new card additions, suppress QuickAdd handles */
+[data-is-locked="true"] .quick-add-handle-btn {
+  display: none !important;
+}

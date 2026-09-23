@@ -31,6 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
+| Master Unit Tests | **179 unit tests across 16 suites (100% green)** |
 
 ---
 
@@ -57,28 +58,31 @@
    - `<div>` containers and `<button>` elements inside them must share a single, cohesive background color in idle state (buttons default to `bg-transparent` via base CSS reset).
    - Never wrap an interactive card button in an outer padded `<div>` with `p-3` if the card itself can be a single direct `<button>` element. This prevents inner hover boxes and disjointed padding rectangles.
    - Backgrounds change strictly as a whole unit or on hover/active states — never creating awkward nested contrast rectangles inside cards or modals.
+10. **Canvas Lock & Modal Viewport Rules:**
+    - Canvas lock (`isLocked`) disables all 10 card creation buttons, quick-add `+` handles, right-click canvas pane menus, and file drops while preserving full pan/zoom/card repositioning.
+    - All modals must enforce `max-h-[88vh] flex flex-col overflow-hidden` with pinned header and footer action bars, and `flex-1 min-h-0 overflow-y-auto` scrollable bodies.
 
 ---
 
 ## 4. Node System (Strict — Exactly These Types)
 
-### Core Automation Nodes (5 original types)
+### Core Automation Nodes (6 types)
 
 | Node | Visual | Purpose | Key Config |
 |---|---|---|---|
 | `screener` | AI Screener card (blue header, prompt pill, 3 credits badge) | Natural language company screener (Sectors API `/v2/companies/`) | `query`, `limit`, `interval` |
 | `watcher` | Radar sticker (white card, blue accents) | Monitors IDX stock tickers | `symbol`, `metric`, `interval` (seconds) |
-| `condition` | Yellow rule capsule | Evaluates DSL boolean rules with `expr-eval` | `rule` (e.g. `price_change > 5 AND volume > 1000000`) |
+| `condition` | Yellow rule capsule (dual True/False handles) | Evaluates DSL boolean rules with `expr-eval` | `rule` (e.g. `price_change > 5 AND volume > 1000000`) |
 | `note` | Pastel sticky note (5 colors) | Auto-updates text on trigger; direct inline edit | `content`, `template` (e.g. `${symbol} surged ${price_change}%`) |
-| `alert` | Coral notification sticker | Emits toast + logs to activity feed | `channel: 'ui' \| 'telegram' \| 'webhook'` |
+| `alert` | Coral notification sticker | Emits toast + logs to activity feed + Discord Webhooks | `channel: 'ui' \| 'discord' \| 'telegram' \| 'webhook'`, `discordWebhookUrl` |
 | `action` | Cobalt automation capsule | Auto-mutates canvas (creates nodes) | `action: 'create_note' \| 'create_watcher' \| 'fundamental_report' \| 'export_canvas'` |
 
 ### Annotation / Freeform Nodes (extended — no engine execution)
 
 | Node | Purpose |
 |---|---|
-| `text` | Freeform text blocks — direct inline editable |
-| `sticker` | Transparent badge stickers (Bullish, Bearish, Breakout Ready, Target Hit, Top Pick, High Volatility, Thesis Approved) |
+| `text` | Freeform text blocks — direct inline editable with formatting toolbar |
+| `sticker` | Transparent badge stickers with inline quick emoji popover and modal editor |
 | `image` | Resizable transparent image — `NodeResizer`, aspect-ratio locked, persisted dimensions |
 | `file` | Universal file attachment — browser preview, open location, copy link |
 
@@ -95,7 +99,7 @@
 POST /api/engine/trigger (Live Sectors API poll or realistic randomized Mock)
          │
          ▼
-graphEngine.ts → BFS traversal from Watcher → Condition → Note/Alert/Action
+graphEngine.ts → BFS traversal from Watcher → Condition (True/False handles) → Note/Alert (Discord)/Action
          │
          ▼
 SQLite (Prisma) ← Node state updated, Logs written, Cycle counters incremented
@@ -112,24 +116,49 @@ React Flow re-renders ← Updated nodes/edges shown, toasts fired
 **Always use these types. Never invent ad-hoc JSON structures.**
 
 ```typescript
-export type NodeType = 'watcher' | 'condition' | 'note' | 'alert' | 'action' | 'text' | 'sticker' | 'image' | 'file';
+export type NodeType = 'watcher' | 'condition' | 'note' | 'alert' | 'action' | 'text' | 'sticker' | 'image' | 'file' | 'screener';
 
 export interface WatcherConfig {
   symbol: string;       // "BBCA", "BBRI", "BMRI", "TLKM", "ASII"
-  metric: 'price' | 'price_change' | 'volume' | 'rank' | 'top_gainers' | 'top_losers';
+  metric: 'price' | 'price_change' | 'volume' | 'rank';
   interval: number;     // seconds
-  cycleCount?: number;  // run counter displayed as "⚡ 12 runs"
+  mode?: 'single' | 'top_gainers' | 'top_losers';
+  threshold?: number;
+  limit?: number;
+  period?: '1d' | '7d' | '14d' | '30d' | '365d' | 'all';
+  minMcapBillion?: number;
+  classifications?: string;
 }
 
-export interface MarketEvent {
-  symbol: string;
-  price: number;
-  prevPrice: number;
-  price_change: number; // e.g. 6.2 for +6.2%
-  volume: number;
-  avg_volume: number;
-  rank?: number;
-  timestamp: string;
+export interface ConditionConfig {
+  rule: string;         // e.g. "price_change > 5 AND volume > 1000000"
+}
+
+export interface NoteConfig {
+  content: string;
+  template?: string;
+  color?: 'yellow' | 'mint' | 'pink' | 'blue' | 'purple';
+  width?: number;
+  height?: number;
+  revisionCount?: number;
+  symbol?: string;
+}
+
+export interface AlertConfig {
+  channel: 'ui' | 'discord' | 'telegram' | 'webhook';
+  messageTemplate?: string;
+  template?: string;
+  discordWebhookUrl?: string;
+  botName?: string;
+  includeMarketStats?: boolean;
+}
+
+export interface ActionConfig {
+  action: 'create_note' | 'create_watcher' | 'fundamental_report' | 'export_canvas';
+  params?: Record<string, any>;
+  targetSymbol?: string;
+  template?: string;
+  interval?: number;
 }
 ```
 
@@ -465,7 +494,7 @@ bun run prisma/seed.ts            # Reset & seed demo canvas
 bun run src/server/test-engine.ts # Smoke test the graph engine directly
 bunx prisma db push               # Push schema changes to dev.db
 bunx prisma studio                # Visual DB browser
-bun test                          # ⚠️ Run ALL unit tests — must stay green (135 tests across 11 suites, ~140ms)
+bun test                          # ⚠️ Run ALL unit tests — must stay green (179 tests across 16 suites, ~450ms)
 bun run test:watch                # Run tests in watch mode during development
 bun run test:coverage             # Run tests with coverage report
 ```
@@ -482,39 +511,31 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
 | `TESTING_PLAN.md` | ⭐ Full 3-tier testing strategy & mandate — **read before adding any new feature** |
+| `GIT_CONFLICT_RESOLUTION_PLAN.md` | Merge conflict resolution plan and integration workflow between branches |
+| `CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md` | Canvas lock state, creation guard, Move/Hand cursor correction, dialog viewport constraints |
+| `DISCORD_WEBHOOK_PLAN.md` | Native Discord Webhook dispatch service, rich embeds, test ping API & UI indicators |
+| `CONDITION_NODE_DUAL_OUTPUT_PLAN.md` | Condition node dual output True/False handles and branching graph traversal |
+| `SCRIFFLE_THEMES_PLAN.md` | Plain-text `.scrifflemes` custom theme engine, parser, presets, and drag-and-drop workflow |
 | `GLOBAL_LOADING_FEEDBACK_PLAN.md` | Architecture and implementation plan for global loading queue & indicators |
+| `QUICK_ADD_CONNECTOR_PLAN.md` | Quick-Add floating handle, drag-to-empty-canvas drop, and flow auto-wiring |
+| `TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md` | Top Movers `/v2/companies/top-changes/` 400 bug fix & error UI |
+| `CREDIT_COST_BADGES_PLAN.md` | API credit cost badges & burst warning notices |
+| `WATCHER_CLEAN_INITIAL_STATE_PLAN.md` | Watcher node clean initial state implementation |
+| `NAVIGATION_PLAN.md` | Spotlight Search (Cmd+K/Cmd+F), Keyboard Shortcuts Guide (?), and Zoom Presets (Shift+1) |
+| `SCRIFFLE_AI_SPEC.md` | ⭐ Standalone AI prompt & .scriffle format specification manual for LLMs |
 | `CURRENT_ENDPOINT.md` | Active vs. planned Sectors API endpoint mapping |
 | `ENDPOINTS.md` | All 32 Sectors API v2 endpoints reference |
 | `CONTEXT.md` | Original master contracts & TypeScript interfaces |
-| `THEME_SWITCHER_PLAN.md` | 3-mode theme color tokens |
-| `MULTI_PROJECT_TABS_PLAN.md` | URL routing & multi-canvas architecture |
-| `SAVE_OPEN_SCRIFFLE_PLAN.md` | .scriffle file format & restore API |
-| `ACTIVITY_FEED_BACKTRACKING_PLAN.md` | Feed labels, camera pan, chain glow |
-| `IMAGE_FEATURES_PLAN.md` | Image upload, clipboard paste, NodeResizer |
-| `FUNDAMENTAL_REPORT_ACTION_PLAN.md` | Company report action + PDF export |
-| `SPIKE_DEVTOOL_PLAN.md` | DevSpikeTool + toast system |
-| `KEYBOARD_SHORTCUTS_PLAN.md` | All keyboard shortcuts |
-| `SECTORS_API_KEY_LIVE_POLL_PLAN.md` | API key session management |
-| `FILE_NODE_PLAN.md` | Universal FileNode architecture |
-| `AUTO_EXPORT_AND_DOWNLOAD_STATUS_PLAN.md` | Auto-export to disk & FileNode download status indicator |
-| `TOP_MOVERS_RANKING_LEADERBOARD_PLAN.md` | Top Gainers & Losers Leaderboard display, official query params & engine fix |
-| `MULTI_SYMBOL_EXPORT_AND_PEER_WATCHER_PLAN.md` | Multi-symbol PDF report export & dynamic peer watcher automation |
-| `NAVIGATION_PLAN.md` | Spotlight Search (Cmd+K/Cmd+F), Keyboard Shortcuts Guide (?), and Zoom Presets (Shift+1) |
-| `SCRIFFLE_AI_SPEC.md` | ⭐ Standalone AI prompt & .scriffle format specification manual for LLMs (ChatGPT, Claude, Gemini, Cursor) |
-| `WATCHER_CLEAN_INITIAL_STATE_PLAN.md` | Watcher node clean initial state implementation (Rank 4 sprint) |
-| `CREDIT_COST_BADGES_PLAN.md` | API credit cost badges & burst warning notices (Rank 3 sprint) |
-| `TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md` | Top Movers `/v2/companies/top-changes/` 400 bug fix & error UI (Rank 1 & 2 sprint) |
-
 
 ---
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 169 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 179 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **169 tests, 0 failures, 15 suites, ~520ms runtime**
+- **179 tests, 0 failures, 16 suites, ~450ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -533,11 +554,12 @@ src/__tests__/
     ├── themeEngine.test.ts           ← 8 tests — .scrifflemes INI parser, serializer, color sanitizer, and CSS variables mapper
     ├── edgeLabels.test.ts            ← 8 tests — contextual edge label auto-inference with sourceHandle true/false resolution
     ├── reportRevision.test.ts        ← 3 tests — in-place dynamic report revisions (Rev 1, Rev 2+) & disk overwrite
-    ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore (Rank 4 sprint)
-    ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations (Rank 3 sprint)
-    ├── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture (Rank 1&2 sprint)
+    ├── watcherInitialState.test.ts   ← 5 tests — watcher node clean idle state on create & restore
+    ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations
+    ├── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture
     ├── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
-    └── conditionBranching.test.ts    ← 8 tests — dual output routing (True vs False branch), legacy null handle fallback, multiple child fanout
+    ├── conditionBranching.test.ts    ← 8 tests — dual output routing (True vs False branch), legacy null handle fallback, multiple child fanout
+    └── discordWebhook.test.ts        ← 10 tests — URL validation, rich sentiment embeds, payload formatting, error handling, timeout protection
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`
