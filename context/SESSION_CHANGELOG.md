@@ -1,10 +1,30 @@
-# 📋 Session Changelog — 2026-09-16
+# 📋 Session Changelog — 2026-09-23
  
  > **For new agents:** Read this file first. It summarises every change made in the most recent working session so you can catch up instantly without re-reading every plan document.
  
  ---
 
-## 0. Quick-Add Node Connector & Flow Auto-Wiring
+## 0. Canvas Lock, Cursor & Dialog Overflow Inconsistency Fix
+
+**Key Capabilities & Fixes Implemented:**
+1. **Canvas Lock & Creation Guard ([`src/app/page.tsx`](file:///D:/workspace-artia/1-hackathon/scriffle/src/app/page.tsx), [`MarketCanvas.tsx`](file:///D:/workspace-artia/1-hackathon/scriffle/src/components/canvas/MarketCanvas.tsx), [`NavToolbar.tsx`](file:///D:/workspace-artia/1-hackathon/scriffle/src/components/controls/NavToolbar.tsx))**:
+   - Centralized `isLocked` state in `src/app/page.tsx` and exposed via custom `<ControlButton />` with theme-aware `lock_line` / `unlock_line` MingCute icons.
+   - When locked, all node-creation entry points (NavToolbar card addition buttons, canvas context menu right-click, quick-add `+` handle buttons, drag-to-empty quick popover, and `Ctrl+V` paste / file drop) are disabled with visual feedback.
+   - Panning, zooming, and dragging existing cards remain 100% interactive.
+2. **Move vs. Hand Tool Cursor Correction ([`src/app/globals.css`](file:///D:/workspace-artia/1-hackathon/scriffle/src/app/globals.css), [`MarketCanvas.tsx`](file:///D:/workspace-artia/1-hackathon/scriffle/src/components/canvas/MarketCanvas.tsx))**:
+   - Scoped cursor styles using `[data-tool-mode]`.
+   - Move Mode (`select` / `V`): Default arrow cursor on canvas pane, `cursor-pointer` on cards.
+   - Hand Mode (`hand` / `H`): Grab hand (`cursor-grab`) on canvas pane and cards, active dragging displays `cursor-grabbing`.
+3. **Unified Card Hover System**:
+   - Standardized card hover across all 10 node types (`WatcherNode`, `ConditionNode`, `NoteNode`, `AlertNode`, `ActionNode`, `ScreenerNode`, `TextNode`, `StickerNode`, `ImageNode`, `FileNode`) with theme-aware border darkening, background tint shift, and `cursor-pointer` across Light, Mono (warm-paper), and Dark (soft charcoal) themes.
+4. **Modal Dialog Viewport Max-Height & Pinned Action Layout**:
+   - Refactored `EditNodeModal.tsx`, `ShortcutsModal.tsx`, `SpotlightSearchModal.tsx`, and `ProjectSwitcherModal.tsx` to adhere to `max-h-[88vh] flex flex-col overflow-hidden`.
+   - Headers and footer action buttons ("Save Changes", "Cancel") stay permanently pinned while body contents scroll smoothly (`flex-1 min-h-0 overflow-y-auto`).
+- **Reference**: [`CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md`](file:///D:/workspace-artia/1-hackathon/scriffle/context/CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md)
+
+---
+
+## 1. Quick-Add Node Connector & Flow Auto-Wiring
 
 **Key Capabilities Implemented:**
 1. **Floating `[+]` Quick-Add Handle ([`QuickAddSourceHandle.tsx`](file:///home/abzolute/Projects/hackathon/src/components/canvas/QuickAddSourceHandle.tsx))**:

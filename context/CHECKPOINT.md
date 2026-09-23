@@ -84,6 +84,15 @@
   * **`Shift + 0` / `Cmd + 0`:** Reset zoom to 100%.
   * **`Delete` / `Backspace`:** Deletes selected card(s) and connector(s).
   * **`Ctrl+C` / `Cmd+C` / `Ctrl+V` / `Cmd+V` / `Ctrl+D`:** Copy, paste, duplicate cards.
+* **Canvas Lock & Creation Guard (`isLocked`):**
+  * Centralized lock toggle in top-left canvas controls (`<ControlButton />`).
+  * Disables all 10 card creation buttons in `NavToolbar`, suppresses pane context menu, hides quick-add `+` handle buttons, blocks drag-to-empty connect popover, and prevents `Ctrl+V` paste / file drops.
+  * Allows pan, zoom, and existing card repositioning to remain 100% interactive.
+* **Deterministic Tool Mode & Cursor Mapping:**
+  * Move Mode (`select` / `V`): Default arrow pointer on canvas pane, `cursor-pointer` on cards.
+  * Hand Mode (`hand` / `H`): Grab hand on canvas pane and cards, shifting to grabbing fist during active drag.
+* **Responsive Modal Dialog Constraints:**
+  * All modals (`EditNodeModal`, `ShortcutsModal`, `SpotlightSearchModal`, `ProjectSwitcherModal`) enforce `max-h-[88vh] flex flex-col overflow-hidden` with pinned headers, scrollable bodies (`flex-1 min-h-0 overflow-y-auto`), and permanently pinned footer action buttons.
 * **Sectors API Key & Live Watcher Polling:**
   * **Session-Only Storage:** Managed in temporary React client state. Automatically wiped on tab close or refresh. Never saved to SQLite and excluded from `.scriffle` exports.
   * **1-Click Live Poll Button:** Sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV and Top Movers from Sectors API v2.
@@ -91,6 +100,7 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md): Canvas lock state, card creation guard, Move/Hand cursor correction, unified hover system, and dialog viewport max-height layout.
 * [`QUICK_ADD_CONNECTOR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/QUICK_ADD_CONNECTOR_PLAN.md): Quick-Add floating handle, drag-to-empty-canvas drop, and flow auto-wiring.
 * [`TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md): Top Movers 400 bug fix, structured error capture, and Watcher error UI.
 * [`CREDIT_COST_BADGES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/CREDIT_COST_BADGES_PLAN.md): Centralized pricing registry (`creditCosts.ts`), node badges, and burst warning notices.

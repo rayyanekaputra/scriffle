@@ -148,3 +148,20 @@ All endpoints follow standard JSON REST patterns:
 2. **Keep code modular:** Separate custom nodes into individual component files and backend services into isolated single-purpose modules.
 3. **No Insecure `eval()`:** Always use `expr-eval` or `filtrex` for the Condition DSL.
 4. **Short-polling over WebSockets:** Frontend polls canvas state every 2 seconds via SWR for robust, lightweight synchronization.
+
+---
+
+## 7. Canvas Interaction, Lock & Modal Architecture
+
+1. **Canvas Lock & Creation Guard (`isLocked`)**:
+   - Centralized in `src/app/page.tsx` and toggled via React Flow's custom `<ControlButton />`.
+   - When locked, **all node creation entry points** (toolbar buttons, canvas pane right-click context menu, quick-add `+` handle buttons, drag-to-empty quick popover, clipboard paste `Ctrl+V`, and file drops) are blocked.
+   - Panning, zooming, and dragging existing cards remain 100% interactive.
+2. **Tool Mode & Cursor Contracts**:
+   - Deterministic cursor styles governed by `[data-tool-mode]` attributes in `src/app/globals.css`.
+   - **Move Tool (`select` / `V`)**: Canvas pane shows default arrow cursor (`cursor-default`), cards show pointer (`cursor-pointer`).
+   - **Hand Tool (`hand` / `H`)**: Canvas pane and card surfaces show grab hand (`cursor-grab`), active drag shows grabbing fist (`cursor-grabbing`).
+3. **Modal Dialog Constraints**:
+   - All modal dialogs (`EditNodeModal`, `ShortcutsModal`, `SpotlightSearchModal`, `ProjectSwitcherModal`) must enforce `max-h-[88vh] flex flex-col overflow-hidden`.
+   - Headers and footer action buttons must be pinned (`shrink-0`), with scrollable bodies (`flex-1 min-h-0 overflow-y-auto`).
+

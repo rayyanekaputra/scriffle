@@ -10,12 +10,14 @@ interface NavToolbarProps {
   toolMode: CanvasToolMode;
   onSetToolMode: (mode: CanvasToolMode) => void;
   onAddNode: (type: NodeType, config?: any, position?: { x: number; y: number }) => void;
+  isLocked?: boolean;
 }
 
 export const NavToolbar: React.FC<NavToolbarProps> = ({
   toolMode,
   onSetToolMode,
   onAddNode,
+  isLocked = false,
 }) => {
   const { theme } = useTheme();
   const [showStickerMenu, setShowStickerMenu] = useState(false);
@@ -45,6 +47,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
   }
 
   const handleAddAtCenter = (type: NodeType, config?: any) => {
+    if (isLocked) return;
     let pos: { x: number; y: number } | undefined = undefined;
     if (typeof window !== 'undefined' && screenToFlowPosition) {
       try {
@@ -67,6 +70,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
   const isMono = theme === 'mono';
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isLocked) return;
     const files = e.target.files;
     if (files && files.length > 0) {
       const file = files[0];
@@ -85,6 +89,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
   };
 
   const handleGenericFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isLocked) return;
     const files = e.target.files;
     if (files && files.length > 0) {
       const file = files[0];
@@ -115,6 +120,14 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
     : isMono
     ? 'text-[#4A4741] hover:text-[#242321] hover:bg-[#EFECE4] border-[#D8D4CA]'
     : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200';
+
+  const creationButtonClass = isLocked
+    ? isDark
+      ? 'opacity-35 cursor-not-allowed pointer-events-none text-[#8C90A0] border-[#2E3140]'
+      : isMono
+      ? 'opacity-35 cursor-not-allowed pointer-events-none text-[#78756D] border-[#D8D4CA]'
+      : 'opacity-35 cursor-not-allowed pointer-events-none text-slate-400 border-slate-200'
+    : buttonClass;
 
   const activeModeClass = isDark
     ? 'bg-[#2E3140] text-white shadow-sm'
@@ -168,7 +181,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* Note Element */}
         <button
           onClick={() => handleAddAtCenter('note', { color: 'yellow', content: 'Double click to write note...' })}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Add Sticky Note'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="quill_pen_line" size={16} />
           <span className="whitespace-nowrap">Sticky Note</span>
@@ -177,7 +192,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* Text Element */}
         <button
           onClick={() => handleAddAtCenter('text', { text: 'Freeform text headline...' })}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Add Freeform Text (T)'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="font_size_line" size={16} />
           <span className="whitespace-nowrap">Text</span>
@@ -186,7 +203,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* Upload Image Button */}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Upload Image'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="pic_line" size={16} />
           <span className="whitespace-nowrap">Image</span>
@@ -202,7 +221,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* File Attachment Button */}
         <button
           onClick={() => docInputRef.current?.click()}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Attach File'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="attachment_line" size={16} />
           <span className="whitespace-nowrap">File</span>
@@ -217,7 +238,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* Screener Node */}
         <button
           onClick={() => handleAddAtCenter('screener', { query: 'top 5 banks by market cap', limit: 5 })}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Add AI Screener'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="ai_line" size={16} />
           <span className="whitespace-nowrap">AI Screener</span>
@@ -226,7 +249,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* Watcher Node */}
         <button
           onClick={() => handleAddAtCenter('watcher', { symbol: 'BBCA', metric: 'price_change', interval: 300 })}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Add Watcher'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="radar_line" size={16} />
           <span className="whitespace-nowrap">Watcher</span>
@@ -235,7 +260,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* Condition Node */}
         <button
           onClick={() => handleAddAtCenter('condition', { rule: 'price_change > 5' })}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Add Condition'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="filter_line" size={16} />
           <span className="whitespace-nowrap">Condition</span>
@@ -245,16 +272,18 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         <div ref={stickerMenuRef} className="relative shrink-0 flex items-center">
           <button
             onClick={() => handleAddAtCenter('sticker', { emoji: '🚀', label: 'Breakout', color: 'blue' })}
-            className={`flex items-center gap-1.5 rounded-l-xl border-y border-l px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
-            title="Add Sticker"
+            disabled={isLocked}
+            className={`flex items-center gap-1.5 rounded-l-xl border-y border-l px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            title={isLocked ? 'Canvas is locked' : 'Add Sticker'}
           >
             <MingIcon name="star_line" size={16} />
             <span className="whitespace-nowrap">Sticker</span>
           </button>
           <button
             onClick={() => setShowStickerMenu(!showStickerMenu)}
-            className={`flex items-center justify-center rounded-r-xl border px-1.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
-            title="Choose sticker preset"
+            disabled={isLocked}
+            className={`flex items-center justify-center rounded-r-xl border px-1.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            title={isLocked ? 'Canvas is locked' : 'Choose sticker preset'}
           >
             <MingIcon name="down_line" size={13} />
           </button>
@@ -301,7 +330,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* Alert Notification Node */}
         <button
           onClick={() => handleAddAtCenter('alert', { channel: 'ui' })}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Add Alert'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="notification_line" size={16} />
           <span className="whitespace-nowrap">Alert</span>
@@ -310,7 +341,9 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         {/* Automation Action Node */}
         <button
           onClick={() => handleAddAtCenter('action', { action: 'create_note' })}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${buttonClass}`}
+          disabled={isLocked}
+          title={isLocked ? 'Canvas is locked' : 'Add Action'}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
         >
           <MingIcon name="flash_line" size={16} />
           <span className="whitespace-nowrap">Action</span>
