@@ -93,6 +93,15 @@
   * **Bundled Terminal Presets:** Includes ⚡ **Bloomberg Terminal**, ❄️ **Nord Frost**, 📻 **Gruvbox Dark**, 🌃 **Tokyo Night**, and ☀️ **Solarized Dark**.
   * **Interactive Theme Modal (`ThemeModal.tsx`):** Live swatch preview card, 1-click import/export, and instant switching across built-in standard environments (Light, Mono, Dark) and custom themes.
   * **Canvas Drag & Drop:** Dropping a `.scrifflemes` or `.conf` file directly on the canvas applies the theme immediately and persists it in `localStorage`.
+* **Canvas Lock & Creation Guard (`isLocked`):**
+  * Centralized lock toggle in top-left canvas controls (`<ControlButton />`).
+  * Disables all 10 card creation buttons in `NavToolbar`, suppresses pane context menu, hides quick-add `+` handle buttons, blocks drag-to-empty connect popover, and prevents `Ctrl+V` paste / file drops.
+  * Allows pan, zoom, and existing card repositioning to remain 100% interactive.
+* **Deterministic Tool Mode & Cursor Mapping:**
+  * Move Mode (`select` / `V`): Default arrow pointer on canvas pane, `cursor-pointer` on cards.
+  * Hand Mode (`hand` / `H`): Grab hand on canvas pane and cards, shifting to grabbing fist during active drag.
+* **Responsive Modal Dialog Constraints:**
+  * All modals (`EditNodeModal`, `ShortcutsModal`, `SpotlightSearchModal`, `ProjectSwitcherModal`) enforce `max-h-[88vh] flex flex-col overflow-hidden` with pinned headers, scrollable bodies (`flex-1 min-h-0 overflow-y-auto`), and permanently pinned footer action buttons.
 * **Sectors API Key & Live Watcher Polling:**
   * **Session-Only Storage:** Managed in temporary React client state. Automatically wiped on tab close or refresh. Never saved to SQLite and excluded from `.scriffle` exports.
   * **1-Click Live Poll Button:** Sends the key to `POST /api/engine/trigger`, fetching real daily OHLCV and Top Movers from Sectors API v2.
@@ -100,7 +109,9 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
-* [`SCRIFFLE_THEMES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/SCRIFFLE_THEMES_PLAN.md): Plain-text `.scrifflemes` custom theme engine, parser, presets, and drag-and-drop workflow.
+* [`SCRIFFLE_THEMES_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/SCRIFFLE_THEMES_PLAN.md): Plain-text `.scrifflemes` custom theme engine, parser, presets, and drag-and-drop workflow.
+* [`CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md): Canvas lock state, card creation guard, Move/Hand cursor correction, unified hover system, and dialog viewport max-height layout.
+* [`GIT_CONFLICT_RESOLUTION_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/GIT_CONFLICT_RESOLUTION_PLAN.md): Conflict resolution and integration workflow between `dev-ui` and `dev-conflicts`.
 * [`QUICK_ADD_CONNECTOR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/QUICK_ADD_CONNECTOR_PLAN.md): Quick-Add floating handle, drag-to-empty-canvas drop, and flow auto-wiring.
 * [`TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/TOP_MOVERS_API_FIX_AND_ERROR_TRANSPARENCY_PLAN.md): Top Movers 400 bug fix, structured error capture, and Watcher error UI.
 * [`CREDIT_COST_BADGES_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/CREDIT_COST_BADGES_PLAN.md): Centralized pricing registry (`creditCosts.ts`), node badges, and burst warning notices.

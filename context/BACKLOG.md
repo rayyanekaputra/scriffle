@@ -25,6 +25,11 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - Built interactive `ThemeModal.tsx` with live color swatch previews, 1-click theme import/export, and seamless switching between standard environments (Light, Mono, Dark) and custom `.scrifflemes`.
   - Added native drag-and-drop `.scrifflemes` / `.conf` file importing directly on `MarketCanvas.tsx` with automatic persistence in `localStorage`.
   - Added unit test suite `themeEngine.test.ts` (151 total passing unit tests across 13 suites, 100% green).
+- [x] **🛡️ Canvas Lock, Cursor & Dialog Overflow Inconsistency (`page.tsx`, `MarketCanvas.tsx`, `NavToolbar.tsx`, `globals.css`, modals & node components)**
+  - **Canvas Lock & Creation Guard**: Centralized `isLocked` state in `page.tsx` wired to custom `<ControlButton />` toggle. When locked, all node-creation entry points (NavToolbar addition buttons, canvas context menu right-click, quick-add `+` handles, connector drop to empty canvas, and `Ctrl+V` paste / file drop) are cleanly blocked, while pan, zoom, and existing card repositioning remain 100% interactive.
+  - **Move vs. Hand Tool Cursor Correction**: Enforced deterministic CSS cursor rules via `[data-tool-mode]`. Move mode (`V`) renders default arrow on canvas pane and pointer on cards; Hand mode (`H`) renders grab hand on canvas pane and cards, shifting to grabbing fist during active drag.
+  - **Unified Card Hover System**: Standardized hover styling across all 10 node types (`watcher`, `condition`, `note`, `alert`, `action`, `screener`, `text`, `sticker`, `image`, `file`) with theme-aware border darkening, background tint shift, and `cursor-pointer` across Light, Mono (warm-paper), and Dark (soft charcoal) themes.
+  - **Modal Dialog Viewport Max-Height & Pinned Action Layout**: Standardized `EditNodeModal`, `ShortcutsModal`, `SpotlightSearchModal`, and `ProjectSwitcherModal` with fixed backdrops, `max-h-[88vh] flex flex-col overflow-hidden` containers, pinned headers (`shrink-0`), scrollable bodies (`flex-1 min-h-0 overflow-y-auto`), and permanently pinned footer action buttons.
 - [x] **⚡ Quick-Add Node Connector & Flow Auto-Wiring (`QuickAddHandle.tsx`, `QuickAddPopover.tsx`, `quickAddNavigator.ts`, `MarketCanvas.tsx`)**
   - Implemented floating `+` quick-add button on all output handles (`WatcherNode`, `ConditionNode`, `ScreenerNode`, `ActionNode`) that appears on card hover/selection.
   - Implemented drag-to-empty-canvas connector drop (`onConnectEnd` in `MarketCanvas.tsx`) to open quick-picker directly at release coordinates.
@@ -130,7 +135,18 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ### 🐛 BUG: Sticker Toolbar Preset Dropdown Clipped by Container Overflow (`NavToolbar.tsx`)
 - **Status**: ✅ Completed
-- **Resolution**: Replaced `overflow-x-auto` with `overflow-visible` on the main toolbar wrapper in [`NavToolbar.tsx`](file:///home/abzolute/Projects/hackathon/src/components/controls/NavToolbar.tsx) and elevated the dropdown `z-50` position above whiteboard chrome.
+- **Resolution**: Replaced `overflow-x-auto` with `overflow-visible` on the main toolbar wrapper in [`NavToolbar.tsx`](file:///home/eiksirf/Projects/scriffle/src/components/controls/NavToolbar.tsx) and elevated the dropdown `z-50` position above whiteboard chrome.
+
+---
+
+### 🛡️ BUG: Canvas Lock, Cursor & Dialog Overflow Inconsistency
+- **Status**: ✅ Completed
+- **Resolution**:
+  1. **Canvas Lock & Creation Guard**: Centralized `isLocked` state in `src/app/page.tsx` wired to custom `<ControlButton />` toggle. When locked, all node-creation entry points (NavToolbar addition buttons, canvas context menu right-click, quick-add `+` handles, connector drop to empty canvas, and `Ctrl+V` paste / file drop) are cleanly blocked, while pan, zoom, and existing card repositioning remain 100% interactive.
+  2. **Move vs. Hand Tool Cursor Correction**: Enforced deterministic CSS cursor rules in `src/app/globals.css` via `[data-tool-mode]`. Move mode (`V`) renders default arrow on canvas pane and pointer on cards; Hand mode (`H`) renders grab hand on canvas pane and cards, shifting to grabbing fist during active drag.
+  3. **Unified Card Hover System**: Standardized hover styling across all 10 node types (`watcher`, `condition`, `note`, `alert`, `action`, `screener`, `text`, `sticker`, `image`, `file`) with theme-aware border darkening, background tint shift, and `cursor-pointer` across Light, Mono (warm-paper), and Dark (soft charcoal) themes.
+  4. **Modal Dialog Viewport Max-Height & Pinned Action Layout**: Standardized `EditNodeModal`, `ShortcutsModal`, `SpotlightSearchModal`, and `ProjectSwitcherModal` with fixed backdrops, `max-h-[88vh] flex flex-col overflow-hidden` containers, pinned headers (`shrink-0`), scrollable bodies (`flex-1 min-h-0 overflow-y-auto`), and permanently pinned footer action buttons.
+- **Reference**: [`CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md)
 
 ---
 

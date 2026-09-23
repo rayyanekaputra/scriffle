@@ -126,7 +126,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <div className="mt-4 space-y-4 text-xs">
+        <div className="mt-4 space-y-4 text-xs max-h-[60vh] overflow-y-auto">
           {node.type === 'watcher' && (
             <>
               <div>

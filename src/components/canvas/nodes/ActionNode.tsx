@@ -27,7 +27,7 @@ export const ActionNode = memo(({ id, data, selected }: NodeProps) => {
       ? 'border-[#0050FF] ring-2 ring-[#0050FF]/30 animate-pulse'
       : isPassed
       ? 'border-[#8E95A5]'
-      : 'border-[#282A36] hover:border-[#383B4A]'
+      : 'border-[#282A36] hover:border-[#3E4254]'
     : isMono
     ? selected
       ? 'border-[#242321] ring-2 ring-[#242321]/20'
@@ -35,7 +35,7 @@ export const ActionNode = memo(({ id, data, selected }: NodeProps) => {
       ? 'border-[#242321] ring-2 ring-[#242321]/30 animate-pulse'
       : isPassed
       ? 'border-[#242321]'
-      : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
+      : 'border-[#D8D4CA] hover:border-[#9E9A8E]'
     : selected
     ? 'border-[#0050FF] ring-2 ring-[#0050FF]/20'
     : nodeLoading
@@ -47,14 +47,14 @@ export const ActionNode = memo(({ id, data, selected }: NodeProps) => {
   const cardBg = isCustom && activeCustomTheme
     ? 'bg-[var(--custom-node-card-bg)] text-[var(--custom-ui-text)]'
     : isDark
-    ? 'bg-[#181920] text-[#E2E4E9]'
+    ? 'bg-[#181920] hover:bg-[#1E202B] text-[#E2E4E9]'
     : isMono
-    ? 'bg-[#FCFBF9] text-[#242321]'
-    : 'bg-white text-slate-900';
+    ? 'bg-[#FCFBF9] hover:bg-[#F2EFE8] text-[#242321]'
+    : 'bg-white hover:bg-slate-50/75 text-slate-900';
 
   return (
     <div
-      className={`relative w-64 rounded-2xl border-2 p-4 transition-all duration-150 group/node ${cardBg} ${cardBorder}`}
+      className={`relative w-64 rounded-2xl border-2 p-4 transition-all duration-150 cursor-pointer group/node ${cardBg} ${cardBorder}`}
     >
       {/* Input Handle */}
       <Handle
