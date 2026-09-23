@@ -19,23 +19,23 @@ export const ConditionNode = memo(({ id, data, selected }: NodeProps) => {
   const isMono = theme === 'mono';
 
   const containerBg = isDark
-    ? 'bg-[#181920] text-[#E2E4E9]'
+    ? 'bg-[#181920] hover:bg-[#1E202B] text-[#E2E4E9]'
     : isMono
-    ? 'bg-[#FCFBF9] text-[#242321]'
-    : 'bg-[#FFFDE7] text-amber-950';
+    ? 'bg-[#FCFBF9] hover:bg-[#F2EFE8] text-[#242321]'
+    : 'bg-[#FFFDE7] hover:bg-amber-50/75 text-amber-950';
 
   const cardBorder = isDark
     ? selected
       ? 'border-[#8E95A5] ring-2 ring-[#8E95A5]/20'
       : isPassed
       ? 'border-[#8E95A5]'
-      : 'border-[#282A36] hover:border-[#383B4A]'
+      : 'border-[#282A36] hover:border-[#3E4254]'
     : isMono
     ? selected
       ? 'border-[#242321] ring-2 ring-[#242321]/20'
       : isPassed
       ? 'border-[#242321]'
-      : 'border-[#D1CEC4] hover:border-[#B5B0A2]'
+      : 'border-[#D8D4CA] hover:border-[#9E9A8E]'
     : selected
     ? 'border-[#FFD728] ring-2 ring-[#FFD728]/40'
     : isPassed
@@ -44,7 +44,7 @@ export const ConditionNode = memo(({ id, data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`relative w-68 rounded-2xl border-2 p-4 transition-all duration-150 group/node ${containerBg} ${cardBorder}`}
+      className={`relative w-68 rounded-2xl border-2 p-4 transition-all duration-150 cursor-pointer group/node ${containerBg} ${cardBorder}`}
     >
       {/* Input Handle */}
       <Handle

@@ -5,6 +5,7 @@ import {
   ReactFlow,
   Background,
   Controls,
+  ControlButton,
   MiniMap,
   useNodesState,
   useEdgesState,
@@ -43,6 +44,8 @@ interface MarketCanvasProps {
   highlightedNodeIds?: string[];
   toolMode?: CanvasToolMode;
   onSetToolMode?: (mode: CanvasToolMode) => void;
+  isLocked?: boolean;
+  onToggleLock?: () => void;
   onRefresh?: () => void;
   onEditNode?: (nodeId: string) => void;
   onAddNodeAtPosition?: (type: NodeType, position: { x: number; y: number }, extraConfig?: any) => void;
@@ -78,6 +81,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   highlightedNodeIds = [],
   toolMode = 'select',
   onSetToolMode,
+  isLocked = false,
+  onToggleLock,
   onRefresh,
   onEditNode,
   onAddNodeAtPosition,
@@ -173,6 +178,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   // Listen for custom quick-add event dispatched from node handles
   useEffect(() => {
     const handleQuickAddEvent = (e: Event) => {
+      if (isLocked) return;
       const customEvent = e as CustomEvent;
       const detail = customEvent.detail || {};
       if (!detail.nodeId) return;
@@ -191,7 +197,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
 
     window.addEventListener('scriffle:quick-add', handleQuickAddEvent);
     return () => window.removeEventListener('scriffle:quick-add', handleQuickAddEvent);
-  }, [nodes]);
+  }, [nodes, isLocked]);
 
   // Track global mouse coordinates for paste placement safely on client
   useEffect(() => {
@@ -418,6 +424,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
 
       // 5. Ctrl+V / Cmd+V -> Paste copied batch (nodes + internal edges)
       if (isCtrlOrCmd && (e.key === 'v' || e.key === 'V')) {
+        if (isLocked) return;
         if (clipboardRef.current && clipboardRef.current.nodes.length > 0) {
           e.preventDefault();
           onRecordSnapshot?.();
@@ -453,6 +460,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
 
       // 6. Ctrl+D / Cmd+D -> Quick Duplicate (+35px offset)
       if (isCtrlOrCmd && (e.key === 'd' || e.key === 'D')) {
+        if (isLocked) return;
         const selectedNodes = nodes.filter((n) => n.selected);
         if (selectedNodes.length > 0) {
           e.preventDefault();
@@ -509,6 +517,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           return;
         }
         if (e.key === 't' || e.key === 'T') {
+          if (isLocked) return;
           e.preventDefault();
           const flowPos = screenToFlowPosition(mousePosRef.current);
           onAddNodeAtPosition?.('text', flowPos, { text: '' });
@@ -577,6 +586,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     nodes,
     edges,
     isolatedGroupId,
+    isLocked,
     handleGroupSelected,
     handleUngroupSelected,
     onDeleteNode,
@@ -597,6 +607,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   // Global Clipboard Image Paste Listener
   useEffect(() => {
     const handleImagePaste = (event: ClipboardEvent) => {
+      if (isLocked) return;
       const target = event.target as HTMLElement;
       if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT')) {
         return;
@@ -629,7 +640,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
 
     window.addEventListener('paste', handleImagePaste);
     return () => window.removeEventListener('paste', handleImagePaste);
-  }, [screenToFlowPosition, onAddNodeAtPosition]);
+  }, [screenToFlowPosition, onAddNodeAtPosition, isLocked]);
 
   // Sync state when backend updates or restores from undo/redo, preserving user selection state
   useEffect(() => {
@@ -805,6 +816,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   // Drag-and-drop connection line released onto empty canvas area
   const onConnectEnd = useCallback(
     (event: MouseEvent | TouchEvent, connectionState?: any) => {
+      if (isLocked) return;
       if (connectionState && !connectionState.isValid && connectionState.fromNode) {
         const clientX =
           'clientX' in event
@@ -837,7 +849,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         });
       }
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition, isLocked]
   );
 
   // Auto-wires and spawns a new connected node from quick-add
@@ -1027,6 +1039,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   const onPaneContextMenu = useCallback(
     (event: any) => {
       event.preventDefault();
+      if (isLocked) return;
       const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       setMenu({
         x: event.clientX,
@@ -1037,7 +1050,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         edgeId: null,
       });
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition, isLocked]
   );
 
   // Right click on specific node
@@ -1078,6 +1091,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
+      if (isLocked) return;
       const files = event.dataTransfer.files;
       if (files && files.length > 0) {
         const file = files[0];
@@ -1123,7 +1137,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         }
       }
     },
-    [screenToFlowPosition, onAddNodeAtPosition, onRefresh]
+    [screenToFlowPosition, onAddNodeAtPosition, onRefresh, canvasData?.id, isLocked]
   );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -1166,6 +1180,8 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
 
   return (
     <div
+      data-tool-mode={toolMode}
+      data-is-locked={isLocked ? 'true' : 'false'}
       className={`h-full w-full relative transition-colors duration-200 ${isHandMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
       style={{ backgroundColor: bgColor }}
       onDrop={onDrop}
@@ -1240,6 +1256,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color={dotColor} />
         <Controls
           position="top-left"
+          showInteractive={false}
           className={
             theme === 'dark'
               ? '!border-2 !border-[#282A36] !bg-[#14151B] !fill-[#BAC0D0] !rounded-xl !shadow-md !mt-3 !ml-3'
@@ -1247,7 +1264,24 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
               ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !fill-[#242321] !rounded-xl !shadow-md !mt-3 !ml-3'
               : '!border-2 !border-slate-300 !bg-white !fill-slate-700 !rounded-xl !shadow-md !mt-3 !ml-3'
           }
-        />
+        >
+          <ControlButton
+            onClick={onToggleLock}
+            title={isLocked ? 'Unlock Canvas (Enable Card Creation)' : 'Lock Canvas (Disable Card Creation)'}
+            aria-label={isLocked ? 'Unlock Canvas' : 'Lock Canvas'}
+            className={
+              isLocked
+                ? '!text-amber-500 !fill-amber-500 hover:!bg-amber-500/10'
+                : theme === 'dark'
+                ? '!text-[#BAC0D0] !fill-[#BAC0D0]'
+                : theme === 'mono'
+                ? '!text-[#242321] !fill-[#242321]'
+                : '!text-slate-700 !fill-slate-700'
+            }
+          >
+            <MingIcon name={isLocked ? 'lock_line' : 'unlock_line'} size={15} />
+          </ControlButton>
+        </Controls>
         <MiniMap
           position="bottom-right"
           nodeColor={miniMapNodeColor}
