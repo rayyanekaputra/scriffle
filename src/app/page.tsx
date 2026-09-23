@@ -31,6 +31,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
   const [toolMode, setToolMode] = useState<CanvasToolMode>('select');
+  const [isLocked, setIsLocked] = useState(false);
   const { showToast } = useToast();
   const { runTracked } = useLoading();
 
@@ -140,6 +141,10 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     position?: { x: number; y: number },
     customConfig?: any
   ) => {
+    if (isLocked) {
+      showToast('Canvas Locked', 'Creation of new cards is disabled while canvas is locked', 'warning');
+      return;
+    }
     recordSnapshot();
     let defaultConfig: any = customConfig || {};
     if (!customConfig) {
@@ -874,6 +879,8 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
               highlightedNodeIds={highlightedNodeIds}
               toolMode={toolMode}
               onSetToolMode={(mode) => setToolMode(mode)}
+              isLocked={isLocked}
+              onToggleLock={() => setIsLocked((prev) => !prev)}
               onRefresh={handleRefresh}
               onEditNode={handleEditNode}
               onAddNodeAtPosition={(type, pos, extra) => handleAddNode(type, pos, extra)}
@@ -892,6 +899,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
               toolMode={toolMode}
               onSetToolMode={(mode) => setToolMode(mode)}
               onAddNode={(type, config, pos) => handleAddNode(type, pos, config)}
+              isLocked={isLocked}
             />
           </ReactFlowProvider>
         </div>

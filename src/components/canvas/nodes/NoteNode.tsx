@@ -110,19 +110,19 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
   const cardStyle = isCustom && activeCustomTheme
     ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)] text-[var(--custom-ui-text)]'
     : isDark
-    ? 'bg-[#181920] border-[#282A36] text-[#E2E4E9]'
+    ? 'bg-[#181920] hover:bg-[#1E202B] border-[#282A36] text-[#E2E4E9]'
     : isMono
-    ? 'bg-[#FCFBF9] border-[#D1CEC4] text-[#242321]'
-    : COLOR_STYLES[currentColor] || COLOR_STYLES.yellow;
+    ? 'bg-[#FCFBF9] hover:bg-[#F2EFE8] border-[#D8D4CA] text-[#242321]'
+    : `${COLOR_STYLES[currentColor] || COLOR_STYLES.yellow} hover:brightness-98`;
 
   const cardBorderFocus = isDark
     ? selected
       ? 'border-[#8E95A5] ring-2 ring-[#8E95A5]/20'
-      : 'hover:border-[#383B4A]'
+      : 'hover:border-[#3E4254]'
     : isMono
     ? selected
-      ? 'border-[#1D4ED8] ring-2 ring-[#1D4ED8]/20'
-      : 'hover:border-[#B5B0A2]'
+      ? 'border-[#242321] ring-2 ring-[#242321]/20'
+      : 'hover:border-[#9E9A8E]'
     : selected
     ? 'ring-3 ring-slate-900/30'
     : 'hover:border-slate-800';
@@ -145,7 +145,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           minWidth: 180,
           minHeight: 140,
         }}
-        className={`group relative flex flex-col rounded-2xl border-2 p-4 transition-all duration-150 ${
+        className={`group relative flex flex-col rounded-2xl border-2 p-4 transition-all duration-150 cursor-pointer ${
           !config.width ? 'w-72' : ''
         } ${cardStyle} ${cardBorderFocus}`}
       >
