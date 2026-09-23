@@ -148,7 +148,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
               Data Source & Key
             </span>
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border transition-all ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold border transition-all ${
                 isLiveMode
                   ? isDark
                     ? 'bg-[#1E2721] text-[#93C5A5] border-[#2A3F31]'
@@ -163,7 +163,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
               }`}
             >
               <span
-                className={`h-1.5 w-1.5 rounded-full ${
+                className={`h-1.5 w-1.5 rounded-full  ${
                   isLiveMode
                     ? isDark ? 'bg-[#93C5A5]' : isMono ? 'bg-[#242321]' : 'bg-emerald-500 animate-pulse'
                     : isDark ? 'bg-[#5A5D6E]' : isMono ? 'bg-[#78756D]' : 'bg-slate-400'

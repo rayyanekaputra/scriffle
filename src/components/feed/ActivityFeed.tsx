@@ -221,10 +221,10 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               Reset
             </button>
           )}
-          <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
+          <span className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
             isDark ? 'bg-[#22242D] text-[#BAC0D0] border-[#313442]' : isMono ? 'bg-[#EAE7DF] text-[#242321] border-[#D8D4CA]' : 'bg-slate-100 text-slate-700 border-slate-200'
           }`}>
-            <span className={`h-1.5 w-1.5 rounded-full animate-ping ${isDark ? 'bg-[#BAC0D0]' : isMono ? 'bg-[#242321]' : 'bg-slate-500'}`} />
+            <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${isDark ? 'bg-[#BAC0D0]' : isMono ? 'bg-[#242321]' : 'bg-slate-500'}`} />
             Live
           </span>
           <button
