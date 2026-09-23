@@ -146,6 +146,12 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
     }
   };
 
+  const kbdClass = isDark
+    ? 'bg-[#22242D] border-[#2E3140] text-slate-200'
+    : isMono
+    ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#242321]'
+    : 'bg-white border-slate-300 text-slate-700 shadow-2xs';
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-24 pb-6 px-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150"
@@ -193,13 +199,7 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
             </button>
           )}
           <kbd
-            className={`hidden sm:inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold border ${
-              isDark
-                ? 'bg-[#22242D] border-[#2E3140] text-slate-400'
-                : isMono
-                ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#78756D]'
-                : 'bg-slate-100 border-slate-200 text-slate-500'
-            }`}
+            className={`hidden sm:inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold border ${kbdClass}`}
           >
             Esc
           </kbd>
@@ -306,13 +306,13 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
         >
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px]">↑</kbd>
-              <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px]">↓</kbd>
-              Navigate
+              <kbd className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${kbdClass}`}>↑</kbd>
+              <kbd className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${kbdClass}`}>↓</kbd>
+              <span>Navigate</span>
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px]">↵</kbd>
-              Jump to Card
+              <kbd className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${kbdClass}`}>↵</kbd>
+              <span>Jump to Card</span>
             </span>
           </div>
 

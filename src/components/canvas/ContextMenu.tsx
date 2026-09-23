@@ -142,7 +142,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 <MingIcon name="group_line" size={16} className={iconColor} />
                 <span>Group selection</span>
               </div>
-              <span className={`text-[10px] ${textLabel}`}>Cmd+G</span>
+              <span className={`text-[10px] ${textLabel}`}>Ctrl+G</span>
             </button>
           )}
 
@@ -158,7 +158,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 <MingIcon name="ungroup_line" size={16} className={iconColor} />
                 <span>Ungroup</span>
               </div>
-              <span className={`text-[10px] ${textLabel}`}>Cmd+Shift+G</span>
+              <span className={`text-[10px] ${textLabel}`}>Ctrl+Shift+G</span>
             </button>
           )}
 

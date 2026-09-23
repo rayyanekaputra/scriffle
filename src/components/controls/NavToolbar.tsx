@@ -320,12 +320,12 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         <div className={`h-6 w-[1.5px] mx-1 shrink-0 ${dividerClass}`} />
 
         {/* Insert Menu: Sticky Note, Text, Image, File (pill split-button) */}
-        <div ref={insertWrapperRef} className="relative shrink-0 flex items-center">
+        <div ref={insertWrapperRef} className="relative shrink-0 flex items-stretch h-[32px]">
           <button
             onClick={toggleInsertMenu}
             disabled={isLocked}
             title={isLocked ? 'Canvas is locked' : 'Insert element'}
-            className={`flex items-center gap-1.5 rounded-l-full border-y border-l pl-3.5 pr-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            className={`flex items-center gap-1.5 rounded-l-full border-y border-l pl-3.5 pr-2.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
           >
             <MingIcon name="add_line" size={16} />
             <span className="whitespace-nowrap">Elements</span>
@@ -333,7 +333,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
           <button
             onClick={toggleInsertMenu}
             disabled={isLocked}
-            className={`flex items-center justify-center rounded-r-full border pl-1.5 pr-2.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            className={`flex items-center justify-center rounded-r-full border pl-1.5 pr-2.5 text-xs font-bold shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
             title={isLocked ? 'Canvas is locked' : 'Insert element'}
           >
             <MingIcon name="down_line" size={13} />
@@ -409,11 +409,11 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         />
         
         {/* Sticker Element & Dropdown Menu (pill split-button) */}
-        <div ref={stickerWrapperRef} className="relative shrink-0 flex items-center">
+        <div ref={stickerWrapperRef} className="relative shrink-0 flex items-stretch h-[32px]">
           <button
             onClick={() => handleAddAtCenter('sticker', { emoji: '🚀', label: 'Breakout', color: 'blue' })}
             disabled={isLocked}
-            className={`flex items-center gap-1.5 rounded-l-full border-y border-l pl-3.5 pr-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            className={`flex items-center gap-1.5 rounded-l-full border-y border-l pl-3.5 pr-2.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
             title={isLocked ? 'Canvas is locked' : 'Add Sticker'}
           >
             <MingIcon name="star_line" size={16} />
@@ -422,7 +422,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
           <button
             onClick={toggleStickerMenu}
             disabled={isLocked}
-            className={`flex items-center justify-center rounded-r-full border pl-1.5 pr-2.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            className={`flex items-center justify-center rounded-r-full border pl-1.5 pr-2.5 text-xs font-bold shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
             title={isLocked ? 'Canvas is locked' : 'Choose sticker preset'}
           >
             <MingIcon name="down_line" size={13} />

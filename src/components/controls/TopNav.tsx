@@ -168,7 +168,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            title="Undo (Ctrl+Z / Cmd+Z)"
+            title="Undo (Ctrl+Z)"
             className={`flex h-7 w-7 items-center justify-center rounded-lg transition active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-transparent ${
               isDark ? 'text-slate-300 hover:bg-[#1E202B]' : isMono ? 'text-[#242321] hover:bg-[#EFECE4]' : 'text-slate-600 hover:bg-slate-100'
             }`}
@@ -178,7 +178,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           <button
             onClick={onRedo}
             disabled={!canRedo}
-            title="Redo (Ctrl+Shift+Z / Cmd+Shift+Z or Ctrl+Y)"
+            title="Redo (Ctrl+Y / Ctrl+Shift+Z)"
             className={`flex h-7 w-7 items-center justify-center rounded-lg transition active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-transparent ${
               isDark ? 'text-slate-300 hover:bg-[#1E202B]' : isMono ? 'text-[#242321] hover:bg-[#EFECE4]' : 'text-slate-600 hover:bg-slate-100'
             }`}
@@ -215,20 +215,20 @@ export const TopNav: React.FC<TopNavProps> = ({
               ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#78756D] hover:text-[#242321] hover:border-[#A8A49A]'
               : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
           }`}
-          title="Spotlight Search (Cmd+K / Cmd+F)"
+          title="Spotlight Search (Ctrl+K / Ctrl+F)"
         >
           <MingIcon name="search_line" size={14} />
           <span>Search cards...</span>
           <kbd
             className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${
               isDark
-                ? 'bg-[#22242D] border-[#2E3140] text-slate-400'
+                ? 'bg-[#22242D] border-[#2E3140] text-slate-300'
                 : isMono
-                ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#78756D]'
-                : 'bg-white border-slate-200 text-slate-500 shadow-2xs'
+                ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#242321]'
+                : 'bg-white border-slate-300 text-slate-700 shadow-2xs'
             }`}
           >
-            ⌘K
+            Ctrl+K
           </kbd>
         </button>
       </div>

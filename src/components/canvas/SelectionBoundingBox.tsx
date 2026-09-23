@@ -159,7 +159,7 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
           <button
             type="button"
             onClick={onGroup}
-            title="Group elements (Cmd+G)"
+            title="Group elements (Ctrl+G)"
             className={`flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-bold backdrop-blur-md transition-all cursor-pointer ${
               isDark
                 ? 'bg-[#1E202B] hover:bg-[#2A2D3D] border-[#313444] text-[#E2E4E9]'
@@ -170,7 +170,7 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
           >
             <MingIcon name="group_line" size={13} />
             <span>Group</span>
-            <span className="opacity-50 text-[10px]">Cmd+G</span>
+            <span className="opacity-50 text-[10px]">Ctrl+G</span>
           </button>
         )}
 
@@ -178,7 +178,7 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
           <button
             type="button"
             onClick={onUngroup}
-            title="Ungroup elements (Cmd+Shift+G)"
+            title="Ungroup elements (Ctrl+Shift+G)"
             className={`flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-bold backdrop-blur-md transition-all cursor-pointer ${
               isDark
                 ? 'bg-[#1E202B] hover:bg-[#2A2D3D] border-[#313444] text-[#E2E4E9]'
@@ -189,7 +189,7 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
           >
             <MingIcon name="ungroup_line" size={13} />
             <span>Ungroup</span>
-            <span className="opacity-50 text-[10px]">Cmd+Shift+G</span>
+            <span className="opacity-50 text-[10px]">Ctrl+Shift+G</span>
           </button>
         )}
       </div>
