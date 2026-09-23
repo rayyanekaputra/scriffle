@@ -142,7 +142,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     customConfig?: any
   ) => {
     if (isLocked) {
-      showToast('Canvas Locked', 'Creation of new cards is disabled while canvas is locked', 'warning');
+      showToast('Canvas Locked', 'Creation of new cards is disabled while canvas is locked', 'alert');
       return;
     }
     recordSnapshot();
