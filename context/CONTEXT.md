@@ -50,13 +50,20 @@ export interface NoteConfig {
 }
 
 export interface AlertConfig {
-  channel: 'ui' | 'telegram' | 'webhook';
+  channel: 'ui' | 'discord' | 'telegram' | 'webhook';
   messageTemplate?: string;
+  template?: string;
+  discordWebhookUrl?: string;
+  botName?: string;
+  includeMarketStats?: boolean;
 }
 
 export interface ActionConfig {
-  action: 'create_note' | 'create_watcher' | 'export_canvas';
+  action: 'create_note' | 'create_watcher' | 'fundamental_report' | 'export_canvas';
   params?: Record<string, any>;
+  targetSymbol?: string;
+  template?: string;
+  interval?: number;
 }
 
 export type NodeConfig =
