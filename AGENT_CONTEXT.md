@@ -439,15 +439,23 @@ hackathon/
 
 - **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 109 tests across 7 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, `spatialNavigator`, and `reportRevision`. All pass in ~128ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
-### 🟡 Open Candidate Integrations & Polish (Prioritized)
-1. **⏳ Global & Card-Level Loading Feedback for Long-Running Operations** — Show institutional loading/progress feedback during multi-stock PDF generation, `.scriffle` exports, or heavy API fetches.
-2. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
-3. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
-4. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
-5. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-6. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-7. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-8. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+### 🔴 Saturday Production Freeze — Launch Checklist (Deadline: Saturday)
+
+> Full checklist lives in `context/BACKLOG.md` under **🔴 Saturday Production Freeze**. Track progress there.
+> Partner QA checklist is at `context/QA_TESTING_GUIDE.md` — 22 sections covering all features + E2E demo flow + build verification sign-off.
+
+1. **🧹 Repo Cleanup** — Remove `prisma/dev.db` and `reports/` from version control. Add both to `.gitignore`. Run `git rm --cached prisma/dev.db`. Verify clean-clone `bun run prisma/seed.ts` still works.
+2. **📄 Update `README.md`** — Rewrite to reflect all 10 node types, new API endpoints, themes, Control Panel, keyboard shortcuts, unit test count (`179 tests, 16 suites`), and hackathon problem statement blurb.
+3. **🎬 Product Teaser** — Hero screenshot or animated GIF for README banner. Core message: *"Too many platforms to switch between for research. Scriffle lets you automate data fetching and brainstorm visually — all in one canvas."*
+4. **🎥 Hackathon Demo Video (3 min minimum)** — 30s problem framing → 2min core demo (Watcher chain, AI Screener pipeline spawn, Radar leaderboard, Discord webhook, theme switch) → 30s close with `.scriffle` save/load. Upload to YouTube/Loom, embed in README + submission.
+
+### 🟡 Open Candidate Integrations (Post-Freeze, If Time Allows)
+1. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+2. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
+3. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+4. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+5. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+6. **Volume Breakout Scanner** — `GET /v2/most-traded/`
 
 ### ⏸️ On-Hold / Deprioritized Candidates
 - **Action-to-Action Chaining** — Chained sequential actions (`[Action] -> [Action]`). *Status: Deprioritized / On-Hold — currently lacking concrete logic-case as single downstream action pipelines (`[Screener/Radar] -> [Action] -> [Pipeline]`) already fulfill target workflows without compounding branching complexity.*
@@ -508,6 +516,7 @@ All historical plan documents are in `context/`. Key ones to reference:
 | File | What It Covers |
 |---|---|
 | `SESSION_CHANGELOG.md` | ⭐ Most recent session changes — read this first for a quick catch-up |
+| `QA_TESTING_GUIDE.md` | ⭐ Partner QA checklist — 22 sections, full E2E demo flow, build verification sign-off. Use before Saturday freeze. |
 | `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
 | `TESTING_PLAN.md` | ⭐ Full 3-tier testing strategy & mandate — **read before adding any new feature** |

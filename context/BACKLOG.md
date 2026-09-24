@@ -4,6 +4,51 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ---
 
+## 🔴 Saturday Production Freeze — Launch Checklist
+
+> **Deadline: Saturday.** These must be done before we freeze and build. QA guide is at [`context/QA_TESTING_GUIDE.md`](./QA_TESTING_GUIDE.md).
+
+### 1. 🧹 Repo Cleanup — Remove DB from Version Control
+- [ ] Add `prisma/dev.db` to `.gitignore`
+- [ ] Add `prisma/*.db-journal` to `.gitignore`
+- [ ] Remove `prisma/dev.db` from git tracking: `git rm --cached prisma/dev.db`
+- [ ] Verify `bun run prisma/seed.ts` still works after clean clone (no committed DB dependency)
+- [ ] Check for any other files that shouldn't be committed (`reports/`, `node_modules/`, `.env*`)
+- [ ] Add `reports/` to `.gitignore` (auto-generated report exports)
+
+### 2. 📄 Update `README.md`
+- [ ] Rewrite README to reflect current full feature set (Screener, Themes, Quick-Add, Discord Webhooks, Multi-Project, etc.)
+- [ ] Update "How it works" section — currently only lists 5 node types, we now have 10
+- [ ] Update "Project structure" — current structure is outdated
+- [ ] Update API reference table — several new endpoints missing (`/api/alert/test-webhook`, `/api/export/report`, `/api/file/open-location`, `/api/canvas/list`, `/api/canvas/restore`)
+- [ ] Add "Themes" section — explain Light / Mono / Dark + `.scrifflemes` custom themes
+- [ ] Add "Control Panel" section — explain streaming, presets, and project file operations
+- [ ] Add "Keyboard Shortcuts" section (or reference the in-app `?` modal)
+- [ ] Add "Unit Tests" section: `bun test` → 179 tests, 16 suites, ~450ms
+- [ ] Add hackathon credits / problem statement blurb
+
+### 3. 🎬 Product Teaser
+- [ ] Create a short teaser page / README banner image or GIF
+- [ ] Core message: **"Too many platforms to switch between for research. Scriffle lets you automate data fetching and brainstorm visually — all in one canvas."**
+- [ ] Show the visual canvas with nodes wired up, activity feed live, and leaderboard
+- [ ] Mention key unique angles: event-driven, auto-mutating canvas, Sectors API integration, Discord alerts
+- [ ] Options: animated GIF from screen recording, static hero screenshot, or a short Loom-style teaser video embed in README
+
+### 4. 🎥 Hackathon Demo Video (3 min minimum)
+- [ ] **Problem framing (30s):** "Analysts switch between 5+ platforms — Bloomberg, Excel, Telegram groups, broker apps, news sites — just to track one stock. Scriffle collapses all of that into one automated visual canvas."
+- [ ] **Core demo (2 min):**
+  - Start with blank canvas
+  - Add a Watcher → Condition → Note chain (30s)
+  - Run "Do Once" → watch notes auto-update, activity feed fires (20s)
+  - Add an AI Screener → Action (create_watcher) → watch 5 pipelines auto-spawn (30s)
+  - Show Top Gainers leaderboard in Radar Watcher mode (15s)
+  - Fire a Discord webhook alert — show it land in Discord (15s)
+  - Switch theme (Dark / Bloomberg) in one click (10s)
+- [ ] **Closing (30s):** Show the `.scriffle` save/load flow, multi-project tabs, highlight Sectors API credit badges for transparency. End with problem statement callback.
+- [ ] Upload to YouTube / Loom and embed link in README + hackathon submission
+
+---
+
 ## 🚀 Active / Completed in Recent Sprint
 
 - [x] **🎮 Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**
