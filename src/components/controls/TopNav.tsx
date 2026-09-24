@@ -251,103 +251,32 @@ export const TopNav: React.FC<TopNavProps> = ({
           <MingIcon name="question_line" size={16} />
         </button>
 
-        {/* 4-Mode Theme Switcher with .scrifflemes Custom Theme support */}
-        <div className={`flex items-center rounded-xl border p-0.5 shrink-0 ${
-          isCustom && activeCustomTheme
-            ? 'border-[var(--custom-ui-border)] bg-transparent'
-            : isDark
-            ? 'border-[#282A36] bg-[#181920]'
-            : isMono
-            ? 'border-[#D8D4CA] bg-[#EAE7DF]/60'
-            : 'border-slate-200 bg-slate-100/80'
-        }`}>
-          <button
-            type="button"
-            onClick={() => setTheme('light')}
-            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-              theme === 'light'
-                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/80'
-                : isCustom
-                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
-                : isDark
-                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
-                : isMono
-                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
-            }`}
-            title="Light Mode (Default Colorful)"
-          >
-            <MingIcon name="sun_line" size={13} />
-            <span className="hidden sm:inline whitespace-nowrap">Light</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTheme('mono')}
-            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-              theme === 'mono'
-                ? 'bg-[#FCFBF9] text-[#242321] shadow-2xs border border-[#D8D4CA]'
-                : isCustom
-                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
-                : isDark
-                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
-                : isMono
-                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
-            }`}
-            title="Monochrome Light (Black & White + Scriffle Blue)"
-          >
-            <MingIcon name="contrast_2_line" size={13} />
-            <span className="hidden sm:inline whitespace-nowrap">Mono</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTheme('dark')}
-            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-              theme === 'dark'
-                ? 'bg-[#282A36] text-white shadow-2xs border border-[#3E4254]'
-                : isCustom
-                ? 'text-[var(--custom-ui-text-muted)] hover:text-[var(--custom-ui-text)] hover:bg-[var(--custom-ui-surface-muted)]'
-                : isDark
-                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
-                : isMono
-                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
-            }`}
-            title="Monochrome Dark (Pure Black & White)"
-          >
-            <MingIcon name="moon_line" size={13} />
-            <span className="hidden sm:inline whitespace-nowrap">Dark</span>
-          </button>
-
-          {/* Custom Theme / Theme Engine Trigger */}
-          <button
-            type="button"
-            onClick={() => setIsThemeModalOpen(true)}
-            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-              theme === 'custom'
-                ? 'bg-[var(--custom-ui-primary)] text-white shadow-2xs border border-[var(--custom-ui-primary)]'
-                : isDark
-                ? 'text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
-                : isMono
-                ? 'text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
-            }`}
-            title={
-              theme === 'custom' && activeCustomTheme
-                ? `Custom Theme: ${activeCustomTheme.metadata.name} (Click to change)`
-                : 'Open Custom Theme Engine (.scrifflemes)'
-            }
-          >
-            <MingIcon name="palette_line" size={13} />
-            <span className="hidden sm:inline whitespace-nowrap">
-              {theme === 'custom' && activeCustomTheme
-                ? activeCustomTheme.metadata.name.split(' ')[0]
-                : 'Themes'}
-            </span>
-          </button>
-        </div>
+        {/* 4-Mode Theme Switcher with .scrifflemes Custom Theme support */}        
+        <button
+          type="button"
+          onClick={() => setIsThemeModalOpen(true)}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border-2 transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+            theme === 'custom' && activeCustomTheme
+              ? 'bg-[var(--custom-ui-primary)] text-white border-[var(--custom-ui-primary)]'
+              : isDark
+              ? 'bg-[#181920] border-[#282A36] text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+              : isMono
+              ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+          }`}
+          title={
+            theme === 'custom' && activeCustomTheme
+              ? `Custom Theme: ${activeCustomTheme.metadata.name} (Click to change)`
+              : 'Open Theme Switcher (Light / Mono / Dark / Custom)'
+          }
+        >
+          <MingIcon name="palette_line" size={16} />
+          <span className="whitespace-nowrap">
+            {theme === 'custom' && activeCustomTheme
+              ? activeCustomTheme.metadata.name.split(' ')[0]
+              : 'Themes'}
+          </span>
+        </button>
 
         <button
           onClick={onToggleControls}
@@ -355,10 +284,18 @@ export const TopNav: React.FC<TopNavProps> = ({
             isControlsOpen
               ? isCustom && activeCustomTheme
                 ? 'bg-[var(--custom-ui-primary)] text-white border-[var(--custom-ui-primary)]'
+                : isDark
+                ? 'bg-white text-slate-900 border-white'
+                : isMono
+                ? 'bg-[#242321] text-white border-[#242321]'
                 : 'bg-slate-900 text-white border-slate-900'
               : isCustom && activeCustomTheme
               ? 'bg-transparent text-[var(--custom-ui-text)] border-[var(--custom-ui-border)] hover:bg-[var(--custom-ui-surface-muted)]'
-              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              : isDark
+              ? 'bg-[#181920] border-[#282A36] text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+              : isMono
+              ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
           }`}
           title="Toggle Control Panel"
         >
@@ -372,10 +309,18 @@ export const TopNav: React.FC<TopNavProps> = ({
             isFeedOpen
               ? isCustom && activeCustomTheme
                 ? 'bg-[var(--custom-ui-primary)] text-white border-[var(--custom-ui-primary)]'
+                : isDark
+                ? 'bg-white text-slate-900 border-white'
+                : isMono
+                ? 'bg-[#242321] text-white border-[#242321]'
                 : 'bg-slate-900 text-white border-slate-900'
               : isCustom && activeCustomTheme
               ? 'bg-transparent text-[var(--custom-ui-text)] border-[var(--custom-ui-border)] hover:bg-[var(--custom-ui-surface-muted)]'
-              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              : isDark
+              ? 'bg-[#181920] border-[#282A36] text-[#8C90A0] hover:text-white hover:bg-[#22242D]'
+              : isMono
+              ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#78756D] hover:text-[#242321] hover:bg-[#EAE7DF]'
+              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
           }`}
           title="Toggle Right Activity Feed Sidebar"
         >
