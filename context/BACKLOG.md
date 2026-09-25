@@ -9,23 +9,23 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 > **Deadline: Saturday.** These must be done before we freeze and build. QA guide is at [`context/QA_TESTING_GUIDE.md`](./QA_TESTING_GUIDE.md).
 
 ### 1. 🧹 Repo Cleanup — Remove DB from Version Control
-- [ ] Add `prisma/dev.db` to `.gitignore`
-- [ ] Add `prisma/*.db-journal` to `.gitignore`
-- [ ] Remove `prisma/dev.db` from git tracking: `git rm --cached prisma/dev.db`
-- [ ] Verify `bun run prisma/seed.ts` still works after clean clone (no committed DB dependency)
-- [ ] Check for any other files that shouldn't be committed (`reports/`, `node_modules/`, `.env*`)
-- [ ] Add `reports/` to `.gitignore` (auto-generated report exports)
+- [x] Add `prisma/dev.db` to `.gitignore`
+- [x] Add `prisma/*.db-journal` to `.gitignore`
+- [x] Remove `prisma/dev.db` from git tracking: `git rm --cached prisma/dev.db`
+- [x] Verify `bun run prisma/seed.ts` still works after clean clone (no committed DB dependency)
+- [x] Check for any other files that shouldn't be committed (`reports/`, `node_modules/`, `.env*`)
+- [x] Add `reports/` to `.gitignore` (auto-generated report exports)
 
 ### 2. 📄 Update `README.md`
-- [ ] Rewrite README to reflect current full feature set (Screener, Themes, Quick-Add, Discord Webhooks, Multi-Project, etc.)
-- [ ] Update "How it works" section — currently only lists 5 node types, we now have 10
-- [ ] Update "Project structure" — current structure is outdated
-- [ ] Update API reference table — several new endpoints missing (`/api/alert/test-webhook`, `/api/export/report`, `/api/file/open-location`, `/api/canvas/list`, `/api/canvas/restore`)
-- [ ] Add "Themes" section — explain Light / Mono / Dark + `.scrifflemes` custom themes
-- [ ] Add "Control Panel" section — explain streaming, presets, and project file operations
-- [ ] Add "Keyboard Shortcuts" section (or reference the in-app `?` modal)
-- [ ] Add "Unit Tests" section: `bun test` → 179 tests, 16 suites, ~450ms
-- [ ] Add hackathon credits / problem statement blurb
+- [x] Rewrite README to reflect current full feature set (Screener, Themes, Quick-Add, Discord Webhooks, Multi-Project, etc.)
+- [x] Update "How it works" section — currently only lists 5 node types, we now have 10
+- [x] Update "Project structure" — current structure is outdated
+- [x] Update API reference table — several new endpoints missing (`/api/alert/test-webhook`, `/api/export/report`, `/api/file/open-location`, `/api/canvas/list`, `/api/canvas/restore`)
+- [x] Add "Themes" section — explain Light / Mono / Dark + `.scrifflemes` custom themes
+- [x] Add "Control Panel" section — explain streaming, presets, and project file operations
+- [x] Add "Keyboard Shortcuts" section (or reference the in-app `?` modal)
+- [x] Add "Unit Tests" section: `bun test` → 179 tests, 16 suites, ~450ms
+- [x] Add hackathon credits / problem statement blurb
 
 ### 3. 🎬 Product Teaser
 - [ ] Create a short teaser page / README banner image or GIF

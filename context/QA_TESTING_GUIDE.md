@@ -493,6 +493,20 @@ bun run build     # Must show: 0 TypeScript errors
 
 ---
 
+## 23. Chunked Implementation Roadmap & Review Points
+
+Use this chunk tracker to execute and verify large features sequentially without exceeding context windows or breaking existing capabilities.
+
+| Chunk # | Focus Area | Scope / Target Capabilities | Review & Verification Point | Status |
+|---|---|---|---|:---:|
+| **Chunk 1** | **Freeze & Repo Housekeeping** | 1. Add `prisma/dev.db`, `prisma/*.db-journal`, and `reports/` to `.gitignore`<br>2. Untrack `prisma/dev.db` via git (`git rm --cached`)<br>3. Verify clean DB push and seeding (`bun run prisma/seed.ts`)<br>4. Comprehensive `README.md` rewrite (documenting all 10 nodes, themes, Control Panel, Discord alerts, 179 tests, problem framing) | `git status` clean of runtime files, `bun run prisma/seed.ts` succeeds, README matches complete architecture | ✅ **Completed** |
+| **Chunk 2** | **Media & Image Studio Node Enhancement** | 1. In-place image replacement & file upload in `ImageNode.tsx`<br>2. Dedicated `image` configuration tab in `EditNodeModal.tsx`<br>3. Inline editable caption with `Enter`/`Esc` commit<br>4. Card border vs. transparent sticker toggle<br>5. Unit test coverage for image node updates | Node editor opens for images, caption edits commit cleanly, image swapping works, unit tests green | ✅ **Completed** |
+| **Chunk 3** | **Canvas Sections / Spatial Frames** | 1. Section/Frame container node type (`section`) with editable header title and subtle tinted boundary<br>2. Children node grouping & synchronized dragging inside boundaries<br>3. Context menu & NavToolbar insertion for Sections<br>4. Unit tests for spatial containment and node movement | Dragging section moves all internal nodes together; clean styling across Light/Mono/Dark | ⚪ Queued |
+| **Chunk 4** | **Zen / Presentation Pitch Mode & Laser Pointer** | 1. Zen mode (`Ctrl+.` / button) that smoothly fades top navbar, toolbar, and sidebars for distraction-free demoing<br>2. Live presenter laser pointer / trail tool for pitch demonstrations<br>3. Quick-return escape shortcut | Presenter mode leaves zero clutter for screen recording; hotkey toggles smoothly | ⚪ Queued |
+| **Chunk 5** | **Pre-Submission Full QA Verification & Demo Script** | 1. Run through 22-item checklist in `QA_TESTING_GUIDE.md`<br>2. Run test suite (`bun test` — 100% green)<br>3. Run production build check (`bun run build` — 0 errors)<br>4. Final 3-minute video demo script sign-off | Complete green QA sign-off table in `QA_TESTING_GUIDE.md`, ready for Saturday freeze | ⚪ Queued |
+
+---
+
 ## QA Sign-Off
 
 | Section | Status | Notes |
@@ -523,3 +537,4 @@ bun run build     # Must show: 0 TypeScript errors
 **QA completed by:** _______________  
 **Date:** _______________  
 **Build green for Saturday freeze?** ☐ Yes ☐ No — blockers listed in `context/BUG_FIXES_PLAN.md`
+
