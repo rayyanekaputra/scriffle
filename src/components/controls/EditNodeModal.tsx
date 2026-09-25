@@ -106,9 +106,9 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-      <div className={`w-full max-w-md rounded-3xl border-2 p-6 shadow-none transition-colors ${modalBg}`}>
+      <div className={`flex flex-col w-full max-w-md max-h-[88vh] rounded-3xl border-2 shadow-none overflow-hidden transition-colors ${modalBg}`}>
         {/* Header */}
-        <div className={`flex items-center justify-between pb-3 border-b ${headerBorder}`}>
+        <div className={`flex items-center justify-between px-6 py-4 border-b shrink-0 ${headerBorder}`}>
           <div className="flex items-center gap-2">
             <MingIcon name="edit_line" size={20} className={isDark ? 'text-[#BAC0D0]' : isMono ? 'text-[#242321]' : 'text-slate-700'} />
             <h2 className={`text-base font-bold ${isDark ? 'text-[#E2E4E9]' : isMono ? 'text-[#242321]' : 'text-slate-900'}`}>
@@ -126,7 +126,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <div className="mt-4 space-y-4 text-xs max-h-[60vh] overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4 text-xs">
           {node.type === 'watcher' && (
             <>
               <div>
@@ -551,44 +551,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
             </>
           )}
 
-          {node.type === 'image' && (
-            <>
-              <div>
-                <label className={`font-bold block mb-1 ${labelColor}`}>Image URL</label>
-                <input
-                  type="text"
-                  value={config.url || ''}
-                  onChange={(e) => setConfig({ ...config, url: e.target.value })}
-                  placeholder="https://... or data:image/..."
-                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
-                />
-              </div>
 
-              <div>
-                <label className={`font-bold block mb-1 ${labelColor}`}>Caption (Optional)</label>
-                <input
-                  type="text"
-                  value={config.caption || ''}
-                  onChange={(e) => setConfig({ ...config, caption: e.target.value })}
-                  placeholder="e.g. Technical chart breakout analysis"
-                  className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
-                />
-              </div>
-
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="img-trans"
-                  checked={config.isTransparent ?? true}
-                  onChange={(e) => setConfig({ ...config, isTransparent: e.target.checked })}
-                  className="rounded"
-                />
-                <label htmlFor="img-trans" className={`font-bold cursor-pointer select-none ${labelColor}`}>
-                  Transparent Background (Zero white border box)
-                </label>
-              </div>
-            </>
-          )}
 
           {node.type === 'alert' && (
             <>
@@ -927,10 +890,130 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
               </div>
             </>
           )}
+
+          {node.type === 'image' && (
+            <>
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Image URL</label>
+                <input
+                  type="text"
+                  value={config.url || ''}
+                  onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                  placeholder="https://... or data:image/..."
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Upload New Image</label>
+                <label className={`flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-2xl border-2 border-dashed cursor-pointer transition ${
+                  isDark ? 'border-[#2C2E3A] hover:border-[#8E95A5] bg-[#191A22]' : isMono ? 'border-[#D8D4CA] hover:border-[#78756D] bg-[#F4F3EF]' : 'border-slate-300 hover:border-slate-500 bg-slate-50'
+                }`}>
+                  <MingIcon name="upload_2_line" size={20} className={secondaryColor} />
+                  <span className={`text-[11px] font-semibold ${labelColor}`}>Click to select an image from your computer</span>
+                  <span className={`text-[10px] ${secondaryColor}`}>PNG, JPG, SVG, WebP supported</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (uploadEvt) => {
+                        const dataUrl = uploadEvt.target?.result as string;
+                        setConfig({
+                          ...config,
+                          url: dataUrl,
+                          isTransparent: file.type.includes('png') || file.type.includes('svg') ? config.isTransparent ?? true : false,
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Caption (Optional)</label>
+                <input
+                  type="text"
+                  value={config.caption || ''}
+                  onChange={(e) => setConfig({ ...config, caption: e.target.value })}
+                  placeholder="e.g. Q3 Banking Sector Overview Chart"
+                  className={`w-full rounded-xl border-2 p-2.5 font-medium focus:outline-none ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`font-bold block mb-1 ${labelColor}`}>Display Style</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfig({ ...config, isTransparent: true })}
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 font-bold transition cursor-pointer ${
+                      config.isTransparent ?? true
+                        ? isDark
+                          ? 'border-[#0050FF] bg-[#0050FF]/20 text-[#0050FF]'
+                          : isMono
+                          ? 'border-[#242321] bg-white text-[#242321]'
+                          : 'border-[#0050FF] bg-blue-50 text-[#0050FF]'
+                        : isDark
+                        ? 'border-[#2C2E3A] bg-[#191A22] text-[#8C90A0]'
+                        : isMono
+                        ? 'border-[#D8D4CA] bg-[#F4F3EF] text-[#78756D]'
+                        : 'border-slate-200 bg-white text-slate-500'
+                    }`}
+                  >
+                    <MingIcon name="ghost_line" size={16} />
+                    <span>Transparent</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setConfig({ ...config, isTransparent: false })}
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 font-bold transition cursor-pointer ${
+                      !(config.isTransparent ?? true)
+                        ? isDark
+                          ? 'border-[#0050FF] bg-[#0050FF]/20 text-[#0050FF]'
+                          : isMono
+                          ? 'border-[#242321] bg-white text-[#242321]'
+                          : 'border-[#0050FF] bg-blue-50 text-[#0050FF]'
+                        : isDark
+                        ? 'border-[#2C2E3A] bg-[#191A22] text-[#8C90A0]'
+                        : isMono
+                        ? 'border-[#D8D4CA] bg-[#F4F3EF] text-[#78756D]'
+                        : 'border-slate-200 bg-white text-slate-500'
+                    }`}
+                  >
+                    <MingIcon name="square_line" size={16} />
+                    <span>Bordered Card</span>
+                  </button>
+                </div>
+              </div>
+
+              {(config.width || config.height) && (
+                <div className="flex items-center justify-between pt-1">
+                  <span className={`text-[11px] ${secondaryColor}`}>
+                    Custom dimensions: {Math.round(config.width || 0)} × {Math.round(config.height || 0)} px
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setConfig({ ...config, width: undefined, height: undefined })}
+                    className={`text-[11px] font-bold underline transition cursor-pointer ${
+                      isDark ? 'text-amber-400' : isMono ? 'text-[#242321]' : 'text-blue-600'
+                    }`}
+                  >
+                    Reset dimensions
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Footer Actions */}
-        <div className={`mt-6 flex justify-end gap-2 border-t pt-4 ${headerBorder}`}>
+        <div className={`flex justify-end gap-2 border-t px-6 py-4 shrink-0 ${headerBorder}`}>
           <button
             type="button"
             onClick={onClose}
