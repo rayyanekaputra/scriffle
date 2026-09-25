@@ -12,9 +12,11 @@ import { ProjectSwitcherModal } from '@/components/controls/ProjectSwitcherModal
 import { SpotlightSearchModal } from '@/components/controls/SpotlightSearchModal';
 import { ShortcutsModal } from '@/components/controls/ShortcutsModal';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { SandboxMissionsCard } from '@/components/tutorial/SandboxMissionsCard';
 import { ToastProvider, useToast } from '@/components/ui/ToastProvider';
 import { useLoading } from '@/context/LoadingContext';
 import { useOnboarding } from '@/context/OnboardingContext';
+import { useSandboxTutorial } from '@/context/SandboxTutorialContext';
 import { useCanvasSync } from '@/hooks/useCanvasSync';
 import { CanvasNodeData, CanvasToolMode, NodeType } from '@/types/canvas';
 
@@ -37,6 +39,21 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   const { showToast } = useToast();
   const { runTracked } = useLoading();
   const { startTour } = useOnboarding();
+  const { openTutorial, updateCanvasSnapshot } = useSandboxTutorial();
+
+  // Listen for custom open-sandbox-tutorial event (from tour popover or spotlight search)
+  useEffect(() => {
+    const handleOpenTutorial = () => {
+      openTutorial();
+    };
+    window.addEventListener('scriffle:open-sandbox-tutorial', handleOpenTutorial);
+    return () => window.removeEventListener('scriffle:open-sandbox-tutorial', handleOpenTutorial);
+  }, [openTutorial]);
+
+  // Feed real-time canvas and logs updates into the sandbox tutorial progress validator
+  useEffect(() => {
+    updateCanvasSnapshot(canvas, logs);
+  }, [canvas, logs, updateCanvasSnapshot]);
 
   // Panels visibility state (hideable Left Panel & Activity Feed)
   const [isFeedOpen, setIsFeedOpen] = useState(true);
@@ -855,6 +872,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         onOpenProjectHub={() => setShowProjectHub(true)}
         onOpenSearch={() => setShowSearchModal(true)}
         onOpenShortcuts={() => setShowShortcutsModal(true)}
+        onStartTutorial={() => openTutorial()}
       />
 
       <div className="relative flex flex-1 overflow-hidden">
@@ -955,6 +973,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
           setTimeout(() => setFocusedNodeId(null), 1000);
         }}
         onStartTour={() => startTour(0)}
+        onStartTutorial={() => openTutorial()}
       />
 
       {/* Keyboard Shortcuts Guide Modal */}
@@ -962,10 +981,14 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         isOpen={showShortcutsModal}
         onClose={() => setShowShortcutsModal(false)}
         onStartTour={() => startTour(0)}
+        onStartTutorial={() => openTutorial()}
       />
 
       {/* Spotlight Onboarding Tour & Cutout Mask */}
       <OnboardingTour />
+
+      {/* Interactive Hands-On Sandbox Missions Card */}
+      <SandboxMissionsCard />
     </main>
   );
 }

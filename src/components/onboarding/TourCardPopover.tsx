@@ -276,14 +276,49 @@ export const TourCardPopover: React.FC = () => {
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={nextStep}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] transition-all cursor-pointer shadow-none"
-          >
-            <span>{isLastStep ? 'Finish & Explore' : 'Next'}</span>
-            {!isLastStep && <MingIcon name="arrow_right_line" size={14} />}
-          </button>
+          {isLastStep ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  nextStep();
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition-all cursor-pointer ${
+                  isDark
+                    ? 'bg-[#181920] border-[#2E3140] text-slate-300 hover:bg-[#22242D]'
+                    : isMono
+                    ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321] hover:bg-[#EAE7DF]'
+                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                Explore Freely
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  nextStep();
+                  if (typeof window !== 'undefined') {
+                    // Open sandbox tutorial
+                    const evt = new CustomEvent('scriffle:open-sandbox-tutorial');
+                    window.dispatchEvent(evt);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] transition-all cursor-pointer shadow-none"
+              >
+                <MingIcon name="target_line" size={14} />
+                <span>Start Missions</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={nextStep}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] transition-all cursor-pointer shadow-none"
+            >
+              <span>Next</span>
+              <MingIcon name="arrow_right_line" size={14} />
+            </button>
+          )}
         </div>
       </div>
     </div>

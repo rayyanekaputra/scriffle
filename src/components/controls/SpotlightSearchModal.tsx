@@ -12,6 +12,7 @@ interface SpotlightSearchModalProps {
   nodes?: CanvasNodeData[];
   onSelectNode: (nodeId: string) => void;
   onStartTour?: () => void;
+  onStartTutorial?: () => void;
 }
 
 export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
@@ -20,6 +21,7 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
   nodes = [],
   onSelectNode,
   onStartTour,
+  onStartTutorial,
 }) => {
   const { theme } = useTheme();
   const [query, setQuery] = useState('');
@@ -336,6 +338,20 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
               >
                 <MingIcon name="magic_line" size={13} />
                 <span>Product Tour</span>
+              </button>
+            )}
+
+            {onStartTutorial && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTutorial();
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[#0050FF] bg-[#0050FF] text-white font-bold transition hover:bg-blue-600 cursor-pointer shadow-none"
+              >
+                <MingIcon name="target_line" size={13} />
+                <span>Tutorial</span>
               </button>
             )}
             <span>{results.length} item{results.length !== 1 ? 's' : ''}</span>

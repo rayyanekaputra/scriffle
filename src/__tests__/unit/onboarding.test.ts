@@ -26,9 +26,9 @@ describe('Interactive Onboarding Spotlight Tour (tourStepsConfig.ts)', () => {
     const nodeStep = TOUR_STEPS.find((s) => s.id === 'toolbar-and-search');
     expect(nodeStep).toBeDefined();
     expect(nodeStep?.title.toLowerCase()).toContain('curated stocks');
-    // Verifies mention of curated Indonesian stocks / BBCA / search
-    expect(nodeStep?.description).toContain('150+ curated IDX companies');
-    expect(nodeStep?.description).toContain('BBCA');
+    // Verifies mention of curated Indonesian stocks and file research mapping
+    expect(nodeStep?.description).toContain('150+ curated IDX stocks');
+    expect(nodeStep?.description).toContain('File cards');
     expect(nodeStep?.targetSelector).toBe('[data-tour="nav-toolbar"]');
   });
 

@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 import { ThemeProvider } from '@/context/ThemeContext';
 import { LoadingProvider } from '@/context/LoadingContext';
 import { OnboardingProvider } from '@/context/OnboardingContext';
+import { SandboxTutorialProvider } from '@/context/SandboxTutorialContext';
 
 export default function RootLayout({
   children,
@@ -42,7 +43,9 @@ export default function RootLayout({
         <ThemeProvider>
           <LoadingProvider>
             <OnboardingProvider>
-              {children}
+              <SandboxTutorialProvider>
+                {children}
+              </SandboxTutorialProvider>
             </OnboardingProvider>
           </LoadingProvider>
         </ThemeProvider>

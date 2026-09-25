@@ -8,6 +8,7 @@ interface ShortcutsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStartTour?: () => void;
+  onStartTutorial?: () => void;
 }
 
 interface ShortcutItem {
@@ -21,7 +22,12 @@ interface ShortcutCategory {
   items: ShortcutItem[];
 }
 
-export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose, onStartTour }) => {
+export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
+  isOpen,
+  onClose,
+  onStartTour,
+  onStartTutorial,
+}) => {
   const { theme } = useTheme();
 
   const isDark = theme === 'dark';
@@ -234,7 +240,21 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose,
                 }`}
               >
                 <MingIcon name="magic_line" size={13} />
-                <span>Take Product Tour</span>
+                <span>Product Tour</span>
+              </button>
+            )}
+
+            {onStartTutorial && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTutorial();
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 border-[#0050FF] bg-[#0050FF] text-white font-bold transition hover:bg-blue-600 cursor-pointer shadow-none"
+              >
+                <MingIcon name="target_line" size={13} />
+                <span>Hands-On Tutorial</span>
               </button>
             )}
           </div>
