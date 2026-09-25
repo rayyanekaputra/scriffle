@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **179 unit tests across 16 suites (100% green)** |
+| Master Unit Tests | **199 unit tests across 19 suites (100% green)** |
 
 ---
 
@@ -220,14 +220,19 @@ hackathon/
     │   ├── feed/
     │   │   └── ActivityFeed.tsx    ← Live event stream, camera pan, chain glow
     │   └── ui/
-    │       └── MingIcon.tsx        ← Reusable MingCute icon component
+    │       ├── MingIcon.tsx        ← Reusable MingCute icon component
+    │       └── CompanyCombobox.tsx ← Accessible Indonesian company & symbol combobox with AI fallback
     ├── context/
     │   └── LoadingContext.tsx      ← Global loading task queue (LoadingProvider, useLoading, runTracked, isNodeLoading)
+    ├── data/
+    │   └── popularIdxCompanies.ts  ← Curated dataset of ~150 IDX companies & popular picks
     ├── hooks/
     │   └── useCanvasSync.ts        ← SWR polling hook (2s interval)
     ├── lib/
     │   ├── creditCosts.ts          ← Centralized pricing registry & burst calculations
     │   ├── prisma.ts               ← Global Prisma client singleton
+    │   ├── search/
+    │   │   └── companySearch.ts    ← Fast in-memory token/substring matcher (<0.3ms)
     │   └── utils.ts
     ├── server/services/
     │   ├── dslEngine.ts            ← Safe expr-eval DSL parser
@@ -339,9 +344,19 @@ hackathon/
 - Cycle counter badge: `⚡ 12 runs`
 - Modes: Single ticker (daily data) or Top Gainers/Losers (radar mode)
 - Per-watcher configurable polling interval (1s–3600s)
-- Clean initial state: Starts idle with `0 runs` and waiting indicators instead of premature mock data
+- Clean unassigned initial state: Starts idle with `0 runs`, empty symbol prompt ("No Stock Selected - Double-click card to choose an Indonesian company") instead of premature mock or default tickers
+- Increased card dimensions (`w-[340px]` single mode, `w-[400px]` radar mode) eliminating text wrapping and providing institutional breathing room
 - Error transparency: Live API failures display `⚠ API Error {code}` badge with structured callout banner; offline mode displays `Mock` badge
 - Credit cost badge in footer (`🪙 10 credits / poll` for Radar, `🪙 1 credit / tick` for Single)
+
+### Indonesian Company Chooser & Selection Combobox (`CompanyCombobox.tsx`)
+- Instant in-memory search across curated dataset of ~150 popular/liquid Indonesian companies (`popularIdxCompanies.ts`) with zero-lag token matcher (`companySearch.ts`, `<0.3ms`)
+- **Empty-focus behavior**: Displays curated `POPULAR_PICKS` (top 12 blue chips: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, `ADRO`, `ANTM`, `ICBP`, `UNVR`, `BREN`, `AMMN`)
+- **Fuzzy & keyword search**: Matches ticker symbol (`bbca`, `tlkm`) and company name tokens (`mandiri` $\rightarrow$ `BMRI`, `astra` $\rightarrow$ `ASII`, `indofood` $\rightarrow$ `ICBP`/`INDF`)
+- **AI Screener Fallback CTA**: When 0 results match, provides a 1-click button to discover companies via the AI Natural Language Screener
+- **Freeform ticker support**: Type any ticker (e.g. newly listed IPO) and press Enter to commit as-is uppercase
+- **Theme-aware & accessible**: 2px flat outline, zero drop shadows, full keyboard navigation (`↑`/`↓`/`↵`/`Esc`) across Light, Mono, Dark, and Custom modes
+- Integrated into `EditNodeModal.tsx` for Watcher single stock mode and Action target stock override
 
 ### API Credit Cost Badges & Safety System (`creditCosts.ts`)
 - Centralized pricing registry for Sectors.app API v2 consumption
@@ -387,6 +402,14 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
+- **Indonesian Company Chooser, Search Combobox & AI Screener Fallback (`CompanyCombobox.tsx`, `popularIdxCompanies.ts`, `companySearch.ts`, `EditNodeModal.tsx`, `companySearch.test.ts`)**:
+  - Implemented in-memory search across ~150 curated Indonesian companies (`IdxCompany[]`) with `<0.3ms` token/keyword matcher (`companySearch.ts`).
+  - Empty-focus state surfaces top 12 blue chips (`POPULAR_PICKS`: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, etc.).
+  - Freeform uppercase ticker commit on Enter for newly listed IPOs.
+  - Interactive "✨ Discover with AI Screener" fallback CTA when 0 search results match.
+  - Integrated into `EditNodeModal.tsx` for Watcher single stock mode and Action target symbol override.
+  - Increased Watcher card width (`w-[340px]` single mode, `w-[400px]` radar mode) and clean unassigned initial prompt (`No Stock Selected`).
+  - Unit test suite `companySearch.test.ts` (199 total passing unit tests across 19 suites, 100% green).
 - **Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**:
   - Implemented Discord Webhook dispatch service with URL format validation (`https://discord.com/api/webhooks/...`), rich financial embed cards with dynamic sentiment colors (Mint `#10B981` for gains, Coral `#FF5B79` for losses, Electric Blue `#0050FF` for neutral), ticker metrics, volume, canvas board name, and 6s timeout protection.
   - Added dedicated `/api/alert/test-webhook` test ping endpoint and interactive "⚡ Send Test Ping" button with live spinner in `EditNodeModal.tsx`.

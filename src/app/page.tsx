@@ -149,7 +149,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     let defaultConfig: any = customConfig || {};
     if (!customConfig) {
       if (type === 'watcher') {
-        defaultConfig = { symbol: 'BBRI', metric: 'price_change', interval: 300 };
+        defaultConfig = { symbol: '', metric: 'price_change', interval: 300 };
       } else if (type === 'condition') {
         defaultConfig = { rule: 'price_change > 4' };
       } else if (type === 'note') {
@@ -927,6 +927,10 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         node={editingNode}
         onClose={() => setEditingNode(null)}
         onSave={handleSaveNodeConfig}
+        onOpenScreener={() => {
+          setEditingNode(null);
+          handleAddNode('screener', undefined, { query: 'Top 5 companies by market cap' });
+        }}
       />
 
       {/* Project Switcher & Hub Modal with Full Viewport Backdrop Blur */}

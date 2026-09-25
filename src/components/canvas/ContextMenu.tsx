@@ -271,7 +271,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
           <button
             onClick={() => {
-              onAddElement('watcher', { symbol: 'BBCA' });
+              onAddElement('watcher', { symbol: '' });
               onClose();
             }}
             className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}

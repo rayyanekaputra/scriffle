@@ -51,6 +51,13 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🏢 Indonesian Company Chooser & Selection Combobox with AI Fallback (`CompanyCombobox.tsx`, `popularIdxCompanies.ts`, `companySearch.ts`, `EditNodeModal.tsx`, `companySearch.test.ts`)**
+  - Built zero-lag in-memory keyword & token search (`<0.3ms`) across ~150 curated Indonesian listed companies.
+  - Implemented smart empty-focus state displaying top 12 blue chips (`POPULAR_PICKS`: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, `ADRO`, `ANTM`, `ICBP`, `UNVR`, `BREN`, `AMMN`).
+  - Added freeform uppercase ticker commit for new IPOs and 1-click fallback CTA ("✨ Discover with AI Screener") when 0 results match.
+  - Integrated into `EditNodeModal.tsx` for Watcher single stock mode and Action target symbol override.
+  - Increased Watcher card width (`w-[340px]` single mode, `w-[400px]` radar mode) and clean unassigned initial prompt (`No Stock Selected`).
+  - Added unit test suite `companySearch.test.ts` (199 total passing unit tests across 19 suites, 100% green).
 - [x] **🎮 Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**
   - Implemented Discord Webhook dispatch service (`src/server/services/discordWebhook.ts`) supporting URL validation, dynamic sentiment embed colors (Mint `#10B981` for gains, Coral `#FF5B79` for drops, Electric Blue `#0050FF` for neutral), structured ticker metrics (Price, Change %, Volume, Prev Close), canvas board name, and 6s timeout protection.
   - Built dedicated `/api/alert/test-webhook` endpoint and interactive "⚡ Send Test Ping" button with live spinner and success/failure feedback banner in `EditNodeModal.tsx`.
