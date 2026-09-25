@@ -51,6 +51,12 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🚀 Interactive Spotlight Onboarding Tour & Curated Stock Discovery (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`, `onboarding.test.ts`)**
+  - Implemented 5-step interactive onboarding spotlight tour covering: Welcome Intro, Node Library & Curated 150+ IDX Stocks discovery, Auto-Wiring & True/False logic branching, Live Engine & Market Streaming, and Spotlight Search (`Ctrl+K`) & Themes.
+  - Built dynamic SVG cutout mask with bounding rect calculations and 2px electric blue pulsing focus ring over live DOM elements.
+  - Added floating minimizable `ResumeTourPill` at bottom right allowing users to resume or dismiss skipped tours.
+  - Integrated 1-click re-trigger actions inside Help / Shortcuts modal (`?`) and Spotlight Search (`Ctrl+K`).
+  - Added unit test suite `onboarding.test.ts` (204 total passing unit tests across 20 suites, 100% green).
 - [x] **🏢 Indonesian Company Chooser & Selection Combobox with AI Fallback (`CompanyCombobox.tsx`, `popularIdxCompanies.ts`, `companySearch.ts`, `EditNodeModal.tsx`, `companySearch.test.ts`)**
   - Built zero-lag in-memory keyword & token search (`<0.3ms`) across ~150 curated Indonesian listed companies.
   - Implemented smart empty-focus state displaying top 12 blue chips (`POPULAR_PICKS`: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, `ADRO`, `ANTM`, `ICBP`, `UNVR`, `BREN`, `AMMN`).
@@ -427,15 +433,11 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [ ] **Presenter Laser Pointer**: Hold modifier key or toggle a laser pointer tool that leaves a smooth fading line for explaining live graphs.
 
 #### 5. 🚀 First-Time User Onboarding & Guided Interactive Tour
-- [ ] **Interactive Onboarding Tour (`useOnboardingStore`, `OnboardingModal.tsx` / `OnboardingOverlay.tsx`)**:
-  - Automatically triggers on first install / visit (`localStorage.getItem('scriffle_onboarded')`).
-  - Can be manually re-triggered anytime via Help `(?)` menu, Spotlight Search (`Ctrl+K` -> *"Restart Tour"*), or Settings.
-  - Guided "Aha! Moment" sandbox flow:
-    - Step 1: Concept & Welcome ("FigJam meets Stock Market Automation").
-    - Step 2: Deploy first node with zero-friction ticker quick-picks (`BBCA`, `Top Gainers`, `AI Screener`).
-    - Step 3: Wire a condition rule (`change_pct > 2%`) to an alert / note.
-    - Step 4: Simulate a live tick / surge and see the canvas auto-mutate.
-  - Skippable at any time with a resume badge and persistence state.
+- [x] **Interactive Onboarding Tour (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`)**:
+  - Automatically triggers on first install / visit (`localStorage.getItem('scriffle_onboarded_v1')`).
+  - Can be manually re-triggered anytime via Help `(?)` menu, Spotlight Search (`Ctrl+K` -> *"Product Tour"*), or Settings.
+  - Guided 5-step "Aha! Moment" spotlight flow highlighting curated IDX company search, auto-wiring, live engine streams, shortcuts, and themes.
+  - Skippable with a floating `ResumeTourPill` and persistent state.
 
 
 

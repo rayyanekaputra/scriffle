@@ -109,7 +109,10 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
   const iconColor = isCustom && activeCustomTheme ? 'text-[var(--custom-ui-text)]' : isDark ? 'text-[#BAC0D0]' : isMono ? 'text-[#242321]' : 'text-slate-600';
 
   return (
-    <aside className={`w-72 border-r-2 p-4 flex flex-col h-full z-30 transition-colors ${asideBg}`}>
+    <aside
+      data-tour="simulation-bar"
+      className={`w-72 border-r-2 p-4 flex flex-col h-full z-30 transition-colors ${asideBg}`}
+    >
       {/* Hidden File Input for .scriffle / .json */}
       <input
         ref={scriffleInputRef}

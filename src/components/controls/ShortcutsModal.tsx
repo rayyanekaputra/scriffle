@@ -7,6 +7,7 @@ import { useTheme } from '@/context/ThemeContext';
 interface ShortcutsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onStartTour?: () => void;
 }
 
 interface ShortcutItem {
@@ -20,7 +21,7 @@ interface ShortcutCategory {
   items: ShortcutItem[];
 }
 
-export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose }) => {
+export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose, onStartTour }) => {
   const { theme } = useTheme();
 
   const isDark = theme === 'dark';
@@ -211,10 +212,32 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
             isDark ? 'border-[#2E3140] bg-[#181920] text-slate-400' : isMono ? 'border-[#D8D4CA] bg-[#F4F3EF] text-[#78756D]' : 'border-slate-200 bg-slate-50 text-slate-500'
           }`}
         >
-          <span className="flex items-center gap-1.5">
-            <MingIcon name="information_line" size={14} />
-            <span>Works across all modern browsers and operating systems</span>
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5">
+              <MingIcon name="information_line" size={14} />
+              <span>Works across all modern browsers and operating systems</span>
+            </span>
+
+            {onStartTour && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTour();
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 font-bold transition cursor-pointer ${
+                  isDark
+                    ? 'border-[#2E3140] bg-[#22242D] text-blue-400 hover:text-white'
+                    : isMono
+                    ? 'border-[#D8D4CA] bg-[#ECEAE4] text-blue-700 hover:text-[#242321]'
+                    : 'border-blue-200 bg-blue-50 text-[#0050FF] hover:bg-blue-100'
+                }`}
+              >
+                <MingIcon name="magic_line" size={13} />
+                <span>Take Product Tour</span>
+              </button>
+            )}
+          </div>
 
           <span className="flex items-center gap-1">
             <span>Press</span>

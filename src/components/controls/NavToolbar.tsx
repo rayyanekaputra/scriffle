@@ -224,6 +224,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
   return (
     <div className="pointer-events-none fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center max-w-[calc(100vw-32px)]">
       <div
+        data-tour="nav-toolbar"
         className={`pointer-events-auto flex items-center gap-1 rounded-2xl border-2 p-1.5 transition-all duration-150 whitespace-nowrap overflow-visible select-none ${containerBg}`}
       >
         {/* Interaction Modes: Move (V) & Hand (H) */}

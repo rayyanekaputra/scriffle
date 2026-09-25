@@ -11,8 +11,10 @@ import { EditNodeModal } from '@/components/controls/EditNodeModal';
 import { ProjectSwitcherModal } from '@/components/controls/ProjectSwitcherModal';
 import { SpotlightSearchModal } from '@/components/controls/SpotlightSearchModal';
 import { ShortcutsModal } from '@/components/controls/ShortcutsModal';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { ToastProvider, useToast } from '@/components/ui/ToastProvider';
 import { useLoading } from '@/context/LoadingContext';
+import { useOnboarding } from '@/context/OnboardingContext';
 import { useCanvasSync } from '@/hooks/useCanvasSync';
 import { CanvasNodeData, CanvasToolMode, NodeType } from '@/types/canvas';
 
@@ -34,6 +36,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   const [isLocked, setIsLocked] = useState(false);
   const { showToast } = useToast();
   const { runTracked } = useLoading();
+  const { startTour } = useOnboarding();
 
   // Panels visibility state (hideable Left Panel & Activity Feed)
   const [isFeedOpen, setIsFeedOpen] = useState(true);
@@ -951,13 +954,18 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
           setFocusedNodeId(nodeId);
           setTimeout(() => setFocusedNodeId(null), 1000);
         }}
+        onStartTour={() => startTour(0)}
       />
 
       {/* Keyboard Shortcuts Guide Modal */}
       <ShortcutsModal
         isOpen={showShortcutsModal}
         onClose={() => setShowShortcutsModal(false)}
+        onStartTour={() => startTour(0)}
       />
+
+      {/* Spotlight Onboarding Tour & Cutout Mask */}
+      <OnboardingTour />
     </main>
   );
 }

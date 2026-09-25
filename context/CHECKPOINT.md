@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **199 unit tests across 19 test suites (100% green).**
+* **Master Unit Test Suite:** **204 unit tests across 20 test suites (100% green).**
 
 ---
 
@@ -117,6 +117,9 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`HANDS_ON_TUTORIAL_SANDBOX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/HANDS_ON_TUTORIAL_SANDBOX_PLAN.md): Interactive step-by-step hands-on sandbox missions, live canvas action detection, and interactive guidance widgets.
+* [`ONBOARDING_SPOTLIGHT_TOUR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/ONBOARDING_SPOTLIGHT_TOUR_PLAN.md): 5-step interactive SVG cutout spotlight tour, 4-theme cards, and resume pill.
+* [`COMPANY_SELECTION_COMBOBOX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/COMPANY_SELECTION_COMBOBOX_PLAN.md): Curated 150+ Indonesian company search combobox and AI screener fallback.
 * [`SCRIFFLE_THEMES_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/SCRIFFLE_THEMES_PLAN.md): Plain-text `.scrifflemes` custom theme engine, parser, presets, and drag-and-drop workflow.
 * [`CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md): Canvas lock state, card creation guard, Move/Hand cursor correction, unified hover system, and dialog viewport max-height layout.
 * [`GIT_CONFLICT_RESOLUTION_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/GIT_CONFLICT_RESOLUTION_PLAN.md): Conflict resolution and integration workflow between `dev-ui` and `dev-conflicts`.

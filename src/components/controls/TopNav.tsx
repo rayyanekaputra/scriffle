@@ -234,7 +234,7 @@ export const TopNav: React.FC<TopNavProps> = ({
       </div>
 
       {/* Right: Theme Switcher, Shortcuts, & Panel View Toggles */}
-      <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+      <div data-tour="top-nav-actions" className="flex items-center gap-2 shrink-0 whitespace-nowrap">
         {/* Help / Shortcuts Button */}
         <button
           type="button"

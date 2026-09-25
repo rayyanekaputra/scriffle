@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **199 unit tests across 19 suites (100% green)** |
+| Master Unit Tests | **204 unit tests across 20 suites (100% green)** |
 
 ---
 
@@ -402,6 +402,12 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
+- **Interactive Spotlight Onboarding Tour & Curated Stock Discovery (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`, `onboarding.test.ts`)**:
+  - Implemented 5-step interactive onboarding tour: Welcome Intro, Node Library & Curated 150+ IDX Stocks discovery, Auto-Wiring & True/False logic branching, Live Engine & Market Streaming, and Spotlight Search (`Ctrl+K`) & Themes.
+  - SVG cutout mask with bounding rect calculations and 2px electric blue pulsing focus ring over live DOM elements.
+  - Floating minimizable `ResumeTourPill` at bottom right allowing users to resume or dismiss skipped tours.
+  - Re-triggerable from Help / Shortcuts modal (`?`) and Spotlight Search (`Ctrl+K`).
+  - Unit test suite `onboarding.test.ts` (204 total passing unit tests across 20 suites, 100% green).
 - **Indonesian Company Chooser, Search Combobox & AI Screener Fallback (`CompanyCombobox.tsx`, `popularIdxCompanies.ts`, `companySearch.ts`, `EditNodeModal.tsx`, `companySearch.test.ts`)**:
   - Implemented in-memory search across ~150 curated Indonesian companies (`IdxCompany[]`) with `<0.3ms` token/keyword matcher (`companySearch.ts`).
   - Empty-focus state surfaces top 12 blue chips (`POPULAR_PICKS`: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, etc.).
