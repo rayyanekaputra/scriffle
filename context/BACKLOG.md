@@ -419,5 +419,17 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [ ] **Zen / Presenter Mode (`Cmd+.`)**: 1-click toggle to hide all UI chrome (toolbars, docks, sidebars) for distraction-free presentation to judges.
 - [ ] **Presenter Laser Pointer**: Hold modifier key or toggle a laser pointer tool that leaves a smooth fading line for explaining live graphs.
 
+#### 5. 🚀 First-Time User Onboarding & Guided Interactive Tour
+- [ ] **Interactive Onboarding Tour (`useOnboardingStore`, `OnboardingModal.tsx` / `OnboardingOverlay.tsx`)**:
+  - Automatically triggers on first install / visit (`localStorage.getItem('scriffle_onboarded')`).
+  - Can be manually re-triggered anytime via Help `(?)` menu, Spotlight Search (`Ctrl+K` -> *"Restart Tour"*), or Settings.
+  - Guided "Aha! Moment" sandbox flow:
+    - Step 1: Concept & Welcome ("FigJam meets Stock Market Automation").
+    - Step 2: Deploy first node with zero-friction ticker quick-picks (`BBCA`, `Top Gainers`, `AI Screener`).
+    - Step 3: Wire a condition rule (`change_pct > 2%`) to an alert / note.
+    - Step 4: Simulate a live tick / surge and see the canvas auto-mutate.
+  - Skippable at any time with a resume badge and persistence state.
+
+
 
 
