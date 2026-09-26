@@ -31,10 +31,12 @@ function resolveNodeMeta(node?: CanvasNodeData, theme = 'light') {
   const isDark = theme === 'dark';
   const isMono = theme === 'mono';
 
+  const watcherLabel = cfg.symbol ? `Watcher (${cfg.symbol})` : 'Watcher (Unassigned)';
+
   if (isDark) {
     return {
       icon: node.type === 'watcher' ? 'radar_line' : node.type === 'condition' ? 'filter_line' : node.type === 'note' ? 'quill_pen_line' : node.type === 'alert' ? 'notification_line' : node.type === 'action' ? 'flash_line' : node.type === 'sticker' ? 'star_line' : 'sparkles_line',
-      label: node.type === 'watcher' ? `Watcher (${cfg.symbol || 'BBCA'})` : node.type.charAt(0).toUpperCase() + node.type.slice(1),
+      label: node.type === 'watcher' ? watcherLabel : node.type.charAt(0).toUpperCase() + node.type.slice(1),
       bg: 'bg-[#181920] text-[#D8DAE2] border-[#282A36] hover:bg-[#22242D]',
     };
   }
@@ -42,7 +44,7 @@ function resolveNodeMeta(node?: CanvasNodeData, theme = 'light') {
   if (isMono) {
     return {
       icon: node.type === 'watcher' ? 'radar_line' : node.type === 'condition' ? 'filter_line' : node.type === 'note' ? 'quill_pen_line' : node.type === 'alert' ? 'notification_line' : node.type === 'action' ? 'flash_line' : node.type === 'sticker' ? 'star_line' : 'sparkles_line',
-      label: node.type === 'watcher' ? `Watcher (${cfg.symbol || 'BBCA'})` : node.type.charAt(0).toUpperCase() + node.type.slice(1),
+      label: node.type === 'watcher' ? watcherLabel : node.type.charAt(0).toUpperCase() + node.type.slice(1),
       bg: 'bg-[#FCFBF9] text-[#242321] border-[#D8D4CA] hover:bg-[#EAE7DF]',
     };
   }
@@ -51,7 +53,7 @@ function resolveNodeMeta(node?: CanvasNodeData, theme = 'light') {
     case 'watcher':
       return {
         icon: 'radar_line',
-        label: `Watcher (${cfg.symbol || 'BBCA'})`,
+        label: watcherLabel,
         bg: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
       };
     case 'condition':

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import axios from 'axios';
 import { getTopMarketMovers, TopMoversResult } from '@/server/services/sectorsApi';
 
 describe('getTopMarketMovers parameter building & error handling', () => {
@@ -20,13 +21,13 @@ describe('getTopMarketMovers parameter building & error handling', () => {
   });
 
   it('captures structured error metadata when API request fails in live mode', async () => {
-    const origFetch = globalThis.fetch;
-    globalThis.fetch = async () =>
-      new Response(JSON.stringify({ detail: 'TOKEN_NOT_VALID' }), {
+    const getSpy = vi.spyOn(axios, 'get').mockRejectedValueOnce({
+      response: {
         status: 401,
         statusText: 'Unauthorized',
-        headers: { 'Content-Type': 'application/json' },
-      });
+        data: { detail: 'TOKEN_NOT_VALID' },
+      },
+    });
 
     try {
       const result: TopMoversResult = await getTopMarketMovers('invalid_key_for_test', {
@@ -42,7 +43,7 @@ describe('getTopMarketMovers parameter building & error handling', () => {
       expect(result.error?.code).toBe(401);
       expect(typeof result.error?.message).toBe('string');
     } finally {
-      globalThis.fetch = origFetch;
+      getSpy.mockRestore();
     }
   });
 

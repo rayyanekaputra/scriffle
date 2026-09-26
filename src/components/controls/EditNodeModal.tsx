@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { CanvasNodeData } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
+import { CompanyCombobox } from '@/components/ui/CompanyCombobox';
 
 interface EditNodeModalProps {
   node: CanvasNodeData | null;
   isOpen: boolean;
   onClose: () => void;
   onSave: (nodeId: string, updatedConfig: any) => void;
+  onOpenScreener?: () => void;
 }
 
 export const EditNodeModal: React.FC<EditNodeModalProps> = ({
@@ -17,6 +19,7 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onOpenScreener,
 }) => {
   const { theme } = useTheme();
   const [config, setConfig] = useState<any>({});
@@ -143,8 +146,8 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                           : e.target.value === 'top_losers'
                           ? 'Top Losers'
                           : config.symbol === 'TOP_GAINERS' || config.symbol === 'Top Gainers' || config.symbol === 'TOP_LOSERS' || config.symbol === 'Top Losers'
-                          ? 'BBCA'
-                          : config.symbol || 'BBCA',
+                          ? ''
+                          : config.symbol || '',
                     })
                   }
                   className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
@@ -157,13 +160,12 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
 
               {config.mode === 'single' || !config.mode ? (
                 <div>
-                  <label className={`font-bold block mb-1 ${labelColor}`}>Stock Ticker Symbol</label>
-                  <input
-                    type="text"
+                  <label className={`font-bold block mb-1 ${labelColor}`}>Stock Ticker / Company</label>
+                  <CompanyCombobox
                     value={config.symbol || ''}
-                    onChange={(e) => setConfig({ ...config, symbol: e.target.value.toUpperCase() })}
-                    placeholder="e.g. BBCA, BBRI, BMRI, TLKM"
-                    className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                    onChange={(sym) => setConfig({ ...config, symbol: sym })}
+                    onOpenScreener={onOpenScreener}
+                    placeholder="Search company or ticker (e.g. BBCA, Mandiri)"
                   />
                 </div>
               ) : (
@@ -739,19 +741,18 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
               {config.action === 'create_watcher' ? (
                 <div className="space-y-3">
                   <div>
-                    <label className={`font-bold block mb-1 ${labelColor}`}>Target Stock Symbol (Optional Override)</label>
-                    <input
-                      type="text"
+                    <label className={`font-bold block mb-1 ${labelColor}`}>Target Stock Symbol / Company (Optional Override)</label>
+                    <CompanyCombobox
                       value={config.targetSymbol || config.params?.symbol || ''}
-                      onChange={(e) =>
+                      onChange={(sym) =>
                         setConfig({
                           ...config,
-                          targetSymbol: e.target.value.toUpperCase(),
-                          params: { ...config.params, symbol: e.target.value.toUpperCase() },
+                          targetSymbol: sym,
+                          params: { ...config.params, symbol: sym },
                         })
                       }
-                      placeholder="Leave empty to auto-track incoming tickers dynamically"
-                      className={`w-full rounded-xl border-2 p-2.5 font-bold focus:outline-none ${inputBg}`}
+                      onOpenScreener={onOpenScreener}
+                      placeholder="Leave empty for dynamic ticker or choose company..."
                     />
                   </div>
                   <div className={`rounded-xl p-3 text-xs leading-relaxed border ${

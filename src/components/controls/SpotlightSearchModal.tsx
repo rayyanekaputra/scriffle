@@ -11,6 +11,8 @@ interface SpotlightSearchModalProps {
   onClose: () => void;
   nodes?: CanvasNodeData[];
   onSelectNode: (nodeId: string) => void;
+  onStartTour?: () => void;
+  onStartTutorial?: () => void;
 }
 
 export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
@@ -18,6 +20,8 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
   onClose,
   nodes = [],
   onSelectNode,
+  onStartTour,
+  onStartTutorial,
 }) => {
   const { theme } = useTheme();
   const [query, setQuery] = useState('');
@@ -316,7 +320,40 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            {onStartTour && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTour();
+                }}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border transition cursor-pointer ${
+                  isDark
+                    ? 'border-[#2E3140] bg-[#181920] text-blue-400 hover:text-blue-300 hover:bg-[#22242D]'
+                    : isMono
+                    ? 'border-[#D8D4CA] bg-[#FCFBF9] text-blue-600 hover:text-blue-700 hover:bg-[#EAE7DF]'
+                    : 'border-slate-200 bg-white text-[#0050FF] hover:bg-blue-50'
+                }`}
+              >
+                <MingIcon name="magic_line" size={13} />
+                <span>Product Tour</span>
+              </button>
+            )}
+
+            {onStartTutorial && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTutorial();
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[#0050FF] bg-[#0050FF] text-white font-bold transition hover:bg-blue-600 cursor-pointer shadow-none"
+              >
+                <MingIcon name="target_line" size={13} />
+                <span>Tutorial</span>
+              </button>
+            )}
             <span>{results.length} item{results.length !== 1 ? 's' : ''}</span>
           </div>
         </div>

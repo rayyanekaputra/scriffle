@@ -23,6 +23,7 @@ interface TopNavProps {
   onOpenProjectHub?: () => void;
   onOpenSearch?: () => void;
   onOpenShortcuts?: () => void;
+  onStartTutorial?: () => void;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -40,6 +41,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenProjectHub,
   onOpenSearch,
   onOpenShortcuts,
+  onStartTutorial,
 }) => {
   const { theme, setTheme, activeCustomTheme } = useTheme();
   const { isLoading, activeTask } = useLoading();
@@ -234,7 +236,27 @@ export const TopNav: React.FC<TopNavProps> = ({
       </div>
 
       {/* Right: Theme Switcher, Shortcuts, & Panel View Toggles */}
-      <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+      <div data-tour="top-nav-actions" className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+        {/* Interactive Tutorial Launcher Button */}
+        {onStartTutorial && (
+          <button
+            type="button"
+            data-tour="tutorial-btn"
+            onClick={onStartTutorial}
+            className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold border-2 transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+              theme === 'dark'
+                ? 'bg-[#181920] border-[#282A36] text-slate-300 hover:text-white hover:bg-[#22242D]'
+                : theme === 'mono'
+                ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321] hover:bg-[#EAE7DF]'
+                : 'bg-blue-50 border-blue-200 text-[#0050FF] hover:bg-blue-100'
+            }`}
+            title="Open Hands-On Tutorial Missions"
+          >
+            <MingIcon name="target_line" size={14} />
+            <span className="hidden sm:inline">Tutorial</span>
+          </button>
+        )}
+
         {/* Help / Shortcuts Button */}
         <button
           type="button"

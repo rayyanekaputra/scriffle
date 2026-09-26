@@ -51,6 +51,32 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🎯 Draggable Sandbox Missions Card Gesture Fix & Onboarding Theme Cohesion (`SandboxMissionsCard.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `MissionStepItem.tsx`, `draggableWidget.test.ts`, `DRAGGABLE_SANDBOX_FIX_PLAN.md`)**
+  - Resolved drag initiation block caused by `target.closest('.nodrag')` matching the outer React Flow canvas guard container.
+  - Implemented gesture delta thresholding (`dx > 3 || dy > 3`) on minimized pill for dual behavior: single tap/click toggles expand, dragging repositions the pill smoothly.
+  - Added synchronous `currentPosRef.current` coordinate tracking to eliminate React state closure lag when persisting to `localStorage` on pointer release.
+  - Added double-click header & pill reset to default `{ x: 24, y: 80 }` and boundary clamping below TopNav (`minY: 64`).
+  - Calmed onboarding color palette across **Dark**, **Mono (Warm Paper)**, and **Custom Themes**: replaced neon electric blue buttons, rings, icons, and callout text with clean theme-cohesive palettes (`bg-white` in Dark mode, `#242321` ink in Mono mode, theme CSS tokens in Custom mode).
+  - Refined Mission progress bar empty track background (`bg-[#282B38]` in Dark, `bg-[#ECEAE4]` in Mono, `bg-slate-100` in Light) so it distinctly renders as an empty progress meter rather than a dark outline.
+  - Added unit test suite `draggableWidget.test.ts` (231 total passing unit tests across 24 suites, 100% green).
+- [x] **⌨️ Keyboard Shortcuts Modal Spacing & `--start-fresh` Non-Destructive CLI Flag (`ShortcutsModal.tsx`, `scripts/dev.ts`, `scripts/start.ts`, `freshProjectCreator.ts`, `startFresh.test.ts`)**
+  - Refactored `ShortcutsModal.tsx` to `max-w-4xl` with generous category card padding (`p-5`, `gap-3.5`) and spacious footer (`py-3.5 px-6/7`), enforcing strictly single-line action buttons (`[Product Tour]`, `[Hands-On Tutorial]`) with `whitespace-nowrap shrink-0` and clear separation from the `Esc` badge.
+  - Implemented `--start-fresh` CLI flag for `bun run dev` and `bun run start`: non-destructively creates a new project board in SQLite with pristine `cycleCount: 0` initial state without deleting historical projects, and triggers a client-side reset of onboarding tour and mission detection counters to 0/6.
+  - Added unit test suite `startFresh.test.ts` (222 total passing unit tests across 22 suites, 100% green).
+- [x] **🚀 Unified Interactive Spotlight Onboarding Tour & Hands-On Sandbox Bridge (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`, `onboarding.test.ts`)**
+  - Implemented 6-step interactive onboarding spotlight tour covering: Welcome Intro, Node Library & Curated 150+ IDX Stocks discovery, Auto-Wiring & True/False logic branching, Live Engine & Market Streaming, Spotlight Search (`Ctrl+K`) & Themes, and Step 6 Sandbox Tutorial Bridge spotlighting `[data-tour="tutorial-btn"]` with direct `openTutorial()` launching.
+  - Added *"Don't show this on startup"* persistent opt-out checkbox on Step 6 (`scriffle_suppress_startup_tour`) with automatic one-time migration for legacy `scriffle_onboarded_v1` users.
+  - Built dynamic SVG cutout mask with bounding rect calculations and 2px electric blue pulsing focus ring over live DOM elements.
+  - Added floating minimizable `ResumeTourPill` at bottom right allowing users to resume or dismiss skipped tours.
+  - Integrated 1-click re-trigger actions inside Help / Shortcuts modal (`?`), TopNav `Tutorial` button, and Spotlight Search (`Ctrl+K`).
+  - Added unit test suite `onboarding.test.ts` (219 total passing unit tests across 21 suites, 100% green).
+- [x] **🏢 Indonesian Company Chooser & Selection Combobox with AI Fallback (`CompanyCombobox.tsx`, `popularIdxCompanies.ts`, `companySearch.ts`, `EditNodeModal.tsx`, `companySearch.test.ts`)**
+  - Built zero-lag in-memory keyword & token search (`<0.3ms`) across ~150 curated Indonesian listed companies.
+  - Implemented smart empty-focus state displaying top 12 blue chips (`POPULAR_PICKS`: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, `ADRO`, `ANTM`, `ICBP`, `UNVR`, `BREN`, `AMMN`).
+  - Added freeform uppercase ticker commit for new IPOs and 1-click fallback CTA ("✨ Discover with AI Screener") when 0 results match.
+  - Integrated into `EditNodeModal.tsx` for Watcher single stock mode and Action target symbol override.
+  - Increased Watcher card width (`w-[340px]` single mode, `w-[400px]` radar mode) and clean unassigned initial prompt (`No Stock Selected`).
+  - Added unit test suite `companySearch.test.ts` (199 total passing unit tests across 19 suites, 100% green).
 - [x] **🎮 Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**
   - Implemented Discord Webhook dispatch service (`src/server/services/discordWebhook.ts`) supporting URL validation, dynamic sentiment embed colors (Mint `#10B981` for gains, Coral `#FF5B79` for drops, Electric Blue `#0050FF` for neutral), structured ticker metrics (Price, Change %, Volume, Prev Close), canvas board name, and 6s timeout protection.
   - Built dedicated `/api/alert/test-webhook` endpoint and interactive "⚡ Send Test Ping" button with live spinner and success/failure feedback banner in `EditNodeModal.tsx`.
@@ -418,6 +444,14 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 #### 4. 🎭 Presentation & Live Pitch Mode (Miro-inspired)
 - [ ] **Zen / Presenter Mode (`Cmd+.`)**: 1-click toggle to hide all UI chrome (toolbars, docks, sidebars) for distraction-free presentation to judges.
 - [ ] **Presenter Laser Pointer**: Hold modifier key or toggle a laser pointer tool that leaves a smooth fading line for explaining live graphs.
+
+#### 5. 🚀 First-Time User Onboarding & Guided Interactive Tour
+- [x] **Interactive Onboarding Tour (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`)**:
+  - Automatically triggers on first install / visit (`localStorage.getItem('scriffle_onboarded_v1')`).
+  - Can be manually re-triggered anytime via Help `(?)` menu, Spotlight Search (`Ctrl+K` -> *"Product Tour"*), or Settings.
+  - Guided 5-step "Aha! Moment" spotlight flow highlighting curated IDX company search, auto-wiring, live engine streams, shortcuts, and themes.
+  - Skippable with a floating `ResumeTourPill` and persistent state.
+
 
 
 

@@ -6,9 +6,9 @@ import { StickerConfig } from '@/types/canvas';
 import { useTheme } from '@/context/ThemeContext';
 
 // --- Color palette ---
-type StickerColor = 'green' | 'red' | 'blue' | 'amber' | 'purple' | 'teal' | 'slate';
+export type StickerColor = 'green' | 'red' | 'blue' | 'amber' | 'purple' | 'teal' | 'slate';
 
-const COLOR_STYLES: Record<StickerColor, { bg: string; border: string; text: string; dot: string }> = {
+export const COLOR_STYLES: Record<StickerColor, { bg: string; border: string; text: string; dot: string }> = {
   green:  { bg: 'bg-emerald-100', border: 'border-emerald-400', text: 'text-emerald-900', dot: 'bg-emerald-400' },
   red:    { bg: 'bg-rose-100',    border: 'border-rose-400',    text: 'text-rose-900',    dot: 'bg-rose-400' },
   blue:   { bg: 'bg-indigo-100',  border: 'border-indigo-400',  text: 'text-indigo-900',  dot: 'bg-indigo-400' },
@@ -17,6 +17,33 @@ const COLOR_STYLES: Record<StickerColor, { bg: string; border: string; text: str
   teal:   { bg: 'bg-teal-100',    border: 'border-teal-400',    text: 'text-teal-900',    dot: 'bg-teal-400' },
   slate:  { bg: 'bg-slate-100',   border: 'border-slate-400',   text: 'text-slate-800',   dot: 'bg-slate-400' },
 };
+
+export const COLOR_ALIASES: Record<string, StickerColor> = {
+  mint: 'green',
+  emerald: 'green',
+  pink: 'red',
+  rose: 'red',
+  indigo: 'blue',
+  yellow: 'amber',
+  orange: 'amber',
+  violet: 'purple',
+  lavender: 'purple',
+  cyan: 'teal',
+  gray: 'slate',
+  grey: 'slate',
+};
+
+/**
+ * Safely resolves any raw color string (including aliases like 'mint', 'pink' or unknown strings)
+ * to a valid StickerColor, always falling back to 'blue' to prevent undefined crashes.
+ */
+export function resolveStickerColor(rawColor?: string | null): StickerColor {
+  if (!rawColor) return 'blue';
+  const lower = rawColor.toLowerCase();
+  if (lower in COLOR_STYLES) return lower as StickerColor;
+  if (lower in COLOR_ALIASES) return COLOR_ALIASES[lower];
+  return 'blue';
+}
 
 // Backward-compat: map old stickerType presets to new schema
 const LEGACY_MAP: Record<string, { emoji: string; label: string; color: StickerColor }> = {
@@ -31,6 +58,8 @@ const LEGACY_MAP: Record<string, { emoji: string; label: string; color: StickerC
 
 const COLOR_ORDER: StickerColor[] = ['green', 'red', 'blue', 'amber', 'purple', 'teal', 'slate'];
 
+const QUICK_EMOJIS = ['🚀', '📈', '📉', '🎯', '⭐', '🔥', '💎', '⚠️', '🐻', '🐂', '🍜', '⚡', '🏆', '👀', '✅', '💡'];
+
 export const StickerNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
   const config = (data.config || {}) as StickerConfig;
@@ -39,7 +68,7 @@ export const StickerNode = memo(({ id, data, selected }: NodeProps) => {
   const legacy = config.stickerType ? LEGACY_MAP[config.stickerType] : null;
   const initEmoji = config.emoji ?? legacy?.emoji ?? '🚀';
   const initLabel = config.label ?? legacy?.label ?? 'My Sticker';
-  const initColor: StickerColor = (config.color as StickerColor) ?? legacy?.color ?? 'blue';
+  const initColor = resolveStickerColor(config.color || legacy?.color);
 
   const [emoji, setEmoji]         = useState(initEmoji);
   const [label, setLabel]         = useState(initLabel);
@@ -73,7 +102,7 @@ export const StickerNode = memo(({ id, data, selected }: NodeProps) => {
     const leg = config.stickerType ? LEGACY_MAP[config.stickerType] : null;
     setEmoji(config.emoji ?? leg?.emoji ?? '🚀');
     setLabel(config.label ?? leg?.label ?? 'My Sticker');
-    setColor((config.color as StickerColor) ?? leg?.color ?? 'blue');
+    setColor(resolveStickerColor(config.color || leg?.color));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.emoji, config.label, config.color, config.stickerType]);
 
@@ -107,8 +136,9 @@ export const StickerNode = memo(({ id, data, selected }: NodeProps) => {
     }
   }, [editingLabel]);
 
-  // --- Styles ---
-  const cs = COLOR_STYLES[color];
+  // --- Styles with guaranteed fallback safety ---
+  const activeColor = resolveStickerColor(color);
+  const cs = COLOR_STYLES[activeColor] || COLOR_STYLES.blue;
 
   const containerStyle = isDark
     ? 'bg-[#1D1E26] border-[#2C2E3A] text-[#D8DAE2]'
@@ -143,33 +173,25 @@ export const StickerNode = memo(({ id, data, selected }: NodeProps) => {
           {emoji}
         </button>
 
-        {/* Floating Quick Emoji Picker Popover */}
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}
-            className="absolute -top-32 -left-2 z-50 p-2 rounded-2xl border-2 shadow-2xl nodrag nowheel
-              bg-white border-slate-300 dark:bg-[#181920] dark:border-[#2C2E3A] text-slate-800 dark:text-white"
-            style={{ width: 196 }}
-            onClick={(e) => e.stopPropagation()}
+            className="absolute -top-12 left-0 z-50 flex items-center gap-1 rounded-2xl border-2 p-1.5 shadow-xl nodrag nowheel
+              bg-white border-slate-300 dark:bg-[#1D1E26] dark:border-[#2C2E3A]"
+            style={{ width: 'max-content' }}
           >
-            <div className="grid grid-cols-4 gap-1">
-              {[
-                '🚀', '📈', '📉', '🎯',
-                '⭐', '⚠️', '✅', '💎',
-                '🐂', '🐻', '💰', '📊',
-                '🔥', '💡', '⚡', '🏆',
-              ].map((em) => (
+            <div className="grid grid-cols-8 gap-1">
+              {QUICK_EMOJIS.map((e) => (
                 <button
-                  key={em}
+                  key={e}
                   type="button"
-                  onClick={() => selectQuickEmoji(em)}
-                  className={`h-8 w-8 text-base flex items-center justify-center rounded-lg transition-all cursor-pointer ${
-                    emoji === em
-                      ? 'bg-blue-500/20 border-2 border-blue-500 scale-105'
-                      : 'hover:bg-slate-100 dark:hover:bg-white/10 hover:scale-110'
-                  }`}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-base hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none"
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    selectQuickEmoji(e);
+                  }}
                 >
-                  {em}
+                  {e}
                 </button>
               ))}
             </div>
@@ -218,7 +240,7 @@ export const StickerNode = memo(({ id, data, selected }: NodeProps) => {
                 persist({ color: c });
               }}
               className={`w-4 h-4 rounded-full border-2 transition-transform hover:scale-125 cursor-pointer
-                ${COLOR_STYLES[c].dot}
+                ${(COLOR_STYLES[c] || COLOR_STYLES.blue).dot}
                 ${c === color ? 'border-slate-700 scale-125' : 'border-transparent'}`}
             />
           ))}

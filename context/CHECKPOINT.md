@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **179 unit tests across 16 test suites (100% green).**
+* **Master Unit Test Suite:** **231 unit tests across 24 test suites (100% green).**
 
 ---
 
@@ -21,11 +21,19 @@
 * **`watcher` (Radar sticker & Leaderboard):**
   * **Single Stock Mode:** Monitors individual Indonesian stock tickers (`BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`) with current price, % move, and cycle counter (`⚡ 12 runs`).
   * **Top Gainers / Losers Leaderboard Mode:** Full multi-mover ranking table (`#1`, `#2`, `#3`... with ticker, company name, last close price, and Mint/Coral % badges) querying `GET /v2/companies/top-changes/` with `n_stock`, `periods`, `classifications`, and `min_mcap_billion` parameters. Features theme-aware rank badges (#1 gold, #2 silver, #3 bronze, #4+ slate) for Light, Mono (warm-paper), and Dark (soft charcoal) modes.
-  * **Clean Initial State & Lifecycle:** Watchers start in a clean idle state (`0 runs`, `"Waiting for tick"` / `"Waiting for live leaderboard poll..."`) without premature mock data injection.
+  * **Increased Card Dimensions (`w-[340px]` single mode, `w-[400px]` radar mode):** Expanded width eliminating cramped text wrapping and providing clean single-line headers, wider company name limits (`max-w-[150px]`), and comfortable metric spacing.
+  * **Clean Unassigned Initial State & Lifecycle:** Watchers start in a clean idle state (`0 runs`, `"No Stock Selected - Double-click card to choose an Indonesian company"`) without premature mock or default tickers.
   * **API Error Transparency & Offline Mock Indicator:** Structured error capture (`{ code, message }`) displays a `⚠ API Error {code}` badge and detailed callout banner on live API failures. Offline mode displays a crisp `Mock` badge.
   * **Credit Rate Badge & Tooltip:** Shows `🪙 10 credits / poll` (with tooltip explaining the 1 credit per classification × period formula) or `🪙 1 credit / tick` in the card footer.
   * **Upstream Input Target Handle:** Equipped with a left-side Target Handle allowing upstream Screener or Action nodes to pipe dynamic ticker payloads directly into Watchers.
   * **Dual Downstream Workflows:** Direct connected sticky notes (`NoteNode`) auto-format the full ranked summary table; connected action nodes (`create_note`) spawn separate individual sticky notes for each ranked mover with non-overlapping spatial offsets.
+* **Indonesian Company Chooser & Search Combobox (`CompanyCombobox.tsx`, `popularIdxCompanies.ts`, `companySearch.ts`):**
+  * **Instant In-Memory Matcher:** Fast `<0.3ms` token & keyword matcher across ~150 curated Indonesian companies.
+  * **Curated Empty-Focus Picks:** Surfaces top 12 blue chips (`POPULAR_PICKS`: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, `ADRO`, `ANTM`, `ICBP`, `UNVR`, `BREN`, `AMMN`).
+  * **Fuzzy & Name Search:** Resolves tickers and keywords (`mandiri` $\rightarrow$ `BMRI`, `astra` $\rightarrow$ `ASII`, `indofood` $\rightarrow$ `ICBP`/`INDF`).
+  * **AI Screener Fallback CTA:** 1-click button to discover companies via AI Screener when 0 results match.
+  * **Freeform Ticker Entry:** Type any ticker and press Enter to commit as uppercase for new IPOs.
+  * **Integrated Across Modals:** Built directly into `EditNodeModal.tsx` for Watcher single stock and Action target symbol configurations.
 * **`screener` (AI Natural Language Company Screener):**
   * **Natural Language Queries:** Users query Indonesian stocks in plain English (e.g., *"top 5 banks by market cap"*, *"mining companies with high dividend"*, *"tech companies by revenue"*).
   * **Sectors API Integration:** Calls `GET /v2/companies/?q={query}&include_query_values=true` or structured SQL (`where`, `order_by`). Unpacks nested `query_values` into direct company properties.
@@ -109,6 +117,10 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`DRAGGABLE_SANDBOX_FIX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/DRAGGABLE_SANDBOX_FIX_PLAN.md): Draggable Sandbox missions widget fix, gesture thresholding, and theme color polish across Dark/Mono/Custom themes.
+* [`HANDS_ON_TUTORIAL_SANDBOX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/HANDS_ON_TUTORIAL_SANDBOX_PLAN.md): Interactive step-by-step hands-on sandbox missions, live canvas action detection, and interactive guidance widgets.
+* [`ONBOARDING_SPOTLIGHT_TOUR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/ONBOARDING_SPOTLIGHT_TOUR_PLAN.md): 5-step interactive SVG cutout spotlight tour, 4-theme cards, and resume pill.
+* [`COMPANY_SELECTION_COMBOBOX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/COMPANY_SELECTION_COMBOBOX_PLAN.md): Curated 150+ Indonesian company search combobox and AI screener fallback.
 * [`SCRIFFLE_THEMES_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/SCRIFFLE_THEMES_PLAN.md): Plain-text `.scrifflemes` custom theme engine, parser, presets, and drag-and-drop workflow.
 * [`CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md): Canvas lock state, card creation guard, Move/Hand cursor correction, unified hover system, and dialog viewport max-height layout.
 * [`GIT_CONFLICT_RESOLUTION_PLAN.md`](file:///home/eiksirf/Projects/scriffle/context/GIT_CONFLICT_RESOLUTION_PLAN.md): Conflict resolution and integration workflow between `dev-ui` and `dev-conflicts`.

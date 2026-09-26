@@ -1253,6 +1253,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
 
   return (
     <div
+      data-tour="market-canvas"
       data-tool-mode={toolMode}
       data-is-locked={isLocked ? 'true' : 'false'}
       className={`h-full w-full relative transition-colors duration-200 ${isHandMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
