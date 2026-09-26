@@ -73,11 +73,12 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
       ],
     },
     {
-      title: 'Grouping & Focus',
+      title: 'Grouping & Layout',
       icon: 'group_line',
       items: [
         { keys: ['Ctrl', 'G'], label: 'Group Selected Cards' },
         { keys: ['Ctrl', '⇧', 'G'], label: 'Ungroup Selected Group' },
+        { keys: ['Ctrl', '⇧', 'T'], label: 'Tidy Up & Auto-Distribute (≥3)' },
         { keys: ['2× Click'], label: 'Enter Group Isolation Mode' },
         { keys: ['⇧', 'Click'], label: 'Multi-Select / Toggle' },
         { keys: ['⇧', 'Drag'], label: 'Marquee Box Selection' },

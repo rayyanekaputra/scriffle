@@ -430,7 +430,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 #### 2. 🗂️ Spatial Board Organization (FigJam × Miro-inspired)
 - [ ] **Canvas Sections / Frames**: Visual colored boundaries with editable title headers (e.g., *"Banking Sector Watchers"*, *"AI Screener Pipeline"*) that enclose and move child nodes together.
-- [ ] **Tidy Up / Auto-Distribute**: 1-click button in the selection bounding box when 3+ nodes are selected to align and space nodes with equal horizontal/vertical offsets.
+- [x] **Tidy Up & Anti-Collision Auto-Distribute (`tidyUpLayout.ts`, `SelectionBoundingBox.tsx`, `MarketCanvas.tsx`)**: 1-click button in the selection bounding box (and `Ctrl+Shift+T` hotkey) when 3+ nodes are selected to distribute nodes with 48px handle clearance and zero overlaps across horizontal, vertical, and 2D grid matrix layouts.
 - [ ] **Floating Color Quick-Swatches on Sticky Notes**: Floating 5-color mini palette on hover/selection of sticky notes for 1-click color swapping.
 
 #### 3. 🔍 Navigation & Productivity (Figma × FigJam-inspired)

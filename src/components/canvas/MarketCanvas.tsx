@@ -35,6 +35,7 @@ import { SelectionBoundingBox } from './SelectionBoundingBox';
 import { QuickAddPopover } from './QuickAddPopover';
 import { findNextSpatialNode } from '@/lib/spatialNavigator';
 import { calculateQuickAddPosition, getDefaultConfigForQuickAdd } from '@/lib/quickAddNavigator';
+import { tidyUpNodes, resolveNodeDimensions, TidyMode } from '@/lib/tidyUpLayout';
 import { CanvasData, CanvasToolMode, NodeType } from '@/types/canvas';
 import { useTheme } from '@/context/ThemeContext';
 import { MingIcon } from '@/components/ui/MingIcon';
@@ -341,6 +342,60 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     }
   }, [nodes, onRecordSnapshot, setNodes, onRefresh]);
 
+  // Helper: Tidy up & auto-distribute spacing for selected nodes (>= 3 nodes)
+  const handleTidyUp = useCallback(
+    async (mode: TidyMode = 'auto') => {
+      const selectedNodes = nodes.filter((n) => n.selected);
+      if (selectedNodes.length < 3) return;
+
+      onRecordSnapshot?.();
+
+      const tidyInput = selectedNodes.map((n) => {
+        const dims = resolveNodeDimensions(n);
+        return {
+          id: n.id,
+          type: n.type,
+          x: n.position.x,
+          y: n.position.y,
+          width: dims.width,
+          height: dims.height,
+          config: n.data?.config,
+        };
+      });
+
+      const results = tidyUpNodes(tidyInput, mode);
+      if (results.length === 0) return;
+
+      const posMap = new Map(results.map((r) => [r.id, r.position]));
+
+      // 1. Optimistic update
+      setNodes((nds) =>
+        nds.map((n) => {
+          const newPos = posMap.get(n.id);
+          return newPos ? { ...n, position: newPos } : n;
+        })
+      );
+
+      // 2. Persist to SQLite
+      try {
+        await fetch('/api/canvas/nodes', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nodes: results.map((r) => ({
+              id: r.id,
+              position: r.position,
+            })),
+          }),
+        });
+        onRefresh?.();
+      } catch (err) {
+        console.error('Failed to persist tidy-up node positions:', err);
+      }
+    },
+    [nodes, onRecordSnapshot, setNodes, onRefresh]
+  );
+
   // Keyboard Shortcuts: Delete, Copy, Paste, Duplicate, Undo/Redo, Group (Cmd+G), Ungroup (Cmd+Shift+G), Tools
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -388,6 +443,16 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           selectedEdges.forEach((ed) => onDeleteEdge?.(ed.id));
         }
         return;
+      }
+
+      // 2b. Tidy Up & Auto-Distribute: Ctrl+Shift+T / Cmd+Shift+T (for >= 3 selected nodes)
+      if (isCtrlOrCmd && e.shiftKey && (e.key === 't' || e.key === 'T')) {
+        const selectedNodes = nodes.filter((n) => n.selected);
+        if (selectedNodes.length >= 3) {
+          e.preventDefault();
+          handleTidyUp('auto');
+          return;
+        }
       }
 
       // 3. Escape -> Exit isolation mode, close menus, and deselect all
@@ -1328,6 +1393,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           nodes={nodes}
           onGroup={handleGroupSelected}
           onUngroup={handleUngroupSelected}
+          onTidyUp={handleTidyUp}
         />
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color={dotColor} />
           <Controls

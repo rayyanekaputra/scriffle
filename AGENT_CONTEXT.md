@@ -297,6 +297,7 @@ hackathon/
 - **Shift+Click / Ctrl+Click** → multi-select; **Shift+Drag** → box marquee select
 - **Figma-Style Selection Bounding Box (`SelectionBoundingBox.tsx`):** 8-point corner and edge midpoint handles with dashed outline and quick `Group` / `Ungroup` action buttons when 2+ elements are selected
 - **Group & Ungroup (`Cmd+G` / `Cmd+Shift+G`):** Cohesive multi-node dragging, group-aware copy & paste (`Cmd+C` / `Cmd+V`) preserving internal connectors and relative offsets
+- **Tidy Up & Anti-Collision Auto-Distribute (`SelectionBoundingBox.tsx`, `tidyUpLayout.ts`):** When 3+ nodes are selected, a "Tidy up" action button appears in the floating selection bounding box (and via `Ctrl+Shift+T`). Automatically computes type-aware dimensions (Radar Watcher 400px, Screener 360px, Single Watcher 340px) and distributes cards with zero collision and 48px handle clearances horizontally, vertically, or into a 2D matrix grid. Supports full `Ctrl+Z` undo.
 - **Quick-Add Connected Node (`+` Handle & Popover):** Hovering any node's output handle reveals a floating `+` button, or dragging a connector onto empty canvas opens a contextual quick-add menu (`QuickAddPopover.tsx`) that automatically spawns and wires the next node with collision avoidance (`quickAddNavigator.ts`).
 - **Double-Click Isolation Mode:** Isolates group into focus mode with top banner to edit individual elements or make `Shift+Click` sub-selections (`Esc` to exit)
 - **Delete / Backspace** → bulk delete selected
