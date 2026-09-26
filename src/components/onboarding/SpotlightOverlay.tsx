@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useOnboarding } from '@/context/OnboardingContext';
+import { useTheme } from '@/context/ThemeContext';
 
 interface TargetRect {
   top: number;
@@ -12,11 +13,16 @@ interface TargetRect {
 
 export const SpotlightOverlay: React.FC = () => {
   const { isActive, currentStep, skipTour } = useOnboarding();
+  const { theme, activeCustomTheme } = useTheme();
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>({
     width: typeof window !== 'undefined' ? window.innerWidth : 1200,
     height: typeof window !== 'undefined' ? window.innerHeight : 800,
   });
+
+  const isCustom = theme === 'custom';
+  const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
+  const isMono = theme === 'mono';
 
   const updateTargetRect = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -72,6 +78,22 @@ export const SpotlightOverlay: React.FC = () => {
 
   if (!isActive) return null;
 
+  const ringBorderClass = isCustom && activeCustomTheme
+    ? 'border-[var(--custom-ui-primary)]'
+    : isDark
+    ? 'border-slate-300'
+    : isMono
+    ? 'border-[#242321]'
+    : 'border-[#0050FF]';
+
+  const ringGlowClass = isCustom && activeCustomTheme
+    ? 'border-[var(--custom-ui-primary)]/40'
+    : isDark
+    ? 'border-white/25'
+    : isMono
+    ? 'border-[#242321]/30'
+    : 'border-[#0050FF]/40';
+
   return (
     <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden select-none transition-all duration-300">
       {/* SVG Cutout Mask */}
@@ -120,7 +142,7 @@ export const SpotlightOverlay: React.FC = () => {
       {/* Pulsing Outline Ring over the targeted element */}
       {targetRect && (
         <div
-          className="absolute pointer-events-none rounded-2xl border-2 border-[#0050FF] transition-all duration-200"
+          className={`absolute pointer-events-none rounded-2xl border-2 transition-all duration-200 ${ringBorderClass}`}
           style={{
             top: `${targetRect.top}px`,
             left: `${targetRect.left}px`,
@@ -129,7 +151,7 @@ export const SpotlightOverlay: React.FC = () => {
           }}
         >
           {/* Subtle accent corner glow */}
-          <div className="absolute -inset-1 rounded-2xl border border-[#0050FF]/40 animate-pulse pointer-events-none" />
+          <div className={`absolute -inset-1 rounded-2xl border animate-pulse pointer-events-none ${ringGlowClass}`} />
         </div>
       )}
     </div>

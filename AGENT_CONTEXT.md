@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **229 unit tests across 24 suites (100% green)** |
+| Master Unit Tests | **231 unit tests across 24 suites (100% green)** |
 
 ---
 
@@ -550,6 +550,7 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
 | `TESTING_PLAN.md` | ⭐ Full 3-tier testing strategy & mandate — **read before adding any new feature** |
+| `DRAGGABLE_SANDBOX_FIX_PLAN.md` | Draggable Sandbox missions widget fix, gesture thresholding, and theme color polish |
 | `GIT_CONFLICT_RESOLUTION_PLAN.md` | Merge conflict resolution plan and integration workflow between branches |
 | `CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md` | Canvas lock state, creation guard, Move/Hand cursor correction, dialog viewport constraints |
 | `DISCORD_WEBHOOK_PLAN.md` | Native Discord Webhook dispatch service, rich embeds, test ping API & UI indicators |

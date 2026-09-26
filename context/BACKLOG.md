@@ -51,11 +51,13 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
-- [x] **🎯 Draggable Sandbox Missions Card Gesture Fix & Minimized Pill Repositioning (`SandboxMissionsCard.tsx`, `draggableWidget.test.ts`, `DRAGGABLE_SANDBOX_FIX_PLAN.md`)**
+- [x] **🎯 Draggable Sandbox Missions Card Gesture Fix & Onboarding Theme Cohesion (`SandboxMissionsCard.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `MissionStepItem.tsx`, `draggableWidget.test.ts`, `DRAGGABLE_SANDBOX_FIX_PLAN.md`)**
   - Resolved drag initiation block caused by `target.closest('.nodrag')` matching the outer React Flow canvas guard container.
   - Implemented gesture delta thresholding (`dx > 3 || dy > 3`) on minimized pill for dual behavior: single tap/click toggles expand, dragging repositions the pill smoothly.
   - Added synchronous `currentPosRef.current` coordinate tracking to eliminate React state closure lag when persisting to `localStorage` on pointer release.
   - Added double-click header & pill reset to default `{ x: 24, y: 80 }` and boundary clamping below TopNav (`minY: 64`).
+  - Calmed onboarding color palette across **Dark**, **Mono (Warm Paper)**, and **Custom Themes**: replaced neon electric blue buttons, rings, icons, and callout text with clean theme-cohesive palettes (`bg-white` in Dark mode, `#242321` ink in Mono mode, theme CSS tokens in Custom mode).
+  - Refined Mission progress bar empty track background (`bg-[#282B38]` in Dark, `bg-[#ECEAE4]` in Mono, `bg-slate-100` in Light) so it distinctly renders as an empty progress meter rather than a dark outline.
   - Added unit test suite `draggableWidget.test.ts` (231 total passing unit tests across 24 suites, 100% green).
 - [x] **⌨️ Keyboard Shortcuts Modal Spacing & `--start-fresh` Non-Destructive CLI Flag (`ShortcutsModal.tsx`, `scripts/dev.ts`, `scripts/start.ts`, `freshProjectCreator.ts`, `startFresh.test.ts`)**
   - Refactored `ShortcutsModal.tsx` to `max-w-4xl` with generous category card padding (`p-5`, `gap-3.5`) and spacious footer (`py-3.5 px-6/7`), enforcing strictly single-line action buttons (`[Product Tour]`, `[Hands-On Tutorial]`) with `whitespace-nowrap shrink-0` and clear separation from the `Esc` badge.

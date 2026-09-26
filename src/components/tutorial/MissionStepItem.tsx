@@ -22,6 +22,22 @@ export const MissionStepItem: React.FC<MissionStepItemProps> = ({
   const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
+  const activeBadgeCircleClass = isCustom && activeCustomTheme
+    ? 'border-[var(--custom-ui-primary)] text-[var(--custom-ui-primary)] bg-[var(--custom-ui-surface-muted)]'
+    : isDark
+    ? 'border-slate-300 text-slate-200 bg-white/10'
+    : isMono
+    ? 'border-[#242321] text-[#242321] bg-[#242321]/10'
+    : 'border-[#0050FF] text-[#0050FF] bg-blue-50';
+
+  const activeHintClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface-muted)] border-[var(--custom-ui-border)] text-[var(--custom-ui-text)]'
+    : isDark
+    ? 'bg-[#101116] border-[#2E3140] text-slate-300'
+    : isMono
+    ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#242321]'
+    : 'bg-blue-50/70 border-blue-200 text-blue-900';
+
   return (
     <div
       onClick={onSelect}
@@ -36,7 +52,7 @@ export const MissionStepItem: React.FC<MissionStepItemProps> = ({
           ? isCustom && activeCustomTheme
             ? 'bg-[var(--custom-ui-surface)] border-[var(--custom-ui-primary)] text-[var(--custom-ui-text)] shadow-xs'
             : isDark
-            ? 'bg-[#1A1C24] border-blue-500 text-white shadow-xs'
+            ? 'bg-[#1A1C24] border-slate-400 text-white shadow-xs'
             : isMono
             ? 'bg-[#FCFBF9] border-[#242321] text-[#242321] shadow-xs'
             : 'bg-white border-[#0050FF] text-slate-900 shadow-xs'
@@ -54,9 +70,7 @@ export const MissionStepItem: React.FC<MissionStepItemProps> = ({
             mission.isCompleted
               ? 'border-emerald-500 bg-emerald-500 text-white'
               : isActive
-              ? isDark
-                ? 'border-blue-400 text-blue-400 bg-blue-500/10'
-                : 'border-[#0050FF] text-[#0050FF] bg-blue-50'
+              ? activeBadgeCircleClass
               : isDark
               ? 'border-slate-600 bg-transparent'
               : isMono
@@ -117,13 +131,7 @@ export const MissionStepItem: React.FC<MissionStepItemProps> = ({
           {/* Active Detail Hint */}
           {isActive && !mission.isCompleted && (
             <div
-              className={`mt-2 rounded-lg border p-2 text-[11px] font-medium leading-normal flex items-start gap-1.5 ${
-                isDark
-                  ? 'bg-[#101116] border-[#2E3140] text-blue-300'
-                  : isMono
-                  ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#242321]'
-                  : 'bg-blue-50/70 border-blue-200 text-blue-900'
-              }`}
+              className={`mt-2 rounded-lg border p-2 text-[11px] font-medium leading-normal flex items-start gap-1.5 ${activeHintClass}`}
             >
               <MingIcon name="lightbulb_line" size={14} className="shrink-0 mt-0.5 text-amber-500" />
               <span>{mission.detailHint}</span>

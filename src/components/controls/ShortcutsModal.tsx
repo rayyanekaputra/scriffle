@@ -123,9 +123,9 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-xl border ${
                 isDark
-                  ? 'bg-[#22242D] border-[#2E3140] text-blue-400'
+                  ? 'bg-[#22242D] border-[#2E3140] text-slate-200'
                   : isMono
-                  ? 'bg-[#ECEAE4] border-[#D8D4CA] text-blue-600'
+                  ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#242321]'
                   : 'bg-blue-50 border-blue-200 text-[#0050FF]'
               }`}
             >
@@ -239,9 +239,9 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
                   isDark
-                    ? 'border-[#2E3140] bg-[#22242D] text-blue-400 hover:text-white'
+                    ? 'border-[#2E3140] bg-[#22242D] text-slate-200 hover:text-white'
                     : isMono
-                    ? 'border-[#D8D4CA] bg-[#ECEAE4] text-blue-700 hover:text-[#242321]'
+                    ? 'border-[#D8D4CA] bg-[#ECEAE4] text-[#242321] hover:bg-[#D8D4CA]'
                     : 'border-blue-200 bg-blue-50 text-[#0050FF] hover:bg-blue-100'
                 }`}
               >
@@ -257,7 +257,13 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                   onClose();
                   onStartTutorial();
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border-2 border-[#0050FF] bg-[#0050FF] text-white text-xs font-bold whitespace-nowrap shrink-0 transition hover:bg-blue-600 cursor-pointer shadow-none"
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border-2 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer shadow-none ${
+                  isDark
+                    ? 'border-white bg-white text-slate-950 hover:bg-slate-100'
+                    : isMono
+                    ? 'border-[#242321] bg-[#242321] text-[#FCFBF9] hover:bg-black'
+                    : 'border-[#0050FF] bg-[#0050FF] text-white hover:bg-blue-600'
+                }`}
               >
                 <MingIcon name="target_line" size={14} />
                 <span className="whitespace-nowrap">Hands-On Tutorial</span>

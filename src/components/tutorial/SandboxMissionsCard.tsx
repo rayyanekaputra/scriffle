@@ -177,6 +177,38 @@ export const SandboxMissionsCard: React.FC = () => {
     ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321]'
     : 'bg-white border-slate-300 text-slate-900';
 
+  const headerIconClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface-muted)] text-[var(--custom-ui-primary)] border-[var(--custom-ui-border)]'
+    : isDark
+    ? 'bg-white/10 text-slate-200 border-white/15'
+    : isMono
+    ? 'bg-[#242321]/10 text-[#242321] border-[#242321]/20'
+    : 'bg-blue-500/10 text-[#0050FF] border-blue-500/20';
+
+  const pillIconClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface-muted)] text-[var(--custom-ui-primary)]'
+    : isDark
+    ? 'bg-white/10 text-slate-200'
+    : isMono
+    ? 'bg-[#242321]/10 text-[#242321]'
+    : 'bg-blue-500/15 text-[#0050FF]';
+
+  const progressBarFillClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-primary)]'
+    : isDark
+    ? 'bg-slate-200'
+    : isMono
+    ? 'bg-[#242321]'
+    : 'bg-[#0050FF]';
+
+  const progressBarTrackClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface-muted)]'
+    : isDark
+    ? 'bg-[#282B38]'
+    : isMono
+    ? 'bg-[#ECEAE4]'
+    : 'bg-slate-100';
+
   // Minimized Compact Pill (smoothly draggable + click to expand)
   if (isMinimized) {
     return (
@@ -199,7 +231,9 @@ export const SandboxMissionsCard: React.FC = () => {
           }`}
           title="Drag to reposition • Click to expand • Double-click to reset"
         >
-          <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-blue-500/15 text-[#0050FF] shrink-0 pointer-events-none">
+          <div className={`flex h-5 w-5 items-center justify-center rounded-lg shrink-0 pointer-events-none ${
+            isAllCompleted ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : pillIconClass
+          }`}>
             <MingIcon name={isAllCompleted ? 'trophy_line' : 'target_line'} size={14} />
           </div>
           <span className="whitespace-nowrap pointer-events-none">
@@ -236,7 +270,7 @@ export const SandboxMissionsCard: React.FC = () => {
         title="Drag header to move checklist • Double-click to reset"
       >
         <div className="flex items-center gap-2 select-none pointer-events-none">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-blue-500/10 text-[#0050FF] border border-blue-500/20 shrink-0">
+          <div className={`flex h-7 w-7 items-center justify-center rounded-xl border shrink-0 ${headerIconClass}`}>
             <MingIcon name="target_line" size={16} />
           </div>
           <div>
@@ -297,9 +331,9 @@ export const SandboxMissionsCard: React.FC = () => {
       </div>
 
       {/* Progress Bar Hairline */}
-      <div className="w-full bg-slate-200/60 dark:bg-[#22242D] mono:bg-[#D8D4CA] h-1.5 shrink-0 overflow-hidden">
+      <div className={`w-full h-1.5 shrink-0 overflow-hidden ${progressBarTrackClass}`}>
         <div
-          className="bg-[#0050FF] h-full transition-all duration-300"
+          className={`h-full transition-all duration-300 ${progressBarFillClass}`}
           style={{ width: `${progressPercent}%` }}
         />
       </div>

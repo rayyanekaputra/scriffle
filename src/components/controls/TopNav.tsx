@@ -245,9 +245,9 @@ export const TopNav: React.FC<TopNavProps> = ({
             onClick={onStartTutorial}
             className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold border-2 transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               theme === 'dark'
-                ? 'bg-[#181920] border-[#282A36] text-blue-400 hover:text-white hover:bg-[#22242D]'
+                ? 'bg-[#181920] border-[#282A36] text-slate-300 hover:text-white hover:bg-[#22242D]'
                 : theme === 'mono'
-                ? 'bg-[#FCFBF9] border-[#D8D4CA] text-blue-700 hover:text-[#242321] hover:bg-[#EAE7DF]'
+                ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321] hover:bg-[#EAE7DF]'
                 : 'bg-blue-50 border-blue-200 text-[#0050FF] hover:bg-blue-100'
             }`}
             title="Open Hands-On Tutorial Missions"

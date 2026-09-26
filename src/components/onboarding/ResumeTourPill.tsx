@@ -30,11 +30,27 @@ export const ResumeTourPill: React.FC = () => {
     ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321]'
     : 'bg-white border-slate-300 text-slate-900';
 
+  const iconBoxClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface-muted)] text-[var(--custom-ui-primary)] border-[var(--custom-ui-border)]'
+    : isDark
+    ? 'bg-white/10 text-slate-200 border-white/15'
+    : isMono
+    ? 'bg-[#242321]/10 text-[#242321] border-[#242321]/20'
+    : 'bg-blue-500/10 text-[#0050FF] border-blue-500/20';
+
+  const resumeBtnClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-primary)] text-[var(--custom-ui-surface)] border-[var(--custom-ui-primary)]'
+    : isDark
+    ? 'bg-white hover:bg-slate-100 text-[#0F1014] border-white'
+    : isMono
+    ? 'bg-[#242321] hover:bg-black text-[#FCFBF9] border-[#242321]'
+    : 'bg-[#0050FF] hover:bg-blue-600 text-white border-[#0050FF]';
+
   return (
     <div
       className={`fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-2xl border-2 px-3.5 py-2 transition-all duration-200 select-none ${pillContainerClass}`}
     >
-      <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-blue-500/10 text-[#0050FF] shrink-0 border border-blue-500/20">
+      <div className={`flex h-7 w-7 items-center justify-center rounded-xl shrink-0 border ${iconBoxClass}`}>
         <MingIcon name="magic_line" size={15} />
       </div>
 
@@ -53,7 +69,7 @@ export const ResumeTourPill: React.FC = () => {
         <button
           type="button"
           onClick={resumeTour}
-          className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border border-[#0050FF] transition-all cursor-pointer"
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border ${resumeBtnClass}`}
         >
           Resume
         </button>

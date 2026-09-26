@@ -19,6 +19,14 @@ export const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
   const isMono = theme === 'mono';
 
+  const primaryBtnClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-primary)] text-[var(--custom-ui-surface)] border-2 border-[var(--custom-ui-primary)]'
+    : isDark
+    ? 'bg-white hover:bg-slate-100 text-[#0F1014] border-2 border-white'
+    : isMono
+    ? 'bg-[#242321] hover:bg-black text-[#FCFBF9] border-2 border-[#242321]'
+    : 'bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF]';
+
   return (
     <div
       className={`rounded-xl border-2 p-4 text-center transition-all ${
@@ -65,7 +73,7 @@ export const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
         <button
           type="button"
           onClick={onDismiss}
-          className="flex items-center gap-1 rounded-xl px-3.5 py-1.5 text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] transition cursor-pointer"
+          className={`flex items-center gap-1 rounded-xl px-3.5 py-1.5 text-xs font-bold transition cursor-pointer ${primaryBtnClass}`}
         >
           <span>Start Researching</span>
           <MingIcon name="arrow_right_line" size={13} />

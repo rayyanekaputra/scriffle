@@ -117,6 +117,7 @@
 ---
 
 ### 2.3 Implementation Plans Saved in Context Directory (`context/`)
+* [`DRAGGABLE_SANDBOX_FIX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/DRAGGABLE_SANDBOX_FIX_PLAN.md): Draggable Sandbox missions widget fix, gesture thresholding, and theme color polish across Dark/Mono/Custom themes.
 * [`HANDS_ON_TUTORIAL_SANDBOX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/HANDS_ON_TUTORIAL_SANDBOX_PLAN.md): Interactive step-by-step hands-on sandbox missions, live canvas action detection, and interactive guidance widgets.
 * [`ONBOARDING_SPOTLIGHT_TOUR_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/ONBOARDING_SPOTLIGHT_TOUR_PLAN.md): 5-step interactive SVG cutout spotlight tour, 4-theme cards, and resume pill.
 * [`COMPANY_SELECTION_COMBOBOX_PLAN.md`](file:///home/abzolute/Projects/hackathon/context/COMPANY_SELECTION_COMBOBOX_PLAN.md): Curated 150+ Indonesian company search combobox and AI screener fallback.

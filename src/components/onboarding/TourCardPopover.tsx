@@ -162,6 +162,38 @@ export const TourCardPopover: React.FC = () => {
 
   const isLastStep = currentStepIndex === totalSteps - 1;
 
+  const headerIconClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-surface-muted)] text-[var(--custom-ui-primary)] border-[var(--custom-ui-border)]'
+    : isDark
+    ? 'bg-white/10 text-slate-200 border-white/15'
+    : isMono
+    ? 'bg-[#242321]/10 text-[#242321] border-[#242321]/20'
+    : 'bg-blue-500/10 text-[#0050FF] border-blue-500/20';
+
+  const checkboxAccentClass = isCustom && activeCustomTheme
+    ? 'accent-[var(--custom-ui-primary)]'
+    : isDark
+    ? 'accent-slate-200'
+    : isMono
+    ? 'accent-[#242321]'
+    : 'accent-[#0050FF]';
+
+  const primaryBtnClass = isCustom && activeCustomTheme
+    ? 'bg-[var(--custom-ui-primary)] hover:opacity-90 text-[var(--custom-ui-surface)] border-2 border-[var(--custom-ui-primary)]'
+    : isDark
+    ? 'bg-white hover:bg-slate-100 text-[#0F1014] border-2 border-white'
+    : isMono
+    ? 'bg-[#242321] hover:bg-black text-[#FCFBF9] border-2 border-[#242321]'
+    : 'bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF]';
+
+  const activeDotClass = isCustom && activeCustomTheme
+    ? 'w-5 bg-[var(--custom-ui-primary)]'
+    : isDark
+    ? 'w-5 bg-white'
+    : isMono
+    ? 'w-5 bg-[#242321]'
+    : 'w-5 bg-[#0050FF]';
+
   return (
     <div
       ref={popoverRef}
@@ -174,7 +206,7 @@ export const TourCardPopover: React.FC = () => {
       {/* Header with Icon, Title, Badge & Dismiss */}
       <div className="flex items-center justify-between px-5 pt-4 pb-2">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500/10 text-[#0050FF] shrink-0 border border-blue-500/20">
+          <div className={`flex h-8 w-8 items-center justify-center rounded-xl shrink-0 border ${headerIconClass}`}>
             <MingIcon name={currentStep.icon || 'magic_line'} size={18} />
           </div>
           <div>
@@ -226,7 +258,7 @@ export const TourCardPopover: React.FC = () => {
               type="checkbox"
               checked={dontShowAgain}
               onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="h-3.5 w-3.5 rounded border-2 border-slate-400 text-[#0050FF] accent-[#0050FF] cursor-pointer"
+              className={`h-3.5 w-3.5 rounded border-2 border-slate-400 cursor-pointer ${checkboxAccentClass}`}
             />
             <span
               className={`text-[11px] font-medium transition-colors ${
@@ -263,7 +295,7 @@ export const TourCardPopover: React.FC = () => {
               title={`Go to step ${idx + 1}`}
               className={`h-2 rounded-full transition-all cursor-pointer ${
                 idx === currentStepIndex
-                  ? 'w-5 bg-[#0050FF]'
+                  ? activeDotClass
                   : isDark
                   ? 'w-2 bg-slate-700 hover:bg-slate-600'
                   : isMono
@@ -327,7 +359,7 @@ export const TourCardPopover: React.FC = () => {
                   completeTour();
                   openTutorial();
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] whitespace-nowrap shrink-0 transition-all cursor-pointer shadow-none"
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer shadow-none ${primaryBtnClass}`}
               >
                 <MingIcon name="target_line" size={14} className="shrink-0" />
                 <span className="whitespace-nowrap">Start Missions</span>
@@ -337,7 +369,7 @@ export const TourCardPopover: React.FC = () => {
             <button
               type="button"
               onClick={nextStep}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] whitespace-nowrap shrink-0 transition-all cursor-pointer shadow-none"
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer shadow-none ${primaryBtnClass}`}
             >
               <span className="whitespace-nowrap">Next</span>
               <MingIcon name="arrow_right_line" size={14} className="shrink-0" />
