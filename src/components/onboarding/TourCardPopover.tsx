@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useOnboarding } from '@/context/OnboardingContext';
+import { useSandboxTutorial } from '@/context/SandboxTutorialContext';
 import { useTheme } from '@/context/ThemeContext';
 import { MingIcon } from '@/components/ui/MingIcon';
 
@@ -15,7 +16,11 @@ export const TourCardPopover: React.FC = () => {
     prevStep,
     goToStep,
     skipTour,
+    completeTour,
+    dontShowAgain,
+    setDontShowAgain,
   } = useOnboarding();
+  const { openTutorial } = useSandboxTutorial();
   const { theme, activeCustomTheme } = useTheme();
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -160,7 +165,7 @@ export const TourCardPopover: React.FC = () => {
   return (
     <div
       ref={popoverRef}
-      className={`fixed z-50 pointer-events-auto w-[400px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl border-2 transition-all duration-200 select-none ${cardContainerClass}`}
+      className={`fixed z-50 pointer-events-auto w-[420px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl border-2 transition-all duration-200 select-none ${cardContainerClass}`}
       style={{
         top: `${popoverPos.top}px`,
         left: `${popoverPos.left}px`,
@@ -212,6 +217,31 @@ export const TourCardPopover: React.FC = () => {
           {currentStep.description}
         </p>
       </div>
+
+      {/* Step 6 / Last Step: "Don't show on startup" toggle checkbox */}
+      {isLastStep && (
+        <div className="px-5 pt-1 pb-1">
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none group">
+            <input
+              type="checkbox"
+              checked={dontShowAgain}
+              onChange={(e) => setDontShowAgain(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-2 border-slate-400 text-[#0050FF] accent-[#0050FF] cursor-pointer"
+            />
+            <span
+              className={`text-[11px] font-medium transition-colors ${
+                isDark
+                  ? 'text-slate-400 group-hover:text-slate-300'
+                  : isMono
+                  ? 'text-[#78756D] group-hover:text-[#242321]'
+                  : 'text-slate-500 group-hover:text-slate-800'
+              }`}
+            >
+              Don't show this on startup
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* Progress Dots & Actions Footer */}
       <div
@@ -280,9 +310,7 @@ export const TourCardPopover: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => {
-                  nextStep();
-                }}
+                onClick={completeTour}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition-all cursor-pointer ${
                   isDark
                     ? 'bg-[#181920] border-[#2E3140] text-slate-300 hover:bg-[#22242D]'
@@ -296,12 +324,8 @@ export const TourCardPopover: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  nextStep();
-                  if (typeof window !== 'undefined') {
-                    // Open sandbox tutorial
-                    const evt = new CustomEvent('scriffle:open-sandbox-tutorial');
-                    window.dispatchEvent(evt);
-                  }
+                  completeTour();
+                  openTutorial();
                 }}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] transition-all cursor-pointer shadow-none"
               >

@@ -241,6 +241,7 @@ export const TopNav: React.FC<TopNavProps> = ({
         {onStartTutorial && (
           <button
             type="button"
+            data-tour="tutorial-btn"
             onClick={onStartTutorial}
             className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold border-2 transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               theme === 'dark'

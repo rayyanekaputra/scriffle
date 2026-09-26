@@ -3,6 +3,10 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { TOUR_STEPS, TourStep } from '@/components/onboarding/tourStepsConfig';
 
+export const SUPPRESS_STARTUP_TOUR_KEY = 'scriffle_suppress_startup_tour';
+export const LEGACY_ONBOARDING_KEY = 'scriffle_onboarded_v1';
+export const TOUR_STEP_STORAGE_KEY = 'scriffle_tour_step';
+
 interface OnboardingContextType {
   isActive: boolean;
   currentStepIndex: number;
@@ -11,6 +15,8 @@ interface OnboardingContextType {
   hasCompleted: boolean;
   isMinimized: boolean;
   resumeStepIndex: number;
+  dontShowAgain: boolean;
+  setDontShowAgain: (val: boolean) => void;
   startTour: (fromStep?: number) => void;
   nextStep: () => void;
   prevStep: () => void;
@@ -21,9 +27,6 @@ interface OnboardingContextType {
   dismissResumePill: () => void;
 }
 
-const ONBOARDING_STORAGE_KEY = 'scriffle_onboarded_v1';
-const TOUR_STEP_STORAGE_KEY = 'scriffle_tour_step';
-
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
 export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,21 +35,33 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [hasCompleted, setHasCompleted] = useState<boolean>(true); // default true until client check
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
   const [resumeStepIndex, setResumeStepIndex] = useState<number>(0);
+  const [dontShowAgain, setDontShowAgainState] = useState<boolean>(false);
 
   // Check client-side localStorage on initial mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const completed = localStorage.getItem(ONBOARDING_STORAGE_KEY) === 'true';
-      setHasCompleted(completed);
-      
+      // 1. One-time migration: respect users who previously dismissed or completed the tour
+      const legacyCompleted = localStorage.getItem(LEGACY_ONBOARDING_KEY);
+      const existingSuppress = localStorage.getItem(SUPPRESS_STARTUP_TOUR_KEY);
+      if (legacyCompleted === 'true' && existingSuppress === null) {
+        localStorage.setItem(SUPPRESS_STARTUP_TOUR_KEY, 'true');
+        localStorage.removeItem(LEGACY_ONBOARDING_KEY);
+      }
+
+      // 2. Read startup suppression status
+      const isSuppressed = localStorage.getItem(SUPPRESS_STARTUP_TOUR_KEY) === 'true';
+      setDontShowAgainState(isSuppressed);
+      setHasCompleted(isSuppressed);
+
+      // 3. Read saved step for resume pill
       const savedStep = parseInt(localStorage.getItem(TOUR_STEP_STORAGE_KEY) || '0', 10);
       if (!isNaN(savedStep) && savedStep > 0 && savedStep < TOUR_STEPS.length) {
         setResumeStepIndex(savedStep);
       }
 
-      // If user is brand new (never completed or skipped), start the tour automatically after a gentle 400ms delay
-      if (!completed) {
+      // 4. If not suppressed on startup, auto-launch tour after 400ms gentle delay
+      if (!isSuppressed) {
         const timer = setTimeout(() => {
           setIsActive(true);
           setCurrentStepIndex(0);
@@ -57,6 +72,17 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } catch {
       // localStorage may be disabled in some environments
     }
+  }, []);
+
+  const setDontShowAgain = useCallback((val: boolean) => {
+    setDontShowAgainState(val);
+    try {
+      if (val) {
+        localStorage.setItem(SUPPRESS_STARTUP_TOUR_KEY, 'true');
+      } else {
+        localStorage.removeItem(SUPPRESS_STARTUP_TOUR_KEY);
+      }
+    } catch {}
   }, []);
 
   const startTour = useCallback((fromStep: number = 0) => {
@@ -71,7 +97,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setIsMinimized(false);
     setHasCompleted(true);
     try {
-      localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
       localStorage.removeItem(TOUR_STEP_STORAGE_KEY);
     } catch {}
   }, []);
@@ -81,7 +106,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setIsMinimized(true);
     setResumeStepIndex(currentStepIndex);
     try {
-      localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
       localStorage.setItem(TOUR_STEP_STORAGE_KEY, currentStepIndex.toString());
     } catch {}
   }, [currentStepIndex]);
@@ -141,6 +165,8 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         hasCompleted,
         isMinimized,
         resumeStepIndex,
+        dontShowAgain,
+        setDontShowAgain,
         startTour,
         nextStep,
         prevStep,

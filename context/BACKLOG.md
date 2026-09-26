@@ -51,12 +51,13 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
-- [x] **🚀 Interactive Spotlight Onboarding Tour & Curated Stock Discovery (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`, `onboarding.test.ts`)**
-  - Implemented 5-step interactive onboarding spotlight tour covering: Welcome Intro, Node Library & Curated 150+ IDX Stocks discovery, Auto-Wiring & True/False logic branching, Live Engine & Market Streaming, and Spotlight Search (`Ctrl+K`) & Themes.
+- [x] **🚀 Unified Interactive Spotlight Onboarding Tour & Hands-On Sandbox Bridge (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`, `onboarding.test.ts`)**
+  - Implemented 6-step interactive onboarding spotlight tour covering: Welcome Intro, Node Library & Curated 150+ IDX Stocks discovery, Auto-Wiring & True/False logic branching, Live Engine & Market Streaming, Spotlight Search (`Ctrl+K`) & Themes, and Step 6 Sandbox Tutorial Bridge spotlighting `[data-tour="tutorial-btn"]` with direct `openTutorial()` launching.
+  - Added *"Don't show this on startup"* persistent opt-out checkbox on Step 6 (`scriffle_suppress_startup_tour`) with automatic one-time migration for legacy `scriffle_onboarded_v1` users.
   - Built dynamic SVG cutout mask with bounding rect calculations and 2px electric blue pulsing focus ring over live DOM elements.
   - Added floating minimizable `ResumeTourPill` at bottom right allowing users to resume or dismiss skipped tours.
-  - Integrated 1-click re-trigger actions inside Help / Shortcuts modal (`?`) and Spotlight Search (`Ctrl+K`).
-  - Added unit test suite `onboarding.test.ts` (204 total passing unit tests across 20 suites, 100% green).
+  - Integrated 1-click re-trigger actions inside Help / Shortcuts modal (`?`), TopNav `Tutorial` button, and Spotlight Search (`Ctrl+K`).
+  - Added unit test suite `onboarding.test.ts` (219 total passing unit tests across 21 suites, 100% green).
 - [x] **🏢 Indonesian Company Chooser & Selection Combobox with AI Fallback (`CompanyCombobox.tsx`, `popularIdxCompanies.ts`, `companySearch.ts`, `EditNodeModal.tsx`, `companySearch.test.ts`)**
   - Built zero-lag in-memory keyword & token search (`<0.3ms`) across ~150 curated Indonesian listed companies.
   - Implemented smart empty-focus state displaying top 12 blue chips (`POPULAR_PICKS`: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, `ADRO`, `ANTM`, `ICBP`, `UNVR`, `BREN`, `AMMN`).
