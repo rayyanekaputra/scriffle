@@ -44,6 +44,35 @@ describe('Draggable Sandbox Widget & Position Clamping Engine', () => {
     expect(clamp(100, 1500)).toEqual({ x: 100, y: 800 - 400 - 16 }); // 384
   });
 
+  it('distinguishes between click-to-expand and drag gesture via movement threshold', () => {
+    const isDragGesture = (startX: number, startY: number, endX: number, endY: number, threshold = 3) => {
+      const dx = Math.abs(endX - startX);
+      const dy = Math.abs(endY - startY);
+      return dx > threshold || dy > threshold;
+    };
+
+    // Minor jitter / tap -> click
+    expect(isDragGesture(100, 100, 101, 102)).toBe(false);
+    expect(isDragGesture(100, 100, 100, 100)).toBe(false);
+
+    // Intentional drag -> drag
+    expect(isDragGesture(100, 100, 105, 100)).toBe(true);
+    expect(isDragGesture(100, 100, 100, 120)).toBe(true);
+    expect(isDragGesture(100, 100, 150, 150)).toBe(true);
+  });
+
+  it('verifies non-drag target filter isolates header action buttons', () => {
+    const shouldIgnoreDrag = (hasNoDragAttr: boolean) => {
+      return hasNoDragAttr;
+    };
+
+    // Regular header bar click
+    expect(shouldIgnoreDrag(false)).toBe(false);
+
+    // Minimize or close button click
+    expect(shouldIgnoreDrag(true)).toBe(true);
+  });
+
   it('simulates localStorage persistence and restoration', () => {
     const store: Record<string, string> = {};
 

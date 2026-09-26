@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **204 unit tests across 20 test suites (100% green).**
+* **Master Unit Test Suite:** **231 unit tests across 24 test suites (100% green).**
 
 ---
 

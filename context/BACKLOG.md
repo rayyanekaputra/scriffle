@@ -51,6 +51,12 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🎯 Draggable Sandbox Missions Card Gesture Fix & Minimized Pill Repositioning (`SandboxMissionsCard.tsx`, `draggableWidget.test.ts`, `DRAGGABLE_SANDBOX_FIX_PLAN.md`)**
+  - Resolved drag initiation block caused by `target.closest('.nodrag')` matching the outer React Flow canvas guard container.
+  - Implemented gesture delta thresholding (`dx > 3 || dy > 3`) on minimized pill for dual behavior: single tap/click toggles expand, dragging repositions the pill smoothly.
+  - Added synchronous `currentPosRef.current` coordinate tracking to eliminate React state closure lag when persisting to `localStorage` on pointer release.
+  - Added double-click header & pill reset to default `{ x: 24, y: 80 }` and boundary clamping below TopNav (`minY: 64`).
+  - Added unit test suite `draggableWidget.test.ts` (231 total passing unit tests across 24 suites, 100% green).
 - [x] **⌨️ Keyboard Shortcuts Modal Spacing & `--start-fresh` Non-Destructive CLI Flag (`ShortcutsModal.tsx`, `scripts/dev.ts`, `scripts/start.ts`, `freshProjectCreator.ts`, `startFresh.test.ts`)**
   - Refactored `ShortcutsModal.tsx` to `max-w-4xl` with generous category card padding (`p-5`, `gap-3.5`) and spacious footer (`py-3.5 px-6/7`), enforcing strictly single-line action buttons (`[Product Tour]`, `[Hands-On Tutorial]`) with `whitespace-nowrap shrink-0` and clear separation from the `Esc` badge.
   - Implemented `--start-fresh` CLI flag for `bun run dev` and `bun run start`: non-destructively creates a new project board in SQLite with pristine `cycleCount: 0` initial state without deleting historical projects, and triggers a client-side reset of onboarding tour and mission detection counters to 0/6.

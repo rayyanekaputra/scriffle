@@ -32,6 +32,8 @@ export const SandboxMissionsCard: React.FC = () => {
   const [pos, setPos] = useState<{ x: number; y: number }>(DEFAULT_SANDBOX_POS);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const currentPosRef = useRef<{ x: number; y: number }>(DEFAULT_SANDBOX_POS);
+  const isMovedRef = useRef<boolean>(false);
   const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number }>({
     startX: 0,
     startY: 0,
@@ -61,7 +63,9 @@ export const SandboxMissionsCard: React.FC = () => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed?.x === 'number' && typeof parsed?.y === 'number') {
-          setPos(clampPosition(parsed.x, parsed.y));
+          const clamped = clampPosition(parsed.x, parsed.y);
+          currentPosRef.current = clamped;
+          setPos(clamped);
         }
       }
     } catch {}
@@ -71,28 +75,33 @@ export const SandboxMissionsCard: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handleResize = () => {
-      const width = cardRef.current?.offsetWidth || 360;
-      const height = cardRef.current?.offsetHeight || 400;
-      setPos((prev) => clampPosition(prev.x, prev.y, width, height));
+      const width = cardRef.current?.offsetWidth || (isMinimized ? 220 : 360);
+      const height = cardRef.current?.offsetHeight || (isMinimized ? 44 : 400);
+      const clamped = clampPosition(currentPosRef.current.x, currentPosRef.current.y, width, height);
+      currentPosRef.current = clamped;
+      setPos(clamped);
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [clampPosition]);
+  }, [clampPosition, isMinimized]);
 
-  // Drag Gesture Handlers on Header
+  // Drag Gesture Handlers on Header / Minimized Pill
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Ignore button clicks or non-primary mouse clicks
+    // Only respond to primary left mouse / touch
     if (e.button !== 0) return;
     const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('.nodrag')) return;
+    
+    // Ignore clicks on explicit action buttons inside expanded header
+    if (target.closest('[data-no-drag="true"]')) return;
 
     setIsDragging(true);
+    isMovedRef.current = false;
     dragStartRef.current = {
       startX: e.clientX,
       startY: e.clientY,
-      initialX: pos.x,
-      initialY: pos.y,
+      initialX: currentPosRef.current.x,
+      initialY: currentPosRef.current.y,
     };
 
     try {
@@ -105,27 +114,49 @@ export const SandboxMissionsCard: React.FC = () => {
     const dx = e.clientX - dragStartRef.current.startX;
     const dy = e.clientY - dragStartRef.current.startY;
 
-    const width = cardRef.current?.offsetWidth || 360;
-    const height = cardRef.current?.offsetHeight || 400;
-    const next = clampPosition(dragStartRef.current.initialX + dx, dragStartRef.current.initialY + dy, width, height);
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      isMovedRef.current = true;
+    }
+
+    const width = cardRef.current?.offsetWidth || (isMinimized ? 220 : 360);
+    const height = cardRef.current?.offsetHeight || (isMinimized ? 44 : 400);
+    const next = clampPosition(
+      dragStartRef.current.initialX + dx,
+      dragStartRef.current.initialY + dy,
+      width,
+      height
+    );
+    
+    currentPosRef.current = next;
     setPos(next);
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging) return;
     setIsDragging(false);
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {}
 
     try {
-      localStorage.setItem(SANDBOX_POS_STORAGE_KEY, JSON.stringify(pos));
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
     } catch {}
+
+    // Persist latest coordinate
+    try {
+      localStorage.setItem(SANDBOX_POS_STORAGE_KEY, JSON.stringify(currentPosRef.current));
+    } catch {}
+
+    // In minimized state, if user just tapped/clicked without dragging, toggle open
+    if (isMinimized && !isMovedRef.current) {
+      toggleMinimize();
+    }
   };
 
   // Reset to default top-left on double click header
-  const handleDoubleClickHeader = () => {
+  const handleDoubleClickHeader = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const defaultClamped = clampPosition(DEFAULT_SANDBOX_POS.x, DEFAULT_SANDBOX_POS.y);
+    currentPosRef.current = defaultClamped;
     setPos(defaultClamped);
     try {
       localStorage.setItem(SANDBOX_POS_STORAGE_KEY, JSON.stringify(defaultClamped));
@@ -146,7 +177,7 @@ export const SandboxMissionsCard: React.FC = () => {
     ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321]'
     : 'bg-white border-slate-300 text-slate-900';
 
-  // Minimized Compact Pill (uses current dragged coordinate)
+  // Minimized Compact Pill (smoothly draggable + click to expand)
   if (isMinimized) {
     return (
       <div
@@ -154,6 +185,7 @@ export const SandboxMissionsCard: React.FC = () => {
         className="fixed top-0 left-0 z-30 select-none animate-in fade-in duration-200 nodrag nowheel nopan"
         style={{
           transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
+          willChange: isDragging ? 'transform' : 'auto',
         }}
       >
         <div
@@ -162,24 +194,18 @@ export const SandboxMissionsCard: React.FC = () => {
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
           onDoubleClick={handleDoubleClickHeader}
-          className="cursor-grab active:cursor-grabbing"
-          title="Drag to reposition • Double-click to reset"
+          className={`flex items-center gap-2 rounded-2xl border-2 px-3.5 py-2 text-xs font-bold transition-all shadow-md cursor-grab active:cursor-grabbing ${
+            isCompletedPill(isAllCompleted, isDark, isMono, isCustom, activeCustomTheme)
+          }`}
+          title="Drag to reposition • Click to expand • Double-click to reset"
         >
-          <button
-            type="button"
-            onClick={toggleMinimize}
-            className={`flex items-center gap-2 rounded-2xl border-2 px-3.5 py-2 text-xs font-bold transition-all shadow-md cursor-pointer ${
-              isCompletedPill(isAllCompleted, isDark, isMono, isCustom, activeCustomTheme)
-            }`}
-          >
-            <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-blue-500/15 text-[#0050FF] shrink-0">
-              <MingIcon name={isAllCompleted ? 'trophy_line' : 'target_line'} size={14} />
-            </div>
-            <span className="whitespace-nowrap">
-              {isAllCompleted ? 'Tutorial Complete' : `Tutorial Missions (${completedCount}/${totalMissions})`}
-            </span>
-            <MingIcon name="up_line" size={14} className="text-slate-400 shrink-0" />
-          </button>
+          <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-blue-500/15 text-[#0050FF] shrink-0 pointer-events-none">
+            <MingIcon name={isAllCompleted ? 'trophy_line' : 'target_line'} size={14} />
+          </div>
+          <span className="whitespace-nowrap pointer-events-none">
+            {isAllCompleted ? 'Tutorial Complete' : `Tutorial Missions (${completedCount}/${totalMissions})`}
+          </span>
+          <MingIcon name="up_line" size={14} className="text-slate-400 shrink-0 pointer-events-none" />
         </div>
       </div>
     );
@@ -230,9 +256,10 @@ export const SandboxMissionsCard: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1 nodrag">
+        <div className="flex items-center gap-1">
           <button
             type="button"
+            data-no-drag="true"
             onClick={(e) => {
               e.stopPropagation();
               toggleMinimize();
@@ -250,6 +277,7 @@ export const SandboxMissionsCard: React.FC = () => {
           </button>
           <button
             type="button"
+            data-no-drag="true"
             onClick={(e) => {
               e.stopPropagation();
               closeTutorial();
