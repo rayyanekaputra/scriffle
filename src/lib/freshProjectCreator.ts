@@ -37,7 +37,7 @@ export async function createFreshProject(customName?: string): Promise<{ id: str
       configJson: JSON.stringify({
         emoji: '📈',
         label: 'Top Pick',
-        color: 'mint',
+        color: 'green',
       }),
     },
   });
@@ -179,7 +179,7 @@ export async function createFreshProject(customName?: string): Promise<{ id: str
       configJson: JSON.stringify({
         emoji: '🚀',
         label: 'Breakout',
-        color: 'mint',
+        color: 'blue',
       }),
     },
   });

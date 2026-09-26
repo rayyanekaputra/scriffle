@@ -177,7 +177,7 @@ Scriffle maintains a comprehensive unit test suite with 100% pass rate:
 bun test
 ```
 
-- **222 unit tests across 22 test suites** executing in ~215ms.
+- **229 unit tests across 24 test suites** executing in ~215ms.
 - Covers safe DSL evaluation (`dslEngine`), template interpolation, Top Movers leaderboard generation, AI Screener formatting, Indonesian company fuzzy search (`companySearch`), spatial navigation, `.scrifflemes` theme parser, dual Condition output branching, Discord Webhooks, Onboarding Spotlight Tour, Hands-On Sandbox Missions validation, and `--start-fresh` CLI reset engine.
 
 ---

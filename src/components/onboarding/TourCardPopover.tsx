@@ -40,7 +40,7 @@ export const TourCardPopover: React.FC = () => {
 
     if (!currentStep?.targetSelector || currentStep.placement === 'center') {
       // Center in viewport
-      const cardWidth = 420;
+      const cardWidth = 480;
       const cardHeight = 260;
       setPopoverPos({
         top: Math.max(20, (window.innerHeight - cardHeight) / 2),
@@ -53,7 +53,7 @@ export const TourCardPopover: React.FC = () => {
     const el = document.querySelector(currentStep.targetSelector);
     if (!el) {
       // Fallback to center if element not in DOM
-      const cardWidth = 420;
+      const cardWidth = 480;
       const cardHeight = 260;
       setPopoverPos({
         top: Math.max(20, (window.innerHeight - cardHeight) / 2),
@@ -64,7 +64,7 @@ export const TourCardPopover: React.FC = () => {
     }
 
     const rect = el.getBoundingClientRect();
-    const cardWidth = 400;
+    const cardWidth = 480;
     const cardHeight = popoverRef.current?.offsetHeight || 240;
     const gap = 16;
 
@@ -165,7 +165,7 @@ export const TourCardPopover: React.FC = () => {
   return (
     <div
       ref={popoverRef}
-      className={`fixed z-50 pointer-events-auto w-[420px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl border-2 transition-all duration-200 select-none ${cardContainerClass}`}
+      className={`fixed z-50 pointer-events-auto w-[480px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl border-2 transition-all duration-200 select-none ${cardContainerClass}`}
       style={{
         top: `${popoverPos.top}px`,
         left: `${popoverPos.left}px`,
@@ -254,7 +254,7 @@ export const TourCardPopover: React.FC = () => {
         } rounded-b-2xl`}
       >
         {/* Step Indicator Dots */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {Array.from({ length: totalSteps }).map((_, idx) => (
             <button
               key={idx}
@@ -275,12 +275,12 @@ export const TourCardPopover: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {currentStepIndex > 0 ? (
             <button
               type="button"
               onClick={prevStep}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 isDark
                   ? 'bg-[#181920] border-[#2E3140] text-slate-300 hover:bg-[#22242D]'
                   : isMono
@@ -294,7 +294,7 @@ export const TourCardPopover: React.FC = () => {
             <button
               type="button"
               onClick={skipTour}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
                 isDark
                   ? 'text-slate-400 hover:text-slate-200'
                   : isMono
@@ -307,11 +307,11 @@ export const TourCardPopover: React.FC = () => {
           )}
 
           {isLastStep ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={completeTour}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                   isDark
                     ? 'bg-[#181920] border-[#2E3140] text-slate-300 hover:bg-[#22242D]'
                     : isMono
@@ -319,7 +319,7 @@ export const TourCardPopover: React.FC = () => {
                     : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                Explore Freely
+                <span className="whitespace-nowrap">Explore Freely</span>
               </button>
               <button
                 type="button"
@@ -327,20 +327,20 @@ export const TourCardPopover: React.FC = () => {
                   completeTour();
                   openTutorial();
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] transition-all cursor-pointer shadow-none"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] whitespace-nowrap shrink-0 transition-all cursor-pointer shadow-none"
               >
-                <MingIcon name="target_line" size={14} />
-                <span>Start Missions</span>
+                <MingIcon name="target_line" size={14} className="shrink-0" />
+                <span className="whitespace-nowrap">Start Missions</span>
               </button>
             </div>
           ) : (
             <button
               type="button"
               onClick={nextStep}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] transition-all cursor-pointer shadow-none"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0050FF] hover:bg-blue-600 text-white border-2 border-[#0050FF] whitespace-nowrap shrink-0 transition-all cursor-pointer shadow-none"
             >
-              <span>Next</span>
-              <MingIcon name="arrow_right_line" size={14} />
+              <span className="whitespace-nowrap">Next</span>
+              <MingIcon name="arrow_right_line" size={14} className="shrink-0" />
             </button>
           )}
         </div>

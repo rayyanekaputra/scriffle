@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSandboxTutorial } from '@/context/SandboxTutorialContext';
 import { useTheme } from '@/context/ThemeContext';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { MissionStepItem } from './MissionStepItem';
 import { CompletionCelebration } from './CompletionCelebration';
+
+export const SANDBOX_POS_STORAGE_KEY = 'scriffle_sandbox_card_pos_v1';
+export const DEFAULT_SANDBOX_POS = { x: 24, y: 80 };
 
 export const SandboxMissionsCard: React.FC = () => {
   const {
@@ -26,6 +29,109 @@ export const SandboxMissionsCard: React.FC = () => {
   } = useSandboxTutorial();
   const { theme, activeCustomTheme } = useTheme();
 
+  const [pos, setPos] = useState<{ x: number; y: number }>(DEFAULT_SANDBOX_POS);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number }>({
+    startX: 0,
+    startY: 0,
+    initialX: DEFAULT_SANDBOX_POS.x,
+    initialY: DEFAULT_SANDBOX_POS.y,
+  });
+
+  // Clamp coordinates within visible screen boundary
+  const clampPosition = useCallback((x: number, y: number, width = 360, height = 400) => {
+    if (typeof window === 'undefined') return { x, y };
+    const minX = 16;
+    const maxX = Math.max(minX, window.innerWidth - width - 16);
+    const minY = 64; // Below top navigation bar
+    const maxY = Math.max(minY, window.innerHeight - height - 16);
+
+    return {
+      x: Math.max(minX, Math.min(x, maxX)),
+      y: Math.max(minY, Math.min(y, maxY)),
+    };
+  }, []);
+
+  // Initialize and persist position from localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = localStorage.getItem(SANDBOX_POS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed?.x === 'number' && typeof parsed?.y === 'number') {
+          setPos(clampPosition(parsed.x, parsed.y));
+        }
+      }
+    } catch {}
+  }, [clampPosition]);
+
+  // Re-clamp on window resize
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => {
+      const width = cardRef.current?.offsetWidth || 360;
+      const height = cardRef.current?.offsetHeight || 400;
+      setPos((prev) => clampPosition(prev.x, prev.y, width, height));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [clampPosition]);
+
+  // Drag Gesture Handlers on Header
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Ignore button clicks or non-primary mouse clicks
+    if (e.button !== 0) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('.nodrag')) return;
+
+    setIsDragging(true);
+    dragStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: pos.x,
+      initialY: pos.y,
+    };
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartRef.current.startX;
+    const dy = e.clientY - dragStartRef.current.startY;
+
+    const width = cardRef.current?.offsetWidth || 360;
+    const height = cardRef.current?.offsetHeight || 400;
+    const next = clampPosition(dragStartRef.current.initialX + dx, dragStartRef.current.initialY + dy, width, height);
+    setPos(next);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {}
+
+    try {
+      localStorage.setItem(SANDBOX_POS_STORAGE_KEY, JSON.stringify(pos));
+    } catch {}
+  };
+
+  // Reset to default top-left on double click header
+  const handleDoubleClickHeader = () => {
+    const defaultClamped = clampPosition(DEFAULT_SANDBOX_POS.x, DEFAULT_SANDBOX_POS.y);
+    setPos(defaultClamped);
+    try {
+      localStorage.setItem(SANDBOX_POS_STORAGE_KEY, JSON.stringify(defaultClamped));
+    } catch {}
+  };
+
   if (!isOpen) return null;
 
   const isCustom = theme === 'custom';
@@ -40,25 +146,41 @@ export const SandboxMissionsCard: React.FC = () => {
     ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321]'
     : 'bg-white border-slate-300 text-slate-900';
 
-  // Minimized Compact Pill
+  // Minimized Compact Pill (uses current dragged coordinate)
   if (isMinimized) {
     return (
-      <div className="fixed top-20 left-6 z-30 select-none animate-in fade-in duration-200">
-        <button
-          type="button"
-          onClick={toggleMinimize}
-          className={`flex items-center gap-2 rounded-2xl border-2 px-3.5 py-2 text-xs font-bold transition-all shadow-md cursor-pointer ${
-            isCompletedPill(isAllCompleted, isDark, isMono, isCustom, activeCustomTheme)
-          }`}
+      <div
+        ref={cardRef}
+        className="fixed top-0 left-0 z-30 select-none animate-in fade-in duration-200 nodrag nowheel nopan"
+        style={{
+          transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
+        }}
+      >
+        <div
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onDoubleClick={handleDoubleClickHeader}
+          className="cursor-grab active:cursor-grabbing"
+          title="Drag to reposition • Double-click to reset"
         >
-          <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-blue-500/15 text-[#0050FF]">
-            <MingIcon name={isAllCompleted ? 'trophy_line' : 'target_line'} size={14} />
-          </div>
-          <span>
-            {isAllCompleted ? 'Tutorial Complete' : `Tutorial Missions (${completedCount}/${totalMissions})`}
-          </span>
-          <MingIcon name="up_line" size={14} className="text-slate-400" />
-        </button>
+          <button
+            type="button"
+            onClick={toggleMinimize}
+            className={`flex items-center gap-2 rounded-2xl border-2 px-3.5 py-2 text-xs font-bold transition-all shadow-md cursor-pointer ${
+              isCompletedPill(isAllCompleted, isDark, isMono, isCustom, activeCustomTheme)
+            }`}
+          >
+            <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-blue-500/15 text-[#0050FF] shrink-0">
+              <MingIcon name={isAllCompleted ? 'trophy_line' : 'target_line'} size={14} />
+            </div>
+            <span className="whitespace-nowrap">
+              {isAllCompleted ? 'Tutorial Complete' : `Tutorial Missions (${completedCount}/${totalMissions})`}
+            </span>
+            <MingIcon name="up_line" size={14} className="text-slate-400 shrink-0" />
+          </button>
+        </div>
       </div>
     );
   }
@@ -67,18 +189,37 @@ export const SandboxMissionsCard: React.FC = () => {
 
   return (
     <div
-      className={`fixed top-20 left-6 z-30 w-[360px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-120px)] flex flex-col rounded-2xl border-2 shadow-2xl transition-all duration-200 select-none ${containerClass}`}
+      ref={cardRef}
+      className={`fixed top-0 left-0 z-30 w-[360px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-120px)] flex flex-col rounded-2xl border-2 shadow-2xl select-none nodrag nowheel nopan ${containerClass}`}
+      style={{
+        transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
+        transition: isDragging ? 'none' : 'box-shadow 0.2s',
+        willChange: isDragging ? 'transform' : 'auto',
+      }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 shrink-0 border-b border-slate-100 dark:border-[#252730] mono:border-[#D8D4CA]">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-blue-500/10 text-[#0050FF] border border-blue-500/20">
+      {/* Draggable Header Bar */}
+      <div
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onDoubleClick={handleDoubleClickHeader}
+        className={`flex items-center justify-between px-4 pt-3.5 pb-2.5 shrink-0 border-b border-slate-100 dark:border-[#252730] mono:border-[#D8D4CA] cursor-grab active:cursor-grabbing ${
+          isDragging ? 'opacity-95' : ''
+        }`}
+        title="Drag header to move checklist • Double-click to reset"
+      >
+        <div className="flex items-center gap-2 select-none pointer-events-none">
+          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-blue-500/10 text-[#0050FF] border border-blue-500/20 shrink-0">
             <MingIcon name="target_line" size={16} />
           </div>
           <div>
-            <h3 className="text-xs font-bold leading-none">
-              Sandbox Missions
-            </h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-xs font-bold leading-none">
+                Sandbox Missions
+              </h3>
+              <MingIcon name="drag_move_2_line" size={12} className="text-slate-400 opacity-60" />
+            </div>
             <span
               className={`text-[10px] font-semibold ${
                 isDark ? 'text-slate-400' : isMono ? 'text-[#78756D]' : 'text-slate-500'
@@ -89,10 +230,13 @@ export const SandboxMissionsCard: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 nodrag">
           <button
             type="button"
-            onClick={toggleMinimize}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMinimize();
+            }}
             title="Minimize checklist"
             className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors cursor-pointer ${
               isDark
@@ -106,7 +250,10 @@ export const SandboxMissionsCard: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={closeTutorial}
+            onClick={(e) => {
+              e.stopPropagation();
+              closeTutorial();
+            }}
             title="Close tutorial"
             className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors cursor-pointer ${
               isDark
@@ -130,7 +277,7 @@ export const SandboxMissionsCard: React.FC = () => {
       </div>
 
       {/* Scrollable Missions List */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2 nodrag">
         {isAllCompleted && !hasSeenGraduation ? (
           <CompletionCelebration
             onDismiss={dismissGraduation}
@@ -150,7 +297,7 @@ export const SandboxMissionsCard: React.FC = () => {
 
       {/* Footer Controls */}
       <div
-        className={`flex items-center justify-between px-3.5 py-2 shrink-0 border-t-2 text-[10px] font-semibold rounded-b-2xl ${
+        className={`flex items-center justify-between px-3.5 py-2 shrink-0 border-t-2 text-[10px] font-semibold rounded-b-2xl nodrag ${
           isDark
             ? 'border-[#252730] bg-[#101116] text-slate-400'
             : isMono
@@ -167,7 +314,7 @@ export const SandboxMissionsCard: React.FC = () => {
           <span>Reset Progress</span>
         </button>
 
-        <span>Scriffle Hands-On Sandbox</span>
+        <span className="opacity-75">Drag header to reposition</span>
       </div>
     </div>
   );
