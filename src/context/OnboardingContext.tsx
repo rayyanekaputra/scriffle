@@ -6,6 +6,7 @@ import { TOUR_STEPS, TourStep } from '@/components/onboarding/tourStepsConfig';
 export const SUPPRESS_STARTUP_TOUR_KEY = 'scriffle_suppress_startup_tour';
 export const LEGACY_ONBOARDING_KEY = 'scriffle_onboarded_v1';
 export const TOUR_STEP_STORAGE_KEY = 'scriffle_tour_step';
+export const FRESH_TOKEN_STORAGE_KEY = 'scriffle_last_fresh_token';
 
 interface OnboardingContextType {
   isActive: boolean;
@@ -41,6 +42,23 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
+      // 0. Check if --start-fresh was used on the server
+      const freshToken = process.env.NEXT_PUBLIC_START_FRESH_TOKEN;
+      if (freshToken) {
+        const lastSeenToken = localStorage.getItem(FRESH_TOKEN_STORAGE_KEY);
+        if (lastSeenToken !== freshToken) {
+          // Fresh mode token detected: purge all onboarding and sandbox storage keys
+          localStorage.removeItem(SUPPRESS_STARTUP_TOUR_KEY);
+          localStorage.removeItem(LEGACY_ONBOARDING_KEY);
+          localStorage.removeItem(TOUR_STEP_STORAGE_KEY);
+          localStorage.removeItem('scriffle_sandbox_progress_v1');
+          localStorage.removeItem('scriffle_sandbox_open_v1');
+          localStorage.removeItem('scriffle_sandbox_minimized_v1');
+          localStorage.removeItem('scriffle_sandbox_graduated_v1');
+          localStorage.setItem(FRESH_TOKEN_STORAGE_KEY, freshToken);
+        }
+      }
+
       // 1. One-time migration: respect users who previously dismissed or completed the tour
       const legacyCompleted = localStorage.getItem(LEGACY_ONBOARDING_KEY);
       const existingSuppress = localStorage.getItem(SUPPRESS_STARTUP_TOUR_KEY);

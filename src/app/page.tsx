@@ -21,7 +21,9 @@ import { useCanvasSync } from '@/hooks/useCanvasSync';
 import { CanvasNodeData, CanvasToolMode, NodeType } from '@/types/canvas';
 
 export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
-  const [currentCanvasId, setCurrentCanvasId] = useState<string | undefined>(canvasId);
+  const [currentCanvasId, setCurrentCanvasId] = useState<string | undefined>(
+    canvasId || process.env.NEXT_PUBLIC_START_FRESH_CANVAS_ID
+  );
   const [showProjectHub, setShowProjectHub] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);

@@ -51,6 +51,10 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **⌨️ Keyboard Shortcuts Modal Spacing & `--start-fresh` Non-Destructive CLI Flag (`ShortcutsModal.tsx`, `scripts/dev.ts`, `scripts/start.ts`, `freshProjectCreator.ts`, `startFresh.test.ts`)**
+  - Refactored `ShortcutsModal.tsx` to `max-w-4xl` with generous category card padding (`p-5`, `gap-3.5`) and spacious footer (`py-3.5 px-6/7`), enforcing strictly single-line action buttons (`[Product Tour]`, `[Hands-On Tutorial]`) with `whitespace-nowrap shrink-0` and clear separation from the `Esc` badge.
+  - Implemented `--start-fresh` CLI flag for `bun run dev` and `bun run start`: non-destructively creates a new project board in SQLite with pristine `cycleCount: 0` initial state without deleting historical projects, and triggers a client-side reset of onboarding tour and mission detection counters to 0/6.
+  - Added unit test suite `startFresh.test.ts` (222 total passing unit tests across 22 suites, 100% green).
 - [x] **🚀 Unified Interactive Spotlight Onboarding Tour & Hands-On Sandbox Bridge (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`, `onboarding.test.ts`)**
   - Implemented 6-step interactive onboarding spotlight tour covering: Welcome Intro, Node Library & Curated 150+ IDX Stocks discovery, Auto-Wiring & True/False logic branching, Live Engine & Market Streaming, Spotlight Search (`Ctrl+K`) & Themes, and Step 6 Sandbox Tutorial Bridge spotlighting `[data-tour="tutorial-btn"]` with direct `openTutorial()` launching.
   - Added *"Don't show this on startup"* persistent opt-out checkbox on Step 6 (`scriffle_suppress_startup_tour`) with automatic one-time migration for legacy `scriffle_onboarded_v1` users.

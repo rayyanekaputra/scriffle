@@ -104,7 +104,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`w-full max-w-3xl flex flex-col rounded-2xl border-2 overflow-hidden transition-all duration-150 ${
+        className={`w-full max-w-4xl flex flex-col rounded-2xl border-2 overflow-hidden transition-all duration-150 ${
           isDark
             ? 'bg-[#14151B] border-[#2E3140] text-slate-100'
             : isMono
@@ -115,13 +115,13 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
       >
         {/* Header */}
         <div
-          className={`flex items-center justify-between px-6 py-4 border-b-2 ${
+          className={`flex items-center justify-between px-6 sm:px-7 py-4 border-b-2 ${
             isDark ? 'border-[#2E3140] bg-[#181920]' : isMono ? 'border-[#D8D4CA] bg-[#F4F3EF]' : 'border-slate-200 bg-slate-50/50'
           }`}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-lg border ${
+              className={`flex h-8 w-8 items-center justify-center rounded-xl border ${
                 isDark
                   ? 'bg-[#22242D] border-[#2E3140] text-blue-400'
                   : isMono
@@ -133,7 +133,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-bold">Keyboard Shortcuts</h2>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+              <p className={`text-[11px] ${isDark ? 'text-slate-400' : isMono ? 'text-[#78756D]' : 'text-slate-500'}`}>
                 Speed up research navigation and whiteboard flow automation
               </p>
             </div>
@@ -141,18 +141,24 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
 
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
+            className={`rounded-lg p-1.5 transition cursor-pointer ${
+              isDark
+                ? 'hover:bg-[#22242D] text-slate-400 hover:text-white'
+                : isMono
+                ? 'hover:bg-[#EAE7DF] text-[#78756D] hover:text-[#242321]'
+                : 'hover:bg-slate-200 text-slate-400 hover:text-slate-700'
+            }`}
           >
             <MingIcon name="close_line" size={16} />
           </button>
         </div>
 
         {/* 2x2 Grid of Categories */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 sm:p-7 grid grid-cols-1 md:grid-cols-2 gap-5 max-h-[70vh] overflow-y-auto">
           {categories.map((cat) => (
             <div
               key={cat.title}
-              className={`rounded-xl border-2 p-4 flex flex-col gap-3 ${
+              className={`rounded-xl border-2 p-5 flex flex-col gap-3.5 ${
                 isDark
                   ? 'bg-[#181920] border-[#252732]'
                   : isMono
@@ -175,25 +181,25 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                 </h3>
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2.5">
                 {cat.items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between text-xs font-medium"
+                    className="flex items-center justify-between text-xs font-medium py-0.5"
                   >
                     <span
-                      className={`text-[12px] ${
+                      className={`text-[12px] leading-tight ${
                         isDark ? 'text-slate-300' : isMono ? 'text-[#242321]' : 'text-slate-800'
                       }`}
                     >
                       {item.label}
                     </span>
 
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0 ml-3">
                       {item.keys.map((k, kIdx) => (
                         <kbd
                           key={kIdx}
-                          className={`rounded px-1.5 py-0.5 text-[11px] font-bold border ${
+                          className={`rounded px-2 py-0.5 text-[11px] font-bold border whitespace-nowrap ${
                             isDark
                               ? 'bg-[#22242D] border-[#2E3140] text-slate-200'
                               : isMono
@@ -212,18 +218,18 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
           ))}
         </div>
 
-        {/* Footer */}
+        {/* Spacious Footer with 1-Liner Action Buttons */}
         <div
-          className={`flex items-center justify-between px-6 py-2.5 border-t-2 text-[11px] font-semibold ${
-            isDark ? 'border-[#2E3140] bg-[#181920] text-slate-400' : isMono ? 'border-[#D8D4CA] bg-[#F4F3EF] text-[#78756D]' : 'border-slate-200 bg-slate-50 text-slate-500'
+          className={`flex flex-wrap sm:flex-nowrap items-center justify-between px-6 sm:px-7 py-3.5 border-t-2 text-[11px] font-semibold gap-4 ${
+            isDark
+              ? 'border-[#2E3140] bg-[#181920] text-slate-400'
+              : isMono
+              ? 'border-[#D8D4CA] bg-[#F4F3EF] text-[#78756D]'
+              : 'border-slate-200 bg-slate-50 text-slate-500'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5">
-              <MingIcon name="information_line" size={14} />
-              <span>Works across all modern browsers and operating systems</span>
-            </span>
-
+          {/* Left: 1-Liner Action Buttons */}
+          <div className="flex items-center gap-2.5 shrink-0">
             {onStartTour && (
               <button
                 type="button"
@@ -231,7 +237,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                   onClose();
                   onStartTour();
                 }}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 font-bold transition cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
                   isDark
                     ? 'border-[#2E3140] bg-[#22242D] text-blue-400 hover:text-white'
                     : isMono
@@ -239,8 +245,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                     : 'border-blue-200 bg-blue-50 text-[#0050FF] hover:bg-blue-100'
                 }`}
               >
-                <MingIcon name="magic_line" size={13} />
-                <span>Product Tour</span>
+                <MingIcon name="magic_line" size={14} />
+                <span className="whitespace-nowrap">Product Tour</span>
               </button>
             )}
 
@@ -251,18 +257,19 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                   onClose();
                   onStartTutorial();
                 }}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 border-[#0050FF] bg-[#0050FF] text-white font-bold transition hover:bg-blue-600 cursor-pointer shadow-none"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border-2 border-[#0050FF] bg-[#0050FF] text-white text-xs font-bold whitespace-nowrap shrink-0 transition hover:bg-blue-600 cursor-pointer shadow-none"
               >
-                <MingIcon name="target_line" size={13} />
-                <span>Hands-On Tutorial</span>
+                <MingIcon name="target_line" size={14} />
+                <span className="whitespace-nowrap">Hands-On Tutorial</span>
               </button>
             )}
           </div>
 
-          <span className="flex items-center gap-1">
-            <span>Press</span>
+          {/* Right: Dismissal Helper */}
+          <div className="flex items-center gap-1.5 shrink-0 text-xs">
+            <span className={isDark ? 'text-slate-400' : isMono ? 'text-[#78756D]' : 'text-slate-500'}>Press</span>
             <kbd
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+              className={`px-2 py-0.5 rounded text-[11px] font-bold border whitespace-nowrap ${
                 isDark
                   ? 'bg-[#22242D] border-[#2E3140] text-slate-200'
                   : isMono
@@ -272,8 +279,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
             >
               Esc
             </kbd>
-            <span>to close</span>
-          </span>
+            <span className={isDark ? 'text-slate-400' : isMono ? 'text-[#78756D]' : 'text-slate-500'}>to close</span>
+          </div>
         </div>
       </div>
     </div>
