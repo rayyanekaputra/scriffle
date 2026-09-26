@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **179 unit tests across 16 suites (100% green)** |
+| Master Unit Tests | **231 unit tests across 24 suites (100% green)** |
 
 ---
 
@@ -220,14 +220,19 @@ hackathon/
     │   ├── feed/
     │   │   └── ActivityFeed.tsx    ← Live event stream, camera pan, chain glow
     │   └── ui/
-    │       └── MingIcon.tsx        ← Reusable MingCute icon component
+    │       ├── MingIcon.tsx        ← Reusable MingCute icon component
+    │       └── CompanyCombobox.tsx ← Accessible Indonesian company & symbol combobox with AI fallback
     ├── context/
     │   └── LoadingContext.tsx      ← Global loading task queue (LoadingProvider, useLoading, runTracked, isNodeLoading)
+    ├── data/
+    │   └── popularIdxCompanies.ts  ← Curated dataset of ~150 IDX companies & popular picks
     ├── hooks/
     │   └── useCanvasSync.ts        ← SWR polling hook (2s interval)
     ├── lib/
     │   ├── creditCosts.ts          ← Centralized pricing registry & burst calculations
     │   ├── prisma.ts               ← Global Prisma client singleton
+    │   ├── search/
+    │   │   └── companySearch.ts    ← Fast in-memory token/substring matcher (<0.3ms)
     │   └── utils.ts
     ├── server/services/
     │   ├── dslEngine.ts            ← Safe expr-eval DSL parser
@@ -339,9 +344,19 @@ hackathon/
 - Cycle counter badge: `⚡ 12 runs`
 - Modes: Single ticker (daily data) or Top Gainers/Losers (radar mode)
 - Per-watcher configurable polling interval (1s–3600s)
-- Clean initial state: Starts idle with `0 runs` and waiting indicators instead of premature mock data
+- Clean unassigned initial state: Starts idle with `0 runs`, empty symbol prompt ("No Stock Selected - Double-click card to choose an Indonesian company") instead of premature mock or default tickers
+- Increased card dimensions (`w-[340px]` single mode, `w-[400px]` radar mode) eliminating text wrapping and providing institutional breathing room
 - Error transparency: Live API failures display `⚠ API Error {code}` badge with structured callout banner; offline mode displays `Mock` badge
 - Credit cost badge in footer (`🪙 10 credits / poll` for Radar, `🪙 1 credit / tick` for Single)
+
+### Indonesian Company Chooser & Selection Combobox (`CompanyCombobox.tsx`)
+- Instant in-memory search across curated dataset of ~150 popular/liquid Indonesian companies (`popularIdxCompanies.ts`) with zero-lag token matcher (`companySearch.ts`, `<0.3ms`)
+- **Empty-focus behavior**: Displays curated `POPULAR_PICKS` (top 12 blue chips: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, `ADRO`, `ANTM`, `ICBP`, `UNVR`, `BREN`, `AMMN`)
+- **Fuzzy & keyword search**: Matches ticker symbol (`bbca`, `tlkm`) and company name tokens (`mandiri` $\rightarrow$ `BMRI`, `astra` $\rightarrow$ `ASII`, `indofood` $\rightarrow$ `ICBP`/`INDF`)
+- **AI Screener Fallback CTA**: When 0 results match, provides a 1-click button to discover companies via the AI Natural Language Screener
+- **Freeform ticker support**: Type any ticker (e.g. newly listed IPO) and press Enter to commit as-is uppercase
+- **Theme-aware & accessible**: 2px flat outline, zero drop shadows, full keyboard navigation (`↑`/`↓`/`↵`/`Esc`) across Light, Mono, Dark, and Custom modes
+- Integrated into `EditNodeModal.tsx` for Watcher single stock mode and Action target stock override
 
 ### API Credit Cost Badges & Safety System (`creditCosts.ts`)
 - Centralized pricing registry for Sectors.app API v2 consumption
@@ -387,6 +402,21 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
+- **Unified Interactive Spotlight Onboarding Tour & Hands-On Sandbox Bridge (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`, `onboarding.test.ts`)**:
+  - Implemented 6-step interactive onboarding tour: Welcome Intro, Node Library & Curated 150+ IDX Stocks discovery, Auto-Wiring & True/False logic branching, Live Engine & Market Streaming, Spotlight Search (`Ctrl+K`) & Themes, and Step 6 Sandbox Tutorial Bridge spotlighting `[data-tour="tutorial-btn"]` with direct `openTutorial()` launching.
+  - Added *"Don't show this on startup"* persistent opt-out checkbox on Step 6 (`scriffle_suppress_startup_tour`) with automatic one-time migration for legacy `scriffle_onboarded_v1` users.
+  - SVG cutout mask with bounding rect calculations and 2px electric blue pulsing focus ring over live DOM elements.
+  - Floating minimizable `ResumeTourPill` at bottom right allowing users to resume or dismiss skipped tours.
+  - Re-triggerable from Help / Shortcuts modal (`?`), TopNav `Tutorial` button, and Spotlight Search (`Ctrl+K`).
+  - Unit test suite `onboarding.test.ts` (219 total passing unit tests across 21 suites, 100% green).
+- **Indonesian Company Chooser, Search Combobox & AI Screener Fallback (`CompanyCombobox.tsx`, `popularIdxCompanies.ts`, `companySearch.ts`, `EditNodeModal.tsx`, `companySearch.test.ts`)**:
+  - Implemented in-memory search across ~150 curated Indonesian companies (`IdxCompany[]`) with `<0.3ms` token/keyword matcher (`companySearch.ts`).
+  - Empty-focus state surfaces top 12 blue chips (`POPULAR_PICKS`: `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, etc.).
+  - Freeform uppercase ticker commit on Enter for newly listed IPOs.
+  - Interactive "✨ Discover with AI Screener" fallback CTA when 0 search results match.
+  - Integrated into `EditNodeModal.tsx` for Watcher single stock mode and Action target symbol override.
+  - Increased Watcher card width (`w-[340px]` single mode, `w-[400px]` radar mode) and clean unassigned initial prompt (`No Stock Selected`).
+  - Unit test suite `companySearch.test.ts` (199 total passing unit tests across 19 suites, 100% green).
 - **Discord Webhook Alert Delivery & Rich Embeds (`discordWebhook.ts`, `AlertNode.tsx`, `EditNodeModal.tsx`, `graphEngine.ts`, `/api/alert/test-webhook`, `discordWebhook.test.ts`)**:
   - Implemented Discord Webhook dispatch service with URL format validation (`https://discord.com/api/webhooks/...`), rich financial embed cards with dynamic sentiment colors (Mint `#10B981` for gains, Coral `#FF5B79` for losses, Electric Blue `#0050FF` for neutral), ticker metrics, volume, canvas board name, and 6s timeout protection.
   - Added dedicated `/api/alert/test-webhook` test ping endpoint and interactive "⚡ Send Test Ping" button with live spinner in `EditNodeModal.tsx`.
@@ -439,15 +469,23 @@ hackathon/
 
 - **Unit Testing Suite (Vitest)** — Implemented full Tier 1 unit test suite: 109 tests across 7 files covering `dslEngine`, `interpolateTemplate`, `generateLeaderboardNoteContent`, `generateScreenerNoteContent`, `searchIndexer`, `spatialNavigator`, and `reportRevision`. All pass in ~128ms. Run with `bun test`. See `context/TESTING_PLAN.md` for the full 3-tier roadmap and the testing mandate.
 
-### 🟡 Open Candidate Integrations & Polish (Prioritized)
-1. **⏳ Global & Card-Level Loading Feedback for Long-Running Operations** — Show institutional loading/progress feedback during multi-stock PDF generation, `.scriffle` exports, or heavy API fetches.
-2. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
-3. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
-4. **Quick-Add Node Connector (`Tab` / `+` port handle) & Labeled Edges** — Signature n8n flow builder speedup with self-documenting automation connectors.
-5. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
-6. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
-7. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
-8. **Volume Breakout Scanner** — `GET /v2/most-traded/`
+### 🔴 Saturday Production Freeze — Launch Checklist (Deadline: Saturday)
+
+> Full checklist lives in `context/BACKLOG.md` under **🔴 Saturday Production Freeze**. Track progress there.
+> Partner QA checklist is at `context/QA_TESTING_GUIDE.md` — 22 sections covering all features + E2E demo flow + build verification sign-off.
+
+1. **🧹 Repo Cleanup** — Remove `prisma/dev.db` and `reports/` from version control. Add both to `.gitignore`. Run `git rm --cached prisma/dev.db`. Verify clean-clone `bun run prisma/seed.ts` still works.
+2. **📄 Update `README.md`** — Rewrite to reflect all 10 node types, new API endpoints, themes, Control Panel, keyboard shortcuts, unit test count (`179 tests, 16 suites`), and hackathon problem statement blurb.
+3. **🎬 Product Teaser** — Hero screenshot or animated GIF for README banner. Core message: *"Too many platforms to switch between for research. Scriffle lets you automate data fetching and brainstorm visually — all in one canvas."*
+4. **🎥 Hackathon Demo Video (3 min minimum)** — 30s problem framing → 2min core demo (Watcher chain, AI Screener pipeline spawn, Radar leaderboard, Discord webhook, theme switch) → 30s close with `.scriffle` save/load. Upload to YouTube/Loom, embed in README + submission.
+
+### 🟡 Open Candidate Integrations (Post-Freeze, If Time Allows)
+1. **Interactive Image Editing & Replacement (`ImageNode.tsx` & `EditNodeModal.tsx`)** — In-place replacement, inline caption editing, border toggle, and dedicated image modal tab.
+2. **Canvas Sections / Frames & Spatial Clustering** — FigJam/Miro-style structural boundaries that group and move child nodes together.
+3. **Foreign Flow Tracker** — Bandarmology node using `GET /v2/foreign-flow/{symbol}/`
+4. **Broker Accumulation / Distribution Alert** — `GET /v2/broker-summary/{symbol}/top/`
+5. **Insider Filings Alert** — Director/shareholder trade alerts using `GET /v2/filings/`
+6. **Volume Breakout Scanner** — `GET /v2/most-traded/`
 
 ### ⏸️ On-Hold / Deprioritized Candidates
 - **Action-to-Action Chaining** — Chained sequential actions (`[Action] -> [Action]`). *Status: Deprioritized / On-Hold — currently lacking concrete logic-case as single downstream action pipelines (`[Screener/Radar] -> [Action] -> [Pipeline]`) already fulfill target workflows without compounding branching complexity.*
@@ -508,9 +546,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 | File | What It Covers |
 |---|---|
 | `SESSION_CHANGELOG.md` | ⭐ Most recent session changes — read this first for a quick catch-up |
+| `QA_TESTING_GUIDE.md` | ⭐ Partner QA checklist — 22 sections, full E2E demo flow, build verification sign-off. Use before Saturday freeze. |
 | `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
 | `TESTING_PLAN.md` | ⭐ Full 3-tier testing strategy & mandate — **read before adding any new feature** |
+| `DRAGGABLE_SANDBOX_FIX_PLAN.md` | Draggable Sandbox missions widget fix, gesture thresholding, and theme color polish |
 | `GIT_CONFLICT_RESOLUTION_PLAN.md` | Merge conflict resolution plan and integration workflow between branches |
 | `CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md` | Canvas lock state, creation guard, Move/Hand cursor correction, dialog viewport constraints |
 | `DISCORD_WEBHOOK_PLAN.md` | Native Discord Webhook dispatch service, rich embeds, test ping API & UI indicators |

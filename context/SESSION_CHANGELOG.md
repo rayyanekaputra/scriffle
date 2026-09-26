@@ -4,6 +4,26 @@
 
 ---
 
+## 0. UI Fixes: Toolbar Split-Button Height Alignment, Search Modal Keyboard Theming & Ctrl Standardization
+
+**Key Capabilities & Fixes Implemented:**
+1. **NavToolbar Split-Button Container & Chevron Height Alignment ([`NavToolbar.tsx`](file:///c:/Users/rayyanep/Coding/scriffle/src/components/controls/NavToolbar.tsx))**:
+   - Updated both `Elements` and `Sticker` split-pill wrappers to `flex items-stretch h-[32px]` with matching sub-button padding (`pl-3.5 pr-2.5` left button, `pl-1.5 pr-2.5` right button).
+   - Both pills and their chevron arrow dropdown containers now share identical pixel-perfect height and vertical alignment across all themes.
+2. **Spotlight Search Popup Modal `<kbd>` Theme Alignment ([`SpotlightSearchModal.tsx`](file:///c:/Users/rayyanep/Coding/scriffle/src/components/controls/SpotlightSearchModal.tsx))**:
+   - Replaced hardcoded dark classes on modal navigation keys (`↑`, `↓`, `↵`) and header `Esc` badge with a theme-aware `kbdClass` helper.
+   - Light Mode: `bg-white border border-slate-300 text-slate-700 shadow-2xs`
+   - Mono Mode: `bg-[#ECEAE4] border border-[#D8D4CA] text-[#242321]`
+   - Dark Mode: `bg-[#22242D] border border-[#2E3140] text-slate-200`
+3. **`Ctrl` Shortcut Standardization Across All UI Surfaces**:
+   - **[`ShortcutsModal.tsx`](file:///c:/Users/rayyanep/Coding/scriffle/src/components/controls/ShortcutsModal.tsx)**: Replaced `⌘` with `Ctrl` across all categories (`Ctrl+C`, `Ctrl+V`, `Ctrl+D`, `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+G`, `Ctrl+Shift+G`, `Ctrl+K`).
+   - **[`TopNav.tsx`](file:///c:/Users/rayyanep/Coding/scriffle/src/components/controls/TopNav.tsx)**: Replaced `⌘K` badge with `Ctrl+K`; updated search and undo/redo tooltips to display `Ctrl`.
+   - **[`ContextMenu.tsx`](file:///c:/Users/rayyanep/Coding/scriffle/src/components/canvas/ContextMenu.tsx)**: Replaced `Cmd+G` and `Cmd+Shift+G` group shortcut badges with `Ctrl+G` and `Ctrl+Shift+G`.
+   - **[`SelectionBoundingBox.tsx`](file:///c:/Users/rayyanep/Coding/scriffle/src/components/canvas/SelectionBoundingBox.tsx)**: Replaced `Cmd+G` and `Cmd+Shift+G` button titles and badge text with `Ctrl+G` and `Ctrl+Shift+G`.
+- **Reference**: [`UI_FIXES_AND_KEYBOARD_ALIGNMENT_PLAN.md`](file:///c:/Users/rayyanep/Coding/scriffle/context/UI_FIXES_AND_KEYBOARD_ALIGNMENT_PLAN.md)
+
+---
+
 ## 0. Canvas Lock, Cursor & Dialog Overflow Inconsistency Fix
 
 **Key Capabilities & Fixes Implemented:**

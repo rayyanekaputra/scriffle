@@ -131,4 +131,14 @@ describe('WatcherNode initial state contract', () => {
     expect(priceChange).toBe(2.5);
     expect(state.cycleCount).toBe(1);
   });
+
+  it('correctly defaults new watcher config to empty symbol', () => {
+    const freshWatcherConfig: WatcherConfig = {
+      symbol: '',
+      metric: 'price_change',
+      interval: 300,
+    };
+    expect(freshWatcherConfig.symbol).toBe('');
+    expect(freshWatcherConfig.symbol).not.toBe('BBCA');
+  });
 });

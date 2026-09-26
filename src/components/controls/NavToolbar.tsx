@@ -170,12 +170,12 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
     : 'bg-white/95 border-slate-200 text-slate-800 shadow-2xl backdrop-blur-md';
 
   const buttonClass = isCustom && activeCustomTheme
-    ? 'text-[var(--custom-ui-text)] bg-transparent hover:bg-[var(--custom-ui-surface-muted)] border-[var(--custom-ui-border)]'
+    ? 'text-[var(--custom-ui-text)] bg-transparent hover:bg-[var(--custom-ui-surface-muted)] border-[var(--custom-ui-border)] cursor-pointer'
     : isDark
-    ? 'text-[#BAC0D0] hover:text-white hover:bg-[#22242D] border-[#2E3140]'
+    ? 'text-[#BAC0D0] hover:text-white hover:bg-[#22242D] border-[#2E3140] cursor-pointer'
     : isMono
-    ? 'text-[#4A4741] hover:text-[#242321] hover:bg-[#EFECE4] border-[#D8D4CA]'
-    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200';
+    ? 'text-[#4A4741] hover:text-[#242321] hover:bg-[#EFECE4] border-[#D8D4CA] cursor-pointer'
+    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200 cursor-pointer';
 
   const creationButtonClass = isLocked
     ? isDark
@@ -224,6 +224,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
   return (
     <div className="pointer-events-none fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center max-w-[calc(100vw-32px)]">
       <div
+        data-tour="nav-toolbar"
         className={`pointer-events-auto flex items-center gap-1 rounded-2xl border-2 p-1.5 transition-all duration-150 whitespace-nowrap overflow-visible select-none ${containerBg}`}
       >
         {/* Interaction Modes: Move (V) & Hand (H) */}
@@ -275,7 +276,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
 
         {/* Watcher Node */}
         <button
-          onClick={() => handleAddAtCenter('watcher', { symbol: 'BBCA', metric: 'price_change', interval: 300 })}
+          onClick={() => handleAddAtCenter('watcher', { symbol: '', metric: 'price_change', interval: 300 })}
           disabled={isLocked}
           title={isLocked ? 'Canvas is locked' : 'Add Watcher'}
           className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
@@ -320,12 +321,12 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         <div className={`h-6 w-[1.5px] mx-1 shrink-0 ${dividerClass}`} />
 
         {/* Insert Menu: Sticky Note, Text, Image, File (pill split-button) */}
-        <div ref={insertWrapperRef} className="relative shrink-0 flex items-center">
+        <div ref={insertWrapperRef} className="relative shrink-0 flex items-stretch h-[32px]">
           <button
             onClick={toggleInsertMenu}
             disabled={isLocked}
             title={isLocked ? 'Canvas is locked' : 'Insert element'}
-            className={`flex items-center gap-1.5 rounded-l-full border-y border-l pl-3.5 pr-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            className={`flex items-center gap-1.5 rounded-l-full border-y border-l pl-3.5 pr-2.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${creationButtonClass}`}
           >
             <MingIcon name="add_line" size={16} />
             <span className="whitespace-nowrap">Elements</span>
@@ -333,7 +334,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
           <button
             onClick={toggleInsertMenu}
             disabled={isLocked}
-            className={`flex items-center justify-center rounded-r-full border pl-1.5 pr-2.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            className={`flex items-center justify-center rounded-r-full border pl-1.5 pr-2.5 text-xs font-bold shrink-0 transition-all active:scale-95 cursor-pointer ${creationButtonClass}`}
             title={isLocked ? 'Canvas is locked' : 'Insert element'}
           >
             <MingIcon name="down_line" size={13} />
@@ -409,11 +410,11 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
         />
         
         {/* Sticker Element & Dropdown Menu (pill split-button) */}
-        <div ref={stickerWrapperRef} className="relative shrink-0 flex items-center">
+        <div ref={stickerWrapperRef} className="relative shrink-0 flex items-stretch h-[32px]">
           <button
             onClick={() => handleAddAtCenter('sticker', { emoji: '🚀', label: 'Breakout', color: 'blue' })}
             disabled={isLocked}
-            className={`flex items-center gap-1.5 rounded-l-full border-y border-l pl-3.5 pr-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            className={`flex items-center gap-1.5 rounded-l-full border-y border-l pl-3.5 pr-2.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 cursor-pointer ${creationButtonClass}`}
             title={isLocked ? 'Canvas is locked' : 'Add Sticker'}
           >
             <MingIcon name="star_line" size={16} />
@@ -422,7 +423,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
           <button
             onClick={toggleStickerMenu}
             disabled={isLocked}
-            className={`flex items-center justify-center rounded-r-full border pl-1.5 pr-2.5 py-1.5 text-xs font-bold shrink-0 transition-all active:scale-95 ${creationButtonClass}`}
+            className={`flex items-center justify-center rounded-r-full border pl-1.5 pr-2.5 text-xs font-bold shrink-0 transition-all active:scale-95 cursor-pointer ${creationButtonClass}`}
             title={isLocked ? 'Canvas is locked' : 'Choose sticker preset'}
           >
             <MingIcon name="down_line" size={13} />

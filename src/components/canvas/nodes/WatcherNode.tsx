@@ -84,7 +84,7 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
     ? 'bg-[#FCFBF9] hover:bg-[#F2EFE8] text-[#242321]'
     : 'bg-white hover:bg-slate-50/75 text-slate-900';
 
-  const cardWidth = isRadarMode ? 'w-80' : 'w-64';
+  const cardWidth = isRadarMode ? 'w-[400px]' : 'w-[340px]';
 
   return (
     <div
@@ -109,9 +109,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
           isDark ? 'border-[#262833]' : isMono ? 'border-[#EAE7DF]' : 'border-slate-200'
         }`}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
           <div
-            className={`rounded-xl p-1.5 border ${
+            className={`rounded-xl p-1.5 border shrink-0 ${
               isDark
                 ? isError
                   ? 'bg-rose-950/60 text-rose-400 border-rose-800/60'
@@ -142,9 +142,9 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
               size={18}
             />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <span
-              className={`text-[11px] font-medium ${
+              className={`text-[11px] font-medium block truncate ${
                 isDark ? 'text-[#8C90A0]' : isMono ? 'text-[#78756D]' : 'text-slate-500'
               }`}
             >
@@ -152,14 +152,16 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
                 ? isGainers
                   ? `Top ${config.limit || 5} Gainers (${(config.period || '1d').toUpperCase()})`
                   : `Top ${config.limit || 5} Losers (${(config.period || '1d').toUpperCase()})`
-                : 'Market Watcher'}
+                : config.symbol
+                ? 'Market Watcher'
+                : 'Unassigned Watcher'}
             </span>
             <h3
-              className={`text-base font-bold leading-none mt-0.5 ${
+              className={`text-base font-bold leading-tight mt-0.5 truncate ${
                 isDark ? 'text-[#E2E4E9]' : isMono ? 'text-[#242321]' : 'text-slate-900'
               }`}
             >
-              {isRadarMode ? (isGainers ? 'Top Gainers Radar' : 'Top Losers Radar') : config.symbol || 'BBCA'}
+              {isRadarMode ? (isGainers ? 'Top Gainers Radar' : 'Top Losers Radar') : config.symbol || 'Select Stock'}
             </h3>
           </div>
         </div>
@@ -288,7 +290,7 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
                         </span>
                         {mover.name && mover.name !== mover.symbol && (
                           <span
-                            className={`text-[10px] truncate max-w-[90px] ${
+                            className={`text-[10px] truncate max-w-[150px] ${
                               isDark ? 'text-[#787C8D]' : isMono ? 'text-[#8C8980]' : 'text-slate-400'
                             }`}
                             title={mover.name}
@@ -348,6 +350,28 @@ export const WatcherNode = memo(({ id, data, selected }: NodeProps) => {
               Waiting for live leaderboard poll...
             </div>
           )}
+        </div>
+      ) : !config.symbol ? (
+        <div className="mt-3">
+          <div
+            className={`rounded-xl p-3 text-center border border-dashed transition-colors ${
+              isCustom && activeCustomTheme
+                ? 'bg-[var(--custom-node-card-bg)] border-[var(--custom-node-card-border)] text-[var(--custom-ui-text-muted)]'
+                : isDark
+                ? 'bg-[#14151B] border-[#2E3242] text-[#8C90A0]'
+                : isMono
+                ? 'bg-[#F4F3EF] border-[#D0CCC1] text-[#78756D]'
+                : 'bg-slate-50 border-slate-300 text-slate-500'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-1.5 font-semibold text-xs mb-1">
+              <MingIcon name="search_line" size={14} />
+              <span>No Stock Selected</span>
+            </div>
+            <p className="text-[10px] opacity-80 leading-tight">
+              Double-click card to choose an Indonesian company
+            </p>
+          </div>
         </div>
       ) : (
         <div className="mt-3 space-y-2 text-xs">

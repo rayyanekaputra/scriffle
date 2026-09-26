@@ -202,7 +202,7 @@ export function getDefaultConfigForQuickAdd(
       };
     case 'watcher':
       return {
-        symbol: 'BBRI',
+        symbol: symbol || '',
         metric: 'price_change',
         interval: 60,
       };

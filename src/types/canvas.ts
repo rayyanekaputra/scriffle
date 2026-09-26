@@ -8,7 +8,8 @@ export type NodeType =
   | 'text'
   | 'image'
   | 'sticker'
-  | 'file';
+  | 'file'
+  | 'section';
 
 export type CanvasToolMode = 'select' | 'hand';
 

@@ -11,6 +11,8 @@ interface SpotlightSearchModalProps {
   onClose: () => void;
   nodes?: CanvasNodeData[];
   onSelectNode: (nodeId: string) => void;
+  onStartTour?: () => void;
+  onStartTutorial?: () => void;
 }
 
 export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
@@ -18,6 +20,8 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
   onClose,
   nodes = [],
   onSelectNode,
+  onStartTour,
+  onStartTutorial,
 }) => {
   const { theme } = useTheme();
   const [query, setQuery] = useState('');
@@ -146,6 +150,12 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
     }
   };
 
+  const kbdClass = isDark
+    ? 'bg-[#22242D] border-[#2E3140] text-slate-200'
+    : isMono
+    ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#242321]'
+    : 'bg-white border-slate-300 text-slate-700 shadow-2xs';
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-24 pb-6 px-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150"
@@ -193,13 +203,7 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
             </button>
           )}
           <kbd
-            className={`hidden sm:inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold border ${
-              isDark
-                ? 'bg-[#22242D] border-[#2E3140] text-slate-400'
-                : isMono
-                ? 'bg-[#ECEAE4] border-[#D8D4CA] text-[#78756D]'
-                : 'bg-slate-100 border-slate-200 text-slate-500'
-            }`}
+            className={`hidden sm:inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold border ${kbdClass}`}
           >
             Esc
           </kbd>
@@ -306,17 +310,50 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
         >
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px]">↑</kbd>
-              <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px]">↓</kbd>
-              Navigate
+              <kbd className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${kbdClass}`}>↑</kbd>
+              <kbd className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${kbdClass}`}>↓</kbd>
+              <span>Navigate</span>
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px]">↵</kbd>
-              Jump to Card
+              <kbd className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${kbdClass}`}>↵</kbd>
+              <span>Jump to Card</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            {onStartTour && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTour();
+                }}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border transition cursor-pointer ${
+                  isDark
+                    ? 'border-[#2E3140] bg-[#181920] text-blue-400 hover:text-blue-300 hover:bg-[#22242D]'
+                    : isMono
+                    ? 'border-[#D8D4CA] bg-[#FCFBF9] text-blue-600 hover:text-blue-700 hover:bg-[#EAE7DF]'
+                    : 'border-slate-200 bg-white text-[#0050FF] hover:bg-blue-50'
+                }`}
+              >
+                <MingIcon name="magic_line" size={13} />
+                <span>Product Tour</span>
+              </button>
+            )}
+
+            {onStartTutorial && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTutorial();
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[#0050FF] bg-[#0050FF] text-white font-bold transition hover:bg-blue-600 cursor-pointer shadow-none"
+              >
+                <MingIcon name="target_line" size={13} />
+                <span>Tutorial</span>
+              </button>
+            )}
             <span>{results.length} item{results.length !== 1 ? 's' : ''}</span>
           </div>
         </div>

@@ -1253,6 +1253,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
 
   return (
     <div
+      data-tour="market-canvas"
       data-tool-mode={toolMode}
       data-is-locked={isLocked ? 'true' : 'false'}
       className={`h-full w-full relative transition-colors duration-200 ${isHandMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
@@ -1262,7 +1263,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
     >
       {/* Group Isolation Focus Banner */}
       {isolatedGroupId && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex items-center gap-2 rounded-full border-2 border-[#0050FF] bg-white dark:bg-[#181920] px-4 py-1.5 shadow-lg animate-in fade-in slide-in-from-top-3 duration-200">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex items-center gap-2 rounded-[10px] border-2 border-[#0050FF] bg-white dark:bg-[#181920] px-4 py-1.5 shadow-lg animate-in fade-in slide-in-from-top-3 duration-200">
           <MingIcon name="group_line" size={16} className="text-[#0050FF]" />
           <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
             Editing inside Group (Isolated)
@@ -1272,7 +1273,7 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           </span>
           <button
             onClick={() => setIsolatedGroupId(null)}
-            className="ml-1 rounded-full p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 transition cursor-pointer"
+            className="ml-1 rounded-[10px] p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 transition cursor-pointer"
           >
             <MingIcon name="close_line" size={14} />
           </button>
@@ -1329,44 +1330,44 @@ export const MarketCanvas: React.FC<MarketCanvasProps> = ({
           onUngroup={handleUngroupSelected}
         />
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color={dotColor} />
-        <Controls
-          position="top-left"
-          showInteractive={false}
-          className={
-            theme === 'dark'
-              ? '!border-2 !border-[#282A36] !bg-[#14151B] !fill-[#BAC0D0] !rounded-xl !shadow-md !mt-3 !ml-3'
-              : theme === 'mono'
-              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !fill-[#242321] !rounded-xl !shadow-md !mt-3 !ml-3'
-              : '!border-2 !border-slate-300 !bg-white !fill-slate-700 !rounded-xl !shadow-md !mt-3 !ml-3'
-          }
-        >
-          <ControlButton
-            onClick={onToggleLock}
-            title={isLocked ? 'Unlock Canvas (Enable Card Creation)' : 'Lock Canvas (Disable Card Creation)'}
-            aria-label={isLocked ? 'Unlock Canvas' : 'Lock Canvas'}
+          <Controls
+            position="top-left"
+            showInteractive={false}
             className={
-              isLocked
-                ? '!text-amber-500 !fill-amber-500 hover:!bg-amber-500/10'
-                : theme === 'dark'
-                ? '!text-[#BAC0D0] !fill-[#BAC0D0]'
+              theme === 'dark'
+                ? '!border-2 !border-[#282A36] !bg-[#14151B] !fill-[#BAC0D0] !rounded-[10px] !shadow-md !mt-3 !ml-3 !overflow-hidden'
                 : theme === 'mono'
-                ? '!text-[#242321] !fill-[#242321]'
-                : '!text-slate-700 !fill-slate-700'
+                ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !fill-[#242321] !rounded-[10px] !shadow-md !mt-3 !ml-3 !overflow-hidden'
+                : '!border-2 !border-slate-300 !bg-white !fill-slate-700 !rounded-[10px] !shadow-md !mt-3 !ml-3 !overflow-hidden'
             }
           >
-            <MingIcon name={isLocked ? 'lock_line' : 'unlock_line'} size={15} />
-          </ControlButton>
-        </Controls>
+            <ControlButton
+              onClick={onToggleLock}
+              title={isLocked ? 'Unlock Canvas (Enable Card Creation)' : 'Lock Canvas (Disable Card Creation)'}
+              aria-label={isLocked ? 'Unlock Canvas' : 'Lock Canvas'}
+              className={
+                isLocked
+                  ? '!text-amber-500 !fill-amber-500 hover:!bg-amber-500/10'
+                  : theme === 'dark'
+                  ? '!text-[#BAC0D0] !fill-[#BAC0D0]'
+                  : theme === 'mono'
+                  ? '!text-[#242321] !fill-[#242321]'
+                  : '!text-slate-700 !fill-slate-700'
+              }
+            >
+              <MingIcon name={isLocked ? 'lock_line' : 'unlock_line'} size={15} />
+            </ControlButton>
+          </Controls>
         <MiniMap
           position="bottom-right"
           nodeColor={miniMapNodeColor}
           maskColor={miniMapMaskColor}
           className={
             theme === 'dark'
-              ? '!border-2 !border-[#282A36] !bg-[#14151B] !rounded-xl !shadow-md !mb-20 !mr-4'
+              ? '!border-2 !border-[#282A36] !bg-[#14151B] !rounded-[10px] !shadow-md !mb-20 !mr-4'
               : theme === 'mono'
-              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !rounded-xl !shadow-md !mb-20 !mr-4'
-              : '!border-2 !border-slate-300 !bg-white !rounded-xl !shadow-md !mb-20 !mr-4'
+              ? '!border-2 !border-[#D8D4CA] !bg-[#ECEAE4] !rounded-[10px] !shadow-md !mb-20 !mr-4'
+              : '!border-2 !border-slate-300 !bg-white !rounded-[10px] !shadow-md !mb-20 !mr-4'
           }
         />
       </ReactFlow>

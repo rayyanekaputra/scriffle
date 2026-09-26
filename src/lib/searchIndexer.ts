@@ -29,13 +29,14 @@ export function extractNodeSearchText(node: CanvasNodeData): {
 
   switch (type) {
     case 'watcher': {
-      const sym = cfg.symbol || 'BBCA';
+      const sym = cfg.symbol || '';
       const metric = cfg.metric || 'price_change';
       const mode = cfg.mode || 'single';
-      title = mode === 'top_gainers' ? 'Top Gainers Radar' : mode === 'top_losers' ? 'Top Losers Radar' : `${sym.toUpperCase()} Watcher`;
+      title = mode === 'top_gainers' ? 'Top Gainers Radar' : mode === 'top_losers' ? 'Top Losers Radar' : sym ? `${sym.toUpperCase()} Watcher` : 'Unassigned Watcher';
       subtitle = mode !== 'single' ? `Mode: ${mode} • Interval: ${cfg.interval || 300}s` : `Metric: ${metric} • Interval: ${cfg.interval || 300}s`;
-      badge = mode !== 'single' ? (mode === 'top_gainers' ? 'Gainers' : 'Losers') : sym.toUpperCase();
-      searchTokens.push(sym, metric, `${cfg.interval}s`, 'watcher', 'stock', 'radar', 'ticker');
+      badge = mode !== 'single' ? (mode === 'top_gainers' ? 'Gainers' : 'Losers') : sym ? sym.toUpperCase() : 'Unassigned';
+      if (sym) searchTokens.push(sym);
+      searchTokens.push(metric, `${cfg.interval || 300}s`, 'watcher', 'stock', 'radar', 'ticker');
       if (mode === 'top_gainers') searchTokens.push('top gainers', 'gainers', 'leaderboard');
       if (mode === 'top_losers') searchTokens.push('top losers', 'losers', 'leaderboard');
       break;

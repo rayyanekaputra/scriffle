@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "bun ./scripts/dev.ts",
     "build": "next build",
-    "start": "next start",
+    "start": "bun ./scripts/start.ts",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
