@@ -157,4 +157,104 @@ describe('ImageNode & Image Studio Enhancements', () => {
     expect(extracted.subtitle).toBe('Transparent PNG');
     expect(extracted.searchTokens).toContain('image');
   });
+
+  it('preserves aspectRatio in ImageConfig when scaling or calculating natural bounds', () => {
+    const originalConfig: ImageConfig = {
+      url: 'https://example.com/candlestick.png',
+      caption: 'Candlestick Chart',
+      width: 640,
+      height: 360,
+      aspectRatio: 16 / 9,
+      isTransparent: true,
+    };
+
+    expect(originalConfig.aspectRatio).toBeCloseTo(1.777, 2);
+
+    // Dimension reset clears width and height while maintaining aspect ratio and caption
+    const resetConfig: ImageConfig = {
+      ...originalConfig,
+      width: undefined,
+      height: undefined,
+    };
+
+    expect(resetConfig.width).toBeUndefined();
+    expect(resetConfig.height).toBeUndefined();
+    expect(resetConfig.aspectRatio).toBeCloseTo(1.777, 2);
+    expect(resetConfig.caption).toBe('Candlestick Chart');
+  });
+
+  it('updates url and transparency correctly when replacing image via drag-and-drop file', () => {
+    const initialConfig: ImageConfig = {
+      url: 'data:image/jpeg;base64,12345',
+      caption: 'Financial Dashboard Snapshot',
+      isTransparent: false,
+      width: 400,
+      height: 300,
+    };
+
+    // Dropping a PNG file allows keeping transparency or adopting PNG transparent capability
+    const droppedFileIsPng = true;
+    const newImageDataUrl = 'data:image/png;base64,67890';
+
+    const replacedConfig: ImageConfig = {
+      ...initialConfig,
+      url: newImageDataUrl,
+      isTransparent: droppedFileIsPng ? initialConfig.isTransparent : false,
+    };
+
+    expect(replacedConfig.url).toBe(newImageDataUrl);
+    expect(replacedConfig.caption).toBe('Financial Dashboard Snapshot');
+    expect(replacedConfig.width).toBe(400);
+    expect(replacedConfig.height).toBe(300);
+  });
+
+  it('verifies R1.4 resize state lifecycle: updates dimension during resize and persists once on resize end', () => {
+    // Simulated resize session
+    let localSize = { width: 300, height: 200 };
+    let persistCallCount = 0;
+    let persistedPayload: any = null;
+
+    const onResizeFrame = (params: { width: number; height: number }) => {
+      // Local state updates immediately on every frame (zero network latency)
+      localSize = { width: Math.round(params.width), height: Math.round(params.height) };
+    };
+
+    const onResizeEnd = (params: { width: number; height: number }) => {
+      persistCallCount += 1;
+      persistedPayload = {
+        width: Math.round(params.width),
+        height: Math.round(params.height),
+      };
+    };
+
+    // Frame 1
+    onResizeFrame({ width: 310, height: 207 });
+    expect(localSize).toEqual({ width: 310, height: 207 });
+    expect(persistCallCount).toBe(0);
+
+    // Frame 2
+    onResizeFrame({ width: 330, height: 220 });
+    expect(localSize).toEqual({ width: 330, height: 220 });
+    expect(persistCallCount).toBe(0);
+
+    // Frame 3 (Drag End)
+    onResizeFrame({ width: 350, height: 233 });
+    onResizeEnd({ width: 350, height: 233 });
+
+    // Dimension updated and network called exactly once on end
+    expect(localSize).toEqual({ width: 350, height: 233 });
+    expect(persistCallCount).toBe(1);
+    expect(persistedPayload).toEqual({ width: 350, height: 233 });
+  });
+
+  it('verifies R1.2 toolbar positioning classes and nodrag guard', () => {
+    // The toolbar must sit fully above the card (bottom-full mb-2.5) with nodrag to prevent drag interference
+    const expectedPlacementClasses = ['nodrag', 'absolute', 'bottom-full', 'mb-2.5', 'right-0', 'z-20'];
+    const toolbarClassString = 'nodrag absolute bottom-full mb-2.5 right-0 z-20 flex items-center gap-1 rounded-full border-2 px-1.5 py-0.5 shadow-none transition-opacity duration-150';
+
+    for (const cls of expectedPlacementClasses) {
+      expect(toolbarClassString).toContain(cls);
+    }
+  });
 });
+

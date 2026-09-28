@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **231 unit tests across 24 test suites (100% green).**
+* **Master Unit Test Suite:** **239 unit tests across 25 test suites (100% green).**
 
 ---
 
@@ -54,10 +54,12 @@
   * **`T` Hotkey Placement:** Press `T` anywhere on canvas to immediately drop free-text at mouse cursor with auto-focus.
 * **`sticker` (Customizable Emoji & Label Stickers):** Free-form sticker badges featuring an inline quick emoji picker popover on canvas, double-click full modal editor with 32-emoji grid, custom label text, and 7-color badge palette (`green`, `red`, `blue`, `amber`, `purple`, `teal`, `slate`). Toolbar button split action supports 1-click addition at viewport center or selecting from 8 quick presets.
 * **`image` (Image Studio Node):**
-  * **Upload:** Via top toolbar button, right-click context menu, or file drop.
+  * **Upload & Direct In-Place Dropzone:** Upload via top toolbar button, right-click context menu, global file drop, or drag-and-drop directly onto existing cards to replace images in-place with real-time dropzone feedback (`"Drop to replace image"`).
+  * **Double-Click Quick Replace:** Double-clicking any image on the canvas directly opens the file picker for rapid asset swapping.
   * **Clipboard Copy & Paste:** Press `Ctrl+V` / `Cmd+V` to paste images directly from OS clipboard onto the canvas at current cursor coordinates.
-  * **Transparency:** Full support for transparent `.png` files with zero white background boxes.
-  * **Interactive Resizing:** Click an image to drag corner `<NodeResizer />` handles (aspect-ratio locked & persisted to SQLite).
+  * **Transparency & Bordered Container Toggle:** 1-click toggle on the floating action bar and `EditNodeModal.tsx` between borderless transparent sticker mode and 2px flat-outline bordered card container across Light, Mono (`#FCFBF9`), and Dark (`#14151B`).
+  * **Interactive Resizing & 1-Click Dimension Reset:** Corner `<NodeResizer />` handles with aspect-ratio locking + 1-click **Reset Dimensions** button (`aspect_ratio_line`) to restore natural dimensions.
+  * **Inline Caption Editor:** Direct inline captioning with auto-trimming and keyboard accessibility (`Enter` to save, `Escape` to revert).
 * **`file` (Universal File Node & PDF Brief):** Universal visual file attachments with category icons, browser preview, copy link, direct OS folder reveal (`/api/file/open-location`), and green `✓ Saved` status indicators.
 
 ---

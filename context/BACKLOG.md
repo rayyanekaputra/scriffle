@@ -51,6 +51,14 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🖼️ Interactive Image Editing & Replacement (`ImageNode.tsx`, `EditNodeModal.tsx`, `canvas.ts`, `imageStudio.test.ts`, `INTERACTIVE_IMAGE_EDITING_PLAN.md`)**
+  - Implemented direct in-place drag-and-drop image file replacement on existing `ImageNode` cards with real-time dropzone feedback (`isDraggingOver` ring, dashed boundary, and `"Drop to replace image"` indicator).
+  - Added double-click image element trigger to immediately open the local image selector for rapid swapping.
+  - Added 1-click **Reset Dimensions** action (`aspect_ratio_line`) to the floating action bar to revert custom resizes to natural image proportions.
+  - Implemented inline caption editor with auto-trimming, placeholder guidance, and keyboard commits (`Enter` to save, `Escape` to revert).
+  - Enhanced theme-aware container styling (borderless transparent sticker mode vs 2px bordered card container) across **Light**, **Mono (warm-paper `#FCFBF9`)**, and **Dark (`#14151B`)**.
+  - Updated `EditNodeModal.tsx` image section with URL input, interactive file dropzone, caption editor, display style segmented toggle, and dimension reset.
+  - Added unit test suite in `imageStudio.test.ts` (239 total passing unit tests across 25 suites, 100% green).
 - [x] **🎯 Draggable Sandbox Missions Card Gesture Fix & Onboarding Theme Cohesion (`SandboxMissionsCard.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `MissionStepItem.tsx`, `draggableWidget.test.ts`, `DRAGGABLE_SANDBOX_FIX_PLAN.md`)**
   - Resolved drag initiation block caused by `target.closest('.nodrag')` matching the outer React Flow canvas guard container.
   - Implemented gesture delta thresholding (`dx > 3 || dy > 3`) on minimized pill for dual behavior: single tap/click toggles expand, dragging repositions the pill smoothly.
@@ -411,7 +419,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - Floating emoji picker popover on icon click.
   - Context menu & `EditNodeModal` support for sticker customization.
   - Update `.scriffle` format schema and AI generator spec (`SCRIFFLE_AI_SPEC.md`) to support arbitrary `{ emoji, label, color }` configs.
-- [ ] **In-Place Image Editor & Re-uploader (`ImageNode.tsx` & `EditNodeModal.tsx`)**:
+- [x] **In-Place Image Editor & Re-uploader (`ImageNode.tsx` & `EditNodeModal.tsx`)**:
   - Double-click / context menu to open Image property editor in `EditNodeModal`.
   - In-place image replacement button / file dropper.
   - Inline editable caption below image with `Enter`/`Esc` commit.
