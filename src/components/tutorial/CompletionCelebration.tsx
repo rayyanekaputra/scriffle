@@ -66,7 +66,7 @@ export const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
           }`}
         >
-          <MingIcon name="refresh_line" size={13} />
+          <MingIcon name="refresh_1_line" size={13} />
           <span>Restart</span>
         </button>
 

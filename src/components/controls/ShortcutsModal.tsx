@@ -246,7 +246,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                     : 'border-blue-200 bg-blue-50 text-[#0050FF] hover:bg-blue-100'
                 }`}
               >
-                <MingIcon name="magic_line" size={14} />
+                <MingIcon name="magic_1_line" size={14} />
                 <span className="whitespace-nowrap">Product Tour</span>
               </button>
             )}

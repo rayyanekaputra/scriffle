@@ -132,7 +132,7 @@ describe('Tutorial Missions Popover & Button Completion Badge', () => {
   });
 
   it('prevents existing canvas nodes from immediately auto-completing missions after reset via baseline', () => {
-    const existingCanvas = {
+    const existingCanvas: any = {
       id: 'c1',
       name: 'test',
       nodes: [
@@ -149,7 +149,7 @@ describe('Tutorial Missions Popover & Button Completion Badge', () => {
 
     // After reset, baseline isolates existing nodes so progress remains empty
     const baseline = {
-      nodeIds: existingCanvas.nodes.map((n) => n.id),
+      nodeIds: existingCanvas.nodes.map((n: any) => n.id),
       edgeIds: [],
       logCount: 0,
     };
@@ -159,7 +159,7 @@ describe('Tutorial Missions Popover & Button Completion Badge', () => {
     expect(Object.keys(progressAfterReset).length).toBe(0);
 
     // Newly added node completes mission
-    const canvasWithNewNode = {
+    const canvasWithNewNode: any = {
       ...existingCanvas,
       nodes: [
         ...existingCanvas.nodes,

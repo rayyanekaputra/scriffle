@@ -12,7 +12,11 @@ describe('Interactive Onboarding Spotlight Tour (tourStepsConfig.ts)', () => {
     expect(TOUR_STEPS.length).toBe(6);
   });
 
-  it('contains valid metadata, non-empty titles, descriptions, and MingCute icons for all steps', () => {
+  it('contains valid metadata, non-empty titles, descriptions, and valid MingCute icons for all steps', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const cssContent = fs.readFileSync(path.resolve(process.cwd(), 'public/mingcute/Mingcute.css'), 'utf-8');
+
     TOUR_STEPS.forEach((step, index) => {
       expect(step.id).toBeTypeOf('string');
       expect(step.id.length).toBeGreaterThan(0);
@@ -24,6 +28,9 @@ describe('Interactive Onboarding Spotlight Tour (tourStepsConfig.ts)', () => {
       expect(step.icon).toBeTypeOf('string');
       expect(step.icon.length).toBeGreaterThan(0);
       expect(['center', 'top', 'bottom', 'left', 'right']).toContain(step.placement);
+
+      // Verify that the icon exists in Mingcute.css (.mgc_<icon>:before)
+      expect(cssContent).toContain(`.mgc_${step.icon}:before`);
     });
   });
 

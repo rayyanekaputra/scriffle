@@ -208,7 +208,7 @@ export const TourCardPopover: React.FC = () => {
       <div className="flex items-center justify-between px-5 pt-4 pb-2">
         <div className="flex items-center gap-2.5">
           <div className={`flex h-8 w-8 items-center justify-center rounded-xl shrink-0 border ${headerIconClass}`}>
-            <MingIcon name={currentStep.icon || 'magic_line'} size={18} />
+            <MingIcon name={currentStep.icon || 'magic_1_line'} size={18} />
           </div>
           <div>
             <h3 className="text-sm font-bold tracking-normal leading-tight">
@@ -313,7 +313,7 @@ export const TourCardPopover: React.FC = () => {
             <button
               type="button"
               onClick={prevStep}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border-2 whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 isDark
                   ? 'bg-[#181920] border-[#2E3140] text-slate-300 hover:bg-[#22242D]'
                   : isMono
@@ -321,7 +321,8 @@ export const TourCardPopover: React.FC = () => {
                   : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              Back
+              <MingIcon name="arrow_left_line" size={14} className="shrink-0" />
+              <span className="whitespace-nowrap">Back</span>
             </button>
           ) : (
             <button
@@ -344,7 +345,7 @@ export const TourCardPopover: React.FC = () => {
               <button
                 type="button"
                 onClick={completeTour}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border-2 whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                   isDark
                     ? 'bg-[#181920] border-[#2E3140] text-slate-300 hover:bg-[#22242D]'
                     : isMono
@@ -352,6 +353,7 @@ export const TourCardPopover: React.FC = () => {
                     : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >
+                <MingIcon name="compass_line" size={14} className="shrink-0" />
                 <span className="whitespace-nowrap">Explore Freely</span>
               </button>
               <button

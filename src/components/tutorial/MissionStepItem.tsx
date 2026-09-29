@@ -133,7 +133,7 @@ export const MissionStepItem: React.FC<MissionStepItemProps> = ({
             <div
               className={`mt-2 rounded-lg border p-2 text-[11px] font-medium leading-normal flex items-start gap-1.5 w-full min-w-0 overflow-hidden ${activeHintClass}`}
             >
-              <MingIcon name="lightbulb_line" size={14} className="shrink-0 mt-0.5 text-amber-500" />
+              <MingIcon name="bulb_line" size={14} className="shrink-0 mt-0.5 text-amber-500" />
               <div className="flex-1 min-w-0">
                 <span className="break-words whitespace-normal leading-relaxed text-pretty">{mission.detailHint}</span>
               </div>

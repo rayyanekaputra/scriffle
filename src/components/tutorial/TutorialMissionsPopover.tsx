@@ -332,7 +332,7 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
                           : 'bg-blue-50/70 border-blue-200 text-blue-950'
                       }`}
                     >
-                      <MingIcon name="lightbulb_line" size={15} className="shrink-0 mt-0.5 text-amber-500" />
+                      <MingIcon name="bulb_line" size={15} className="shrink-0 mt-0.5 text-amber-500" />
                       <div className="flex-1 min-w-0 overflow-hidden">
                         <span className="font-bold block mb-0.5 text-[10px] uppercase tracking-wider">
                           Instructions
@@ -365,7 +365,7 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
           onClick={resetMissions}
           className="hover:underline flex items-center gap-1 cursor-pointer transition-colors"
         >
-          <MingIcon name="refresh_line" size={12} />
+          <MingIcon name="refresh_1_line" size={12} />
           <span>Reset progress</span>
         </button>
 
