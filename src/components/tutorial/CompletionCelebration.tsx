@@ -43,11 +43,11 @@ export const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
         <MingIcon name="trophy_line" size={22} />
       </div>
 
-      <h3 className="text-sm font-extrabold leading-tight">
+      <h3 className="text-sm font-extrabold leading-tight break-words text-pretty">
         Tutorial Completed!
       </h3>
       <p
-        className={`mt-1 text-xs leading-relaxed ${
+        className={`mt-1 text-xs leading-relaxed break-words whitespace-normal text-pretty ${
           isDark ? 'text-slate-300' : isMono ? 'text-[#5E5A52]' : 'text-slate-600'
         }`}
       >
@@ -66,7 +66,7 @@ export const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
           }`}
         >
-          <MingIcon name="refresh_line" size={13} />
+          <MingIcon name="refresh_1_line" size={13} />
           <span>Restart</span>
         </button>
 

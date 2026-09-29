@@ -7,6 +7,8 @@ import { Logo } from '@/components/ui/Logo';
 import { useTheme } from '@/context/ThemeContext';
 import { useLoading } from '@/context/LoadingContext';
 import { ThemeModal } from '@/components/canvas/controls/ThemeModal';
+import { useSandboxTutorial } from '@/context/SandboxTutorialContext';
+import { TutorialMissionsPopover } from '@/components/tutorial/TutorialMissionsPopover';
 
 interface TopNavProps {
   canvasName: string;
@@ -45,6 +47,15 @@ export const TopNav: React.FC<TopNavProps> = ({
 }) => {
   const { theme, setTheme, activeCustomTheme } = useTheme();
   const { isLoading, activeTask } = useLoading();
+  const {
+    isOpen: isTutorialOpen,
+    openTutorial,
+    closeTutorial,
+    isAllCompleted,
+    completedCount,
+    totalMissions,
+  } = useSandboxTutorial();
+  const tutorialBtnRef = useRef<HTMLButtonElement>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [tempName, setTempName] = useState(canvasName || 'untitled board');
@@ -237,25 +248,81 @@ export const TopNav: React.FC<TopNavProps> = ({
 
       {/* Right: Theme Switcher, Shortcuts, & Panel View Toggles */}
       <div data-tour="top-nav-actions" className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-        {/* Interactive Tutorial Launcher Button */}
-        {onStartTutorial && (
+        {/* Interactive Tutorial Launcher Button & Anchored Popover */}
+        <div className="relative">
           <button
+            ref={tutorialBtnRef}
             type="button"
             data-tour="tutorial-btn"
-            onClick={onStartTutorial}
+            onClick={() => {
+              if (isTutorialOpen) {
+                closeTutorial();
+              } else {
+                openTutorial();
+              }
+            }}
             className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold border-2 transition-all whitespace-nowrap shrink-0 cursor-pointer ${
-              theme === 'dark'
+              isAllCompleted
+                ? isDark
+                  ? 'bg-emerald-950/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/30'
+                  : isMono
+                  ? 'bg-[#EBF3ED] border-emerald-700 text-emerald-900 hover:bg-[#E2EDE5]'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
+                : isTutorialOpen
+                ? isDark
+                  ? 'bg-[#22242D] border-blue-500 text-white'
+                  : isMono
+                  ? 'bg-[#242321] border-[#242321] text-white'
+                  : 'bg-blue-100 border-[#0050FF] text-[#0050FF]'
+                : theme === 'dark'
                 ? 'bg-[#181920] border-[#282A36] text-slate-300 hover:text-white hover:bg-[#22242D]'
                 : theme === 'mono'
                 ? 'bg-[#FCFBF9] border-[#D8D4CA] text-[#242321] hover:bg-[#EAE7DF]'
                 : 'bg-blue-50 border-blue-200 text-[#0050FF] hover:bg-blue-100'
             }`}
-            title="Open Hands-On Tutorial Missions"
+            title={
+              isAllCompleted
+                ? `Tutorial Complete (${totalMissions}/${totalMissions})`
+                : `Hands-On Tutorial Missions (${completedCount}/${totalMissions})`
+            }
           >
-            <MingIcon name="target_line" size={14} />
+            {isAllCompleted ? (
+              <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-white shrink-0">
+                <MingIcon name="check_line" size={10} className="stroke-[3]" />
+              </span>
+            ) : (
+              <MingIcon
+                name="target_line"
+                size={14}
+                className={completedCount > 0 ? 'text-[#0050FF] dark:text-blue-400' : ''}
+              />
+            )}
             <span className="hidden sm:inline">Tutorial</span>
+            {isAllCompleted ? (
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                Done
+              </span>
+            ) : completedCount > 0 ? (
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                  isDark
+                    ? 'bg-white/10 text-slate-300'
+                    : isMono
+                    ? 'bg-[#242321]/10 text-[#242321]'
+                    : 'bg-blue-100 text-[#0050FF]'
+                }`}
+              >
+                {completedCount}/{totalMissions}
+              </span>
+            ) : null}
           </button>
-        )}
+
+          <TutorialMissionsPopover
+            isOpen={isTutorialOpen}
+            onClose={closeTutorial}
+            buttonRef={tutorialBtnRef}
+          />
+        </div>
 
         {/* Help / Shortcuts Button */}
         <button

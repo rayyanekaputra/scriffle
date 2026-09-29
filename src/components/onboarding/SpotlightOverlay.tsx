@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useOnboarding } from '@/context/OnboardingContext';
+import { useSandboxTutorial } from '@/context/SandboxTutorialContext';
 import { useTheme } from '@/context/ThemeContext';
 
 interface TargetRect {
@@ -13,6 +14,7 @@ interface TargetRect {
 
 export const SpotlightOverlay: React.FC = () => {
   const { isActive, currentStep, skipTour } = useOnboarding();
+  const { isAllCompleted } = useSandboxTutorial();
   const { theme, activeCustomTheme } = useTheme();
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>({
@@ -93,6 +95,9 @@ export const SpotlightOverlay: React.FC = () => {
     : isMono
     ? 'border-[#242321]/30'
     : 'border-[#0050FF]/40';
+
+  // If tutorial status is done, hide the welcome modal overlay
+  if (!isActive || (isAllCompleted && currentStep?.id === 'welcome')) return null;
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden select-none transition-all duration-300">

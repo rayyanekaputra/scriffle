@@ -11,7 +11,7 @@
 - Users build a canvas of connected nodes (visual graph)
 - The backend engine monitors market data and **auto-mutates the canvas** (rewrites notes, fires alerts, creates new nodes) without user interaction
 - A **Simulation Bar** lets presenters inject fake market spikes (e.g. `BBCA +6.2%`) for live demos
-- Built for the **Sectors 2026 Hackathon** by `thelast10years` / `rayyanekaputra`
+- Built for the **Sectors 2026 Hackathon** by `thelast10years` (`rayyanekaputra` & `artyaaryatama`)
 
 **GitHub:** `https://github.com/rayyanekaputra/scriffle`
 
@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **231 unit tests across 24 suites (100% green)** |
+| Master Unit Tests | **257 unit tests across 26 suites (100% green)** |
 
 ---
 
@@ -61,6 +61,9 @@
 10. **Canvas Lock & Modal Viewport Rules:**
     - Canvas lock (`isLocked`) disables all 10 card creation buttons, quick-add `+` handles, right-click canvas pane menus, and file drops while preserving full pan/zoom/card repositioning.
     - All modals must enforce `max-h-[88vh] flex flex-col overflow-hidden` with pinned header and footer action bars, and `flex-1 min-h-0 overflow-y-auto` scrollable bodies.
+11. **Popover & Card Text Containment Contracts:**
+    - All popover menus, floating drawers, and nested mission/card containers (`TutorialMissionsPopover`, `MissionStepItem`, `TourCardPopover`) must strictly enforce `w-full min-w-0 overflow-hidden box-border` on parent containers.
+    - Text elements (`shortDesc`, `detailHint`, descriptions) must include `[overflow-wrap:anywhere] break-words whitespace-normal text-pretty flex-1 min-w-0` to eliminate horizontal text protrusion across all themes and responsive viewports.
 
 ---
 
@@ -297,6 +300,7 @@ hackathon/
 - **Shift+Click / Ctrl+Click** → multi-select; **Shift+Drag** → box marquee select
 - **Figma-Style Selection Bounding Box (`SelectionBoundingBox.tsx`):** 8-point corner and edge midpoint handles with dashed outline and quick `Group` / `Ungroup` action buttons when 2+ elements are selected
 - **Group & Ungroup (`Cmd+G` / `Cmd+Shift+G`):** Cohesive multi-node dragging, group-aware copy & paste (`Cmd+C` / `Cmd+V`) preserving internal connectors and relative offsets
+- **Tidy Up & Overlap-Aware Spacing Engine (`SelectionBoundingBox.tsx`, `tidyUpLayout.ts`):** When 3+ nodes are selected, a "Tidy up" action button appears in the floating selection bounding box (and via `Ctrl+Shift+T`). Uses iterative AABB constraint relaxation (`tidyDeOverlap`) with distance-from-centroid weighted displacement and post-relaxation centroid stability. Accurately measures type-aware dimensions (Radar Watcher 400px, Screener 360px, Single Watcher 340px) and separates overlapping/colliding nodes to the nearest free space with generous 64px X / 48px Y handle clearances while preserving the user's natural 2D layout. Non-overlapping nodes maintain 0px coordinate drift. Supports full `Ctrl+Z` undo.
 - **Quick-Add Connected Node (`+` Handle & Popover):** Hovering any node's output handle reveals a floating `+` button, or dragging a connector onto empty canvas opens a contextual quick-add menu (`QuickAddPopover.tsx`) that automatically spawns and wires the next node with collision avoidance (`quickAddNavigator.ts`).
 - **Double-Click Isolation Mode:** Isolates group into focus mode with top banner to edit individual elements or make `Shift+Click` sub-selections (`Esc` to exit)
 - **Delete / Backspace** → bulk delete selected
@@ -562,20 +566,20 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `CREDIT_COST_BADGES_PLAN.md` | API credit cost badges & burst warning notices |
 | `WATCHER_CLEAN_INITIAL_STATE_PLAN.md` | Watcher node clean initial state implementation |
 | `NAVIGATION_PLAN.md` | Spotlight Search (Cmd+K/Cmd+F), Keyboard Shortcuts Guide (?), and Zoom Presets (Shift+1) |
+| `TUTORIAL_POPOVER_OVERFLOW_FIX_PLAN.md` | Tutorial popover instructions and description text overflow containment plan |
 | `SCRIFFLE_AI_SPEC.md` | ⭐ Standalone AI prompt & .scriffle format specification manual for LLMs |
 | `CURRENT_ENDPOINT.md` | Active vs. planned Sectors API endpoint mapping |
 | `ENDPOINTS.md` | All 32 Sectors API v2 endpoints reference |
-| `CONTEXT.md` | Original master contracts & TypeScript interfaces |
 
 ---
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 179 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 254 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **179 tests, 0 failures, 16 suites, ~450ms runtime**
+- **254 tests, 0 failures, 26 suites, ~200ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map

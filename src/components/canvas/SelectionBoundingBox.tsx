@@ -9,12 +9,14 @@ interface SelectionBoundingBoxProps {
   nodes: Node[];
   onGroup?: () => void;
   onUngroup?: () => void;
+  onTidyUp?: () => void;
 }
 
 export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
   nodes,
   onGroup,
   onUngroup,
+  onTidyUp,
 }) => {
   const { theme, activeCustomTheme } = useTheme();
   const { x: vx, y: vy, zoom } = useViewport();
@@ -154,6 +156,25 @@ export const SelectionBoundingBox: React.FC<SelectionBoundingBoxProps> = ({
           <MingIcon name={isGrouped ? 'group_line' : 'layout_grid_line'} size={13} className="text-[#0050FF]" />
           <span>{isGrouped ? 'Group' : `${selectedNodes.length} objects`}</span>
         </div>
+
+        {onTidyUp && selectedNodes.length >= 3 && !isGrouped && (
+          <button
+            type="button"
+            onClick={onTidyUp}
+            title="Tidy up & auto-distribute spacing (Ctrl+Shift+T)"
+            className={`flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-bold backdrop-blur-md transition-all cursor-pointer ${
+              isDark
+                ? 'bg-[#1E202B] hover:bg-[#2A2D3D] border-[#313444] text-[#E2E4E9]'
+                : isMono
+                ? 'bg-[#ECEAE4] hover:bg-[#E0DDD5] border-[#D1CEC4] text-[#242321]'
+                : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+            }`}
+          >
+            <MingIcon name="distribute_horizontal_line" size={13} />
+            <span>Tidy up</span>
+            <span className="opacity-50 text-[10px]">Ctrl+Shift+T</span>
+          </button>
+        )}
 
         {onGroup && !isGrouped && (
           <button

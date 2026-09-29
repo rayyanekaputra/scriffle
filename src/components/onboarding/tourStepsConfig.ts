@@ -15,7 +15,7 @@ export const TOUR_STEPS: TourStep[] = [
     description: 'An event-driven visual whiteboard for Indonesian stock market research. Build automated node pipelines that monitor live IDX ticks, evaluate condition rules, and auto-mutate notes in real time.',
     placement: 'center',
     badge: 'Step 1 of 6',
-    icon: 'magic_line',
+    icon: 'magic_1_line',
   },
   {
     id: 'toolbar-and-search',
