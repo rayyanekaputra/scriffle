@@ -11,7 +11,7 @@
 - Users build a canvas of connected nodes (visual graph)
 - The backend engine monitors market data and **auto-mutates the canvas** (rewrites notes, fires alerts, creates new nodes) without user interaction
 - A **Simulation Bar** lets presenters inject fake market spikes (e.g. `BBCA +6.2%`) for live demos
-- Built for the **Sectors 2026 Hackathon** by `thelast10years` / `rayyanekaputra`
+- Built for the **Sectors 2026 Hackathon** by `thelast10years` (`rayyanekaputra` & `artyaaryatama`)
 
 **GitHub:** `https://github.com/rayyanekaputra/scriffle`
 
