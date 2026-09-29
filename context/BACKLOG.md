@@ -54,7 +54,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [x] **📐 Overlap-Aware Tidy Up & Minimal Displacement Spacing Engine (`tidyUpLayout.ts`, `tidyUpLayout.test.ts`, `TIDY_UP_OVERLAP_SPACING_PLAN.md`)**
   - Replaced legacy destructive 1D sorting/grid alignment with physics-free AABB iterative constraint relaxation (`tidyDeOverlap`).
   - Implemented distance-from-centroid weighted displacement to preserve the natural topology of user-placed clusters without scattering outer nodes.
-  - Added center-of-box geometry for heterogeneous card dimensions (e.g. 400px Radars vs 280px Notes) with 48px X / 36px Y handle clearance.
+  - Added center-of-box geometry for heterogeneous card dimensions (e.g. 400px Radars vs 280px Notes) with generous 64px X / 48px Y handle clearance.
   - Implemented post-relaxation centroid drift correction to ensure group centers remain stable.
   - Non-overlapping cards maintain zero coordinate drift. All 257 unit tests green.
 - [x] **🛠️ Tutorial Popover Instructions & Short Description Text Overflow Fix (`TutorialMissionsPopover.tsx`, `MissionStepItem.tsx`, `TourCardPopover.tsx`, `CompletionCelebration.tsx`, `TUTORIAL_POPOVER_OVERFLOW_FIX_PLAN.md`)**
