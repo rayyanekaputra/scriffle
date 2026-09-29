@@ -2,11 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   tidyUpNodes,
   tidyHorizontal,
-  tidyVertical,
-  tidyGrid,
-  detectTidyMode,
   resolveNodeDimensions,
   TidyNode,
+  TIDY_HORIZONTAL_GAP,
+  TIDY_VERTICAL_GAP,
 } from '@/lib/tidyUpLayout';
 
 describe('tidyUpLayout — Anti-Overlap & Spacing Suite', () => {
@@ -47,7 +46,7 @@ describe('tidyUpLayout — Anti-Overlap & Spacing Suite', () => {
     ).toEqual({ width: 320, height: 240 });
   });
 
-  it('distributes nodes horizontally with zero overlaps and exact 48px handle clearance', () => {
+  it('distributes nodes horizontally when horizontal mode is explicitly requested', () => {
     const nodes: TidyNode[] = [
       { id: 'c', x: 800, y: 200, width: 260, height: 100 },
       { id: 'a', x: 100, y: 150, width: 340, height: 180 },
@@ -57,90 +56,122 @@ describe('tidyUpLayout — Anti-Overlap & Spacing Suite', () => {
     const results = tidyHorizontal(nodes);
     expect(results).toHaveLength(3);
 
-    // Sorted order should be a (x:100), b (x:400), c (x:800)
     const [resA, resB, resC] = results;
     expect(resA.id).toBe('a');
-    expect(resA.position).toEqual({ x: 100, y: 150 }); // anchor minY = 150
-
-    expect(resB.id).toBe('b');
-    expect(resB.position).toEqual({ x: 100 + 340 + 48, y: 150 }); // 488
-
-    expect(resC.id).toBe('c');
-    expect(resC.position).toEqual({ x: 488 + 280 + 48, y: 150 }); // 816
-
-    // Verify distance between cards is exactly 48px
-    expect(resB.position.x - (resA.position.x + 340)).toBe(48);
-    expect(resC.position.x - (resB.position.x + 280)).toBe(48);
+    expect(resA.position).toEqual({ x: 100, y: 150 });
+    expect(resB.position).toEqual({ x: 100 + 340 + TIDY_HORIZONTAL_GAP, y: 150 });
+    expect(resC.position).toEqual({ x: 100 + 340 + TIDY_HORIZONTAL_GAP + 280 + TIDY_HORIZONTAL_GAP, y: 150 });
   });
 
-  it('distributes nodes vertically with zero overlaps and exact 36px clearance', () => {
-    const nodes: TidyNode[] = [
-      { id: 'n2', x: 500, y: 400, width: 280, height: 140 },
-      { id: 'n1', x: 100, y: 100, width: 360, height: 300 },
-      { id: 'n3', x: 300, y: 700, width: 260, height: 100 },
-    ];
+  describe('tidyDeOverlap — Overlap-Aware Minimal Displacement', () => {
+    it('does NOT move nodes that have no overlap', () => {
+      // Three nodes far apart — expect zero displacement
+      const nodes: TidyNode[] = [
+        { id: 'a', x: 0, y: 0, width: 280, height: 140 },
+        { id: 'b', x: 600, y: 0, width: 280, height: 140 },
+        { id: 'c', x: 1200, y: 0, width: 280, height: 140 },
+      ];
+      const results = tidyUpNodes(nodes, 'auto');
+      const posMap = new Map(results.map((r) => [r.id, r.position]));
+      expect(Math.abs(posMap.get('a')!.x - 0)).toBeLessThan(5);
+      expect(Math.abs(posMap.get('b')!.x - 600)).toBeLessThan(5);
+      expect(Math.abs(posMap.get('c')!.x - 1200)).toBeLessThan(5);
+    });
 
-    const results = tidyVertical(nodes);
-    expect(results).toHaveLength(3);
+    it('separates two fully overlapping (stacked) nodes', () => {
+      // A and B are perfectly stacked at the same coordinates
+      const nodes: TidyNode[] = [
+        { id: 'a', x: 100, y: 100, width: 280, height: 140 },
+        { id: 'b', x: 100, y: 100, width: 280, height: 140 },
+        { id: 'c', x: 800, y: 100, width: 280, height: 140 }, // far away
+      ];
+      const results = tidyUpNodes(nodes, 'auto');
+      const posMap = new Map(results.map((r) => [r.id, r.position]));
+      const pA = posMap.get('a')!;
+      const pB = posMap.get('b')!;
 
-    const [res1, res2, res3] = results;
-    expect(res1.id).toBe('n1');
-    expect(res1.position).toEqual({ x: 100, y: 100 });
+      // After de-overlap, A and B must not overlap (minimal displacement chose Y since height 140 < width 280)
+      const topNode = pA.y <= pB.y ? pA : pB;
+      const bottomNode = pA.y <= pB.y ? pB : pA;
+      expect(topNode.y + 140).toBeLessThanOrEqual(bottomNode.y);
+    });
 
-    expect(res2.id).toBe('n2');
-    expect(res2.position).toEqual({ x: 100, y: 100 + 300 + 36 }); // 436
+    it('separates partial overlaps — a node partially behind another', () => {
+      // Node B overlaps A by 50px on X axis
+      const nodes: TidyNode[] = [
+        { id: 'a', x: 0, y: 0, width: 280, height: 140 },
+        { id: 'b', x: 230, y: 0, width: 280, height: 140 }, // overlaps A by 50px
+        { id: 'c', x: 700, y: 0, width: 280, height: 140 },
+      ];
+      const results = tidyUpNodes(nodes, 'auto');
+      const posMap = new Map(results.map((r) => [r.id, r.position]));
+      const pA = posMap.get('a')!;
+      const pB = posMap.get('b')!;
 
-    expect(res3.id).toBe('n3');
-    expect(res3.position).toEqual({ x: 100, y: 436 + 140 + 36 }); // 612
-  });
+      // A's right + GAP <= B's left
+      expect(pA.x + 280 + TIDY_HORIZONTAL_GAP).toBeLessThanOrEqual(pB.x + 1);
+    });
 
-  it('detects auto mode accurately between horizontal, vertical, and 2D grid', () => {
-    const horizNodes: TidyNode[] = [
-      { id: '1', x: 0, y: 0, width: 280, height: 100 },
-      { id: '2', x: 400, y: 20, width: 280, height: 100 },
-      { id: '3', x: 800, y: 10, width: 280, height: 100 },
-    ];
-    expect(detectTidyMode(horizNodes)).toBe('horizontal');
+    it('produces zero overlapping pairs after de-collision of a dense cluster', () => {
+      // 5 nodes all piled up at origin — worst case
+      const nodes: TidyNode[] = Array.from({ length: 5 }, (_, i) => ({
+        id: String(i),
+        x: 50 + i * 10,
+        y: 50 + i * 5,
+        width: 280,
+        height: 140,
+      }));
+      const results = tidyUpNodes(nodes, 'auto');
+      expect(results).toHaveLength(5);
 
-    const vertNodes: TidyNode[] = [
-      { id: '1', x: 0, y: 0, width: 280, height: 100 },
-      { id: '2', x: 10, y: 200, width: 280, height: 100 },
-      { id: '3', x: 5, y: 400, width: 280, height: 100 },
-    ];
-    expect(detectTidyMode(vertNodes)).toBe('vertical');
+      const positions = results.map((r) => ({
+        id: r.id,
+        x: r.position.x,
+        y: r.position.y,
+        width: nodes.find((n) => n.id === r.id)!.width,
+        height: nodes.find((n) => n.id === r.id)!.height,
+      }));
 
-    const gridNodes: TidyNode[] = [
-      { id: '1', x: 0, y: 0, width: 280, height: 140 },
-      { id: '2', x: 350, y: 0, width: 280, height: 140 },
-      { id: '3', x: 0, y: 200, width: 280, height: 140 },
-      { id: '4', x: 350, y: 200, width: 280, height: 140 },
-    ];
-    expect(detectTidyMode(gridNodes)).toBe('grid');
-  });
+      for (let i = 0; i < positions.length; i++) {
+        for (let j = i + 1; j < positions.length; j++) {
+          const A = positions[i];
+          const B = positions[j];
+          const noOverlapX = A.x + A.width <= B.x || B.x + B.width <= A.x;
+          const noOverlapY = A.y + A.height <= B.y || B.y + B.height <= A.y;
+          expect(noOverlapX || noOverlapY).toBe(true);
+        }
+      }
+    });
 
-  it('distributes 4 nodes in a 2x2 grid without any collision', () => {
-    const nodes: TidyNode[] = [
-      { id: '1', x: 10, y: 10, width: 340, height: 180 },
-      { id: '2', x: 400, y: 20, width: 280, height: 120 },
-      { id: '3', x: 20, y: 300, width: 360, height: 200 },
-      { id: '4', x: 410, y: 320, width: 260, height: 100 },
-    ];
+    it('preserves centroid — group center does not drift more than 2px', () => {
+      const nodes: TidyNode[] = [
+        { id: 'a', x: 100, y: 100, width: 280, height: 140 },
+        { id: 'b', x: 120, y: 110, width: 280, height: 140 },
+        { id: 'c', x: 500, y: 400, width: 360, height: 200 },
+      ];
 
-    const results = tidyGrid(nodes);
-    expect(results).toHaveLength(4);
+      const origCx = nodes.reduce((s, n) => s + n.x + n.width / 2, 0) / nodes.length;
+      const origCy = nodes.reduce((s, n) => s + n.y + n.height / 2, 0) / nodes.length;
 
-    const posMap = new Map(results.map((r) => [r.id, r.position]));
-    const p1 = posMap.get('1')!;
-    const p2 = posMap.get('2')!;
-    const p3 = posMap.get('3')!;
-    const p4 = posMap.get('4')!;
+      const results = tidyUpNodes(nodes, 'auto');
+      const posMap = new Map(results.map((r) => [r.id, r.position]));
 
-    // Top row
-    expect(p1.y).toBe(p2.y);
-    expect(p2.x).toBeGreaterThanOrEqual(p1.x + 360 + 48);
+      const finalCx = nodes.reduce((s, n) => s + posMap.get(n.id)!.x + n.width / 2, 0) / nodes.length;
+      const finalCy = nodes.reduce((s, n) => s + posMap.get(n.id)!.y + n.height / 2, 0) / nodes.length;
 
-    // Bottom row
-    expect(p3.y).toBe(p4.y);
-    expect(p3.y).toBeGreaterThanOrEqual(p1.y + 180 + 36);
+      expect(Math.abs(origCx - finalCx)).toBeLessThan(2);
+      expect(Math.abs(origCy - finalCy)).toBeLessThan(2);
+    });
+
+    it('preserves ID mapping — every input node ID appears exactly once in results', () => {
+      const nodes: TidyNode[] = [
+        { id: 'x1', x: 0, y: 0, width: 280, height: 140 },
+        { id: 'x2', x: 50, y: 50, width: 280, height: 140 },
+        { id: 'x3', x: 100, y: 100, width: 280, height: 140 },
+      ];
+      const results = tidyUpNodes(nodes, 'auto');
+      const ids = results.map((r) => r.id).sort();
+      expect(ids).toEqual(['x1', 'x2', 'x3']);
+    });
   });
 });

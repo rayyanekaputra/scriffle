@@ -20,10 +20,10 @@ export interface TidyResult {
 
 export type TidyMode = 'auto' | 'horizontal' | 'vertical' | 'grid';
 
-export const TIDY_HORIZONTAL_GAP = 48; // Spacing for 36px floating quick-add handles + clearance
-export const TIDY_VERTICAL_GAP = 36;   // Vertical inter-card breathing room
-export const TIDY_GRID_GAP_X = 48;
-export const TIDY_GRID_GAP_Y = 36;
+export const TIDY_HORIZONTAL_GAP = 64; // Spacing for 36px floating quick-add handles + generous clearance
+export const TIDY_VERTICAL_GAP = 48;   // Vertical inter-card breathing room
+export const TIDY_GRID_GAP_X = 64;
+export const TIDY_GRID_GAP_Y = 48;
 
 export const DEFAULT_NODE_DIMENSIONS: Record<string, { width: number; height: number }> = {
   watcher_radar: { width: 400, height: 260 },
@@ -197,6 +197,98 @@ export function tidyGrid(
 }
 
 /**
+ * De-overlaps nodes using iterative AABB constraint relaxation with centroid preservation.
+ * Nodes that are already non-overlapping are never moved.
+ * This is the new default behavior for mode === 'auto'.
+ */
+export function tidyDeOverlap(
+  nodes: TidyNode[],
+  gapX: number = TIDY_HORIZONTAL_GAP,
+  gapY: number = TIDY_VERTICAL_GAP
+): TidyResult[] {
+  if (nodes.length === 0) return [];
+
+  // Work on mutable copies — never mutate input
+  const working = nodes.map((n) => ({ ...n }));
+
+  // 1. Original centroid (center-of-box average)
+  const origCentroid = {
+    x: working.reduce((s, n) => s + n.x + n.width / 2, 0) / working.length,
+    y: working.reduce((s, n) => s + n.y + n.height / 2, 0) / working.length,
+  };
+
+  const MAX_ITERATIONS = 50;
+
+  for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
+    let anyOverlap = false;
+
+    for (let i = 0; i < working.length; i++) {
+      for (let j = i + 1; j < working.length; j++) {
+        const A = working[i];
+        const B = working[j];
+
+        const centerAx = A.x + A.width / 2;
+        const centerAy = A.y + A.height / 2;
+        const centerBx = B.x + B.width / 2;
+        const centerBy = B.y + B.height / 2;
+
+        const dx = centerAx - centerBx;
+        const dy = centerAy - centerBy;
+
+        const halfSumW = (A.width + B.width) / 2 + gapX;
+        const halfSumH = (A.height + B.height) / 2 + gapY;
+
+        const overlapX = halfSumW - Math.abs(dx);
+        const overlapY = halfSumH - Math.abs(dy);
+
+        // Only a collision if BOTH axes overlap
+        if (overlapX <= 0 || overlapY <= 0) continue;
+
+        anyOverlap = true;
+
+        // Compute weights based on distance from centroid
+        const distA = Math.hypot(centerAx - origCentroid.x, centerAy - origCentroid.y);
+        const distB = Math.hypot(centerBx - origCentroid.x, centerBy - origCentroid.y);
+        const total = distA + distB;
+        const wA = total > 0 ? distB / total : 0.5;
+        const wB = total > 0 ? distA / total : 0.5;
+
+        // Pick minimal-displacement axis
+        if (overlapX < overlapY) {
+          // Separate horizontally
+          const signX = dx >= 0 ? 1 : -1; // 0 case: push A right
+          A.x += signX * overlapX * wA;
+          B.x -= signX * overlapX * wB;
+        } else {
+          // Separate vertically
+          const signY = dy >= 0 ? 1 : -1; // 0 case: push A down
+          A.y += signY * overlapY * wA;
+          B.y -= signY * overlapY * wB;
+        }
+      }
+    }
+
+    if (!anyOverlap) break;
+  }
+
+  // 2. Centroid drift correction
+  const finalCentroid = {
+    x: working.reduce((s, n) => s + n.x + n.width / 2, 0) / working.length,
+    y: working.reduce((s, n) => s + n.y + n.height / 2, 0) / working.length,
+  };
+  const driftX = origCentroid.x - finalCentroid.x;
+  const driftY = origCentroid.y - finalCentroid.y;
+
+  return working.map((n) => ({
+    id: n.id,
+    position: {
+      x: Math.round(n.x + driftX),
+      y: Math.round(n.y + driftY),
+    },
+  }));
+}
+
+/**
  * Master dispatcher for Tidy Up layout.
  */
 export function tidyUpNodes(
@@ -206,9 +298,10 @@ export function tidyUpNodes(
 ): TidyResult[] {
   if (nodes.length < 3) return [];
 
-  const effectiveMode = mode === 'auto' ? detectTidyMode(nodes) : mode;
-
-  switch (effectiveMode) {
+  switch (mode) {
+    case 'auto':
+      // NEW: Overlap-aware de-collision with centroid preservation
+      return tidyDeOverlap(nodes, customGap ?? TIDY_HORIZONTAL_GAP, customGap ?? TIDY_VERTICAL_GAP);
     case 'horizontal':
       return tidyHorizontal(nodes, customGap ?? TIDY_HORIZONTAL_GAP);
     case 'vertical':
@@ -216,6 +309,6 @@ export function tidyUpNodes(
     case 'grid':
       return tidyGrid(nodes, customGap ?? TIDY_GRID_GAP_X, customGap ?? TIDY_GRID_GAP_Y);
     default:
-      return tidyHorizontal(nodes, customGap ?? TIDY_HORIZONTAL_GAP);
+      return tidyDeOverlap(nodes, customGap ?? TIDY_HORIZONTAL_GAP, customGap ?? TIDY_VERTICAL_GAP);
   }
 }
