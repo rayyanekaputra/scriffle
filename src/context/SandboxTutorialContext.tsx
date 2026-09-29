@@ -28,10 +28,10 @@ interface SandboxTutorialContextType {
   updateCanvasSnapshot: (canvas: CanvasData | null | undefined, logs: ExecutionLog[] | null | undefined) => void;
 }
 
-const SANDBOX_STORAGE_KEY = 'scriffle_sandbox_progress_v1';
-const SANDBOX_OPEN_KEY = 'scriffle_sandbox_open_v1';
-const SANDBOX_MINIMIZED_KEY = 'scriffle_sandbox_minimized_v1';
-const SANDBOX_GRADUATED_KEY = 'scriffle_sandbox_graduated_v1';
+export const SANDBOX_STORAGE_KEY = 'scriffle_sandbox_progress_v1';
+export const SANDBOX_OPEN_KEY = 'scriffle_sandbox_open_v1';
+export const SANDBOX_MINIMIZED_KEY = 'scriffle_sandbox_minimized_v1';
+export const SANDBOX_GRADUATED_KEY = 'scriffle_sandbox_graduated_v1';
 
 const SandboxTutorialContext = createContext<SandboxTutorialContextType | undefined>(undefined);
 
@@ -51,10 +51,8 @@ export const SandboxTutorialProvider: React.FC<{ children: React.ReactNode }> = 
         setProgressMap(JSON.parse(savedProgress));
       }
 
-      const savedOpen = localStorage.getItem(SANDBOX_OPEN_KEY);
-      if (savedOpen !== null) {
-        setIsOpen(savedOpen === 'true');
-      }
+      // Purge any stale open flag: tutorial must NEVER be open on initial load / refresh
+      localStorage.removeItem(SANDBOX_OPEN_KEY);
 
       const savedMinimized = localStorage.getItem(SANDBOX_MINIMIZED_KEY);
       if (savedMinimized !== null) {
@@ -81,17 +79,10 @@ export const SandboxTutorialProvider: React.FC<{ children: React.ReactNode }> = 
   const openTutorial = useCallback(() => {
     setIsOpen(true);
     setIsMinimized(false);
-    try {
-      localStorage.setItem(SANDBOX_OPEN_KEY, 'true');
-      localStorage.setItem(SANDBOX_MINIMIZED_KEY, 'false');
-    } catch {}
   }, []);
 
   const closeTutorial = useCallback(() => {
     setIsOpen(false);
-    try {
-      localStorage.setItem(SANDBOX_OPEN_KEY, 'false');
-    } catch {}
   }, []);
 
   const toggleMinimize = useCallback(() => {
@@ -117,6 +108,7 @@ export const SandboxTutorialProvider: React.FC<{ children: React.ReactNode }> = 
 
   const dismissGraduation = useCallback(() => {
     setHasSeenGraduation(true);
+    setIsOpen(false);
     try {
       localStorage.setItem(SANDBOX_GRADUATED_KEY, 'true');
     } catch {}

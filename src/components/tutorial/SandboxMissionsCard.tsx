@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSandboxTutorial } from '@/context/SandboxTutorialContext';
+import { useOnboarding } from '@/context/OnboardingContext';
 import { useTheme } from '@/context/ThemeContext';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { MissionStepItem } from './MissionStepItem';
@@ -27,6 +28,7 @@ export const SandboxMissionsCard: React.FC = () => {
     resetMissions,
     dismissGraduation,
   } = useSandboxTutorial();
+  const { isActive: isOnboardingActive } = useOnboarding();
   const { theme, activeCustomTheme } = useTheme();
 
   const [pos, setPos] = useState<{ x: number; y: number }>(DEFAULT_SANDBOX_POS);
@@ -163,7 +165,7 @@ export const SandboxMissionsCard: React.FC = () => {
     } catch {}
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || isOnboardingActive) return null;
 
   const isCustom = theme === 'custom';
   const isDark = theme === 'dark' || (isCustom && activeCustomTheme?.metadata.mode_base === 'dark');
