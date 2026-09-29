@@ -101,4 +101,89 @@ describe('Tutorial Missions Popover & Button Completion Badge', () => {
     // Click on canvas or outside -> close
     expect(shouldClose(false, false)).toBe(true);
   });
+
+  it('resets local storage keys storing tutorial progress when choose reset progress', () => {
+    const memoryStorage: Record<string, string> = {
+      [SANDBOX_STORAGE_KEY]: JSON.stringify({
+        'mission-watcher-stock': { id: 'mission-watcher-stock', isCompleted: true },
+        'mission-file-research': { id: 'mission-file-research', isCompleted: true },
+        'mission-wire-condition': { id: 'mission-wire-condition', isCompleted: true },
+        'mission-branch-output': { id: 'mission-branch-output', isCompleted: true },
+        'mission-freeform-annotation': { id: 'mission-freeform-annotation', isCompleted: true },
+        'mission-simulate-execution': { id: 'mission-simulate-execution', isCompleted: true },
+      }),
+      'scriffle_sandbox_graduated_v1': 'true',
+      [SANDBOX_OPEN_KEY]: 'true',
+      'scriffle_sandbox_minimized_v1': 'true',
+      'scriffle_sandbox_card_pos_v1': JSON.stringify({ x: 100, y: 100 }),
+    };
+
+    // User chooses "Reset progress"
+    delete memoryStorage[SANDBOX_STORAGE_KEY];
+    delete memoryStorage['scriffle_sandbox_graduated_v1'];
+    delete memoryStorage[SANDBOX_OPEN_KEY];
+    delete memoryStorage['scriffle_sandbox_minimized_v1'];
+    delete memoryStorage['scriffle_sandbox_card_pos_v1'];
+
+    expect(memoryStorage[SANDBOX_STORAGE_KEY]).toBeUndefined();
+    expect(memoryStorage['scriffle_sandbox_graduated_v1']).toBeUndefined();
+    expect(memoryStorage[SANDBOX_OPEN_KEY]).toBeUndefined();
+    expect(memoryStorage['scriffle_sandbox_minimized_v1']).toBeUndefined();
+  });
+
+  it('prevents existing canvas nodes from immediately auto-completing missions after reset via baseline', () => {
+    const existingCanvas = {
+      id: 'c1',
+      name: 'test',
+      nodes: [
+        { id: 'w1', canvasId: 'c1', type: 'watcher', position: { x: 0, y: 0 }, config: { symbol: 'BBCA' } },
+        { id: 'f1', canvasId: 'c1', type: 'file', position: { x: 100, y: 0 }, config: {} },
+      ],
+      edges: [],
+    };
+
+    // Before reset without baseline, existing nodes complete missions
+    const initialProgress = evaluateMissionProgress(existingCanvas, []);
+    expect(initialProgress['mission-watcher-stock']?.isCompleted).toBe(true);
+    expect(initialProgress['mission-file-research']?.isCompleted).toBe(true);
+
+    // After reset, baseline isolates existing nodes so progress remains empty
+    const baseline = {
+      nodeIds: existingCanvas.nodes.map((n) => n.id),
+      edgeIds: [],
+      logCount: 0,
+    };
+    const progressAfterReset = evaluateMissionProgress(existingCanvas, [], {}, baseline);
+    expect(progressAfterReset['mission-watcher-stock']).toBeUndefined();
+    expect(progressAfterReset['mission-file-research']).toBeUndefined();
+    expect(Object.keys(progressAfterReset).length).toBe(0);
+
+    // Newly added node completes mission
+    const canvasWithNewNode = {
+      ...existingCanvas,
+      nodes: [
+        ...existingCanvas.nodes,
+        { id: 'w2_new', canvasId: 'c1', type: 'watcher', position: { x: 200, y: 0 }, config: { symbol: 'TLKM' } },
+      ],
+    };
+    const progressWithNewAction = evaluateMissionProgress(canvasWithNewNode, [], {}, baseline);
+    expect(progressWithNewAction['mission-watcher-stock']?.isCompleted).toBe(true);
+  });
+
+  it('hides the welcome to scriffle modal when tutorial status is done', () => {
+    const isWelcomeModalVisible = (isTutorialDone: boolean, currentStepId: string, isActive: boolean) => {
+      if (!isActive) return false;
+      if (isTutorialDone && currentStepId === 'welcome') return false;
+      return true;
+    };
+
+    // When tutorial is NOT done, welcome modal is visible
+    expect(isWelcomeModalVisible(false, 'welcome', true)).toBe(true);
+
+    // When tutorial IS done, welcome modal is hidden
+    expect(isWelcomeModalVisible(true, 'welcome', true)).toBe(false);
+
+    // Other non-welcome steps can still be inspected if explicitly navigated
+    expect(isWelcomeModalVisible(true, 'toolbar-and-search', true)).toBe(true);
+  });
 });

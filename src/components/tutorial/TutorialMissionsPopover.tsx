@@ -367,7 +367,6 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
           <span>Reset progress</span>
         </button>
 
-        <span className="opacity-75 text-[10px]">Esc to close</span>
       </div>
     </div>
   );

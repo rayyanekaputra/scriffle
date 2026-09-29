@@ -20,7 +20,7 @@ export const TourCardPopover: React.FC = () => {
     dontShowAgain,
     setDontShowAgain,
   } = useOnboarding();
-  const { openTutorial } = useSandboxTutorial();
+  const { openTutorial, isAllCompleted } = useSandboxTutorial();
   const { theme, activeCustomTheme } = useTheme();
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -150,7 +150,8 @@ export const TourCardPopover: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isActive, nextStep, prevStep, skipTour]);
 
-  if (!isActive) return null;
+  // If tutorial status is done, hide the welcome to scriffle modal
+  if (!isActive || (isAllCompleted && currentStep?.id === 'welcome')) return null;
 
   const cardContainerClass = isCustom && activeCustomTheme
     ? 'bg-[var(--custom-ui-surface)] border-[var(--custom-ui-border)] text-[var(--custom-ui-text)]'
