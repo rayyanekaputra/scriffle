@@ -2,6 +2,12 @@
 #  Scriffle — Interactive Setup & Onboarding Script (Windows PowerShell)
 # ==============================================================================
 
+# Require PowerShell 3+ (needed for [string]::IsNullOrWhiteSpace, -match regex, etc.)
+if ($PSVersionTable.PSVersion.Major -lt 3) {
+    Write-Error "Scriffle requires PowerShell 3 or later. Current version: $($PSVersionTable.PSVersion). Please upgrade at https://github.com/PowerShell/PowerShell"
+    Exit 1
+}
+
 $ErrorActionPreference = "Stop"
 
 function Print-Banner {
@@ -75,7 +81,7 @@ if ($hasBun) {
     $bunVer = (bun --version)
     Write-Host "     [1]  ⚡ Bun (v$bunVer) — Recommended. Ultra-fast native engine. ✓ Installed" -ForegroundColor Green
 } else {
-    Write-Host "     [1]  ⚡ Bun — Recommended. Ultra-fast native engine. (Will auto-install via powershell)" -ForegroundColor Yellow
+    Write-Host "     [1]  ⚡ Bun — Recommended. Ultra-fast native engine. (Will auto-install via PowerShell)" -ForegroundColor Yellow
 }
 
 if ($hasNode) {
@@ -101,11 +107,23 @@ if ($runtimeChoice -eq "2") {
 } else {
     if (-not $hasBun) {
         Write-Host "`n  ⚡ Installing Bun automatically for Windows...`n" -ForegroundColor Yellow
-        powershell -c "irm bun.sh/install.ps1 | iex"
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User") + ";" + [System.Environment]::GetEnvironmentVariable("Path","Machine")
+        try {
+            # Run the Bun installer inline in the CURRENT session so PATH changes persist.
+            # Do NOT spawn a child powershell.exe — its PATH changes would be lost on exit.
+            Invoke-RestMethod bun.sh/install.ps1 | Invoke-Expression
+        } catch {
+            Write-Host "  ❌ Failed to download the Bun installer. Check your internet connection." -ForegroundColor Red
+            Write-Host "     You can install Bun manually from https://bun.sh and then rerun setup." -ForegroundColor DarkGray
+            Exit 1
+        }
+        # Refresh PATH in the current session by re-reading from the registry
+        $userPath    = [System.Environment]::GetEnvironmentVariable("Path", "User")
+        $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+        $env:Path    = "$userPath;$machinePath"
         $hasBun = Get-Command bun -ErrorAction SilentlyContinue
         if (-not $hasBun) {
-            Write-Host "  ❌ Please restart your terminal after Bun installation and rerun setup." -ForegroundColor Red
+            Write-Host "  ❌ Bun was installed but could not be found in PATH." -ForegroundColor Red
+            Write-Host "     Please close this terminal, reopen it, and run setup again." -ForegroundColor DarkGray
             Exit 1
         }
         Write-Host "  ✓ Bun installed successfully!" -ForegroundColor Green
@@ -140,47 +158,65 @@ Write-Host ""
 Write-Host "  Step 3: Setting up Scriffle...`n" -ForegroundColor Cyan
 
 # 1. Install dependencies
-Write-Host "  📦  Installing dependencies..." -NoNewline -ForegroundColor Cyan
+Write-Host "  📦  Installing dependencies..." -ForegroundColor Cyan
 if ($selectedRuntime -eq "bun") {
-    bun install | Out-Null
+    bun install *>&1 | Out-Null
 } else {
-    npm install | Out-Null
+    npm install *>&1 | Out-Null
 }
-Write-Host "`r  ✓  Dependencies installed.          " -ForegroundColor Green
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ❌ Dependency installation failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+    Write-Host "     Check your internet connection, then try running 'bun install' manually." -ForegroundColor DarkGray
+    Exit $LASTEXITCODE
+}
+Write-Host "  ✓  Dependencies installed." -ForegroundColor Green
 
 # 2. Prisma Generate
-Write-Host "  ⚙️   Generating database client..." -NoNewline -ForegroundColor Cyan
+Write-Host "  ⚙️   Generating database client..." -ForegroundColor Cyan
 if ($selectedRuntime -eq "bun") {
-    bunx prisma generate | Out-Null
+    bunx prisma generate *>&1 | Out-Null
 } else {
-    npx prisma generate | Out-Null
+    npx prisma generate *>&1 | Out-Null
 }
-Write-Host "`r  ✓  Database client generated.       " -ForegroundColor Green
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ❌ Prisma client generation failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+    Write-Host "     Try running 'bunx prisma generate' manually to see the error." -ForegroundColor DarkGray
+    Exit $LASTEXITCODE
+}
+Write-Host "  ✓  Database client generated." -ForegroundColor Green
 
 # 3. Prisma DB Push (create SQLite database)
-Write-Host "  🗄️   Configuring SQLite database..." -NoNewline -ForegroundColor Cyan
+Write-Host "  🗄️   Configuring SQLite database..." -ForegroundColor Cyan
 if ($selectedRuntime -eq "bun") {
-    bunx prisma db push --skip-generate | Out-Null
+    bunx prisma db push --skip-generate *>&1 | Out-Null
 } else {
-    npx prisma db push --skip-generate | Out-Null
+    npx prisma db push --skip-generate *>&1 | Out-Null
 }
-Write-Host "`r  ✓  SQLite database configured.      " -ForegroundColor Green
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ❌ Database setup failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+    Write-Host "     Try running 'bunx prisma db push' manually to see the error." -ForegroundColor DarkGray
+    Exit $LASTEXITCODE
+}
+Write-Host "  ✓  SQLite database configured." -ForegroundColor Green
 
 # 4. Seed or Fresh Board
 if ($canvasChoice -eq "2") {
-    Write-Host "  🚀  Initializing fresh clean canvas..." -NoNewline -ForegroundColor Cyan
-    if ($selectedRuntime -eq "bun") {
-        bun run ./scripts/dev.ts --start-fresh --dry-run 2>$null | Out-Null
-    }
-    Write-Host "`r  ✓  Clean canvas initialized.        " -ForegroundColor Green
+    # Clean Canvas: DB schema is already pushed above. No seeding needed.
+    # The onboarding tour will guide the user from a blank board on first launch.
+    Write-Host "  🚀  Clean canvas ready (no demo data seeded)." -ForegroundColor Green
 } else {
-    Write-Host "  🌱  Seeding demo workspace..." -NoNewline -ForegroundColor Cyan
+    Write-Host "  🌱  Seeding demo workspace..." -ForegroundColor Cyan
     if ($selectedRuntime -eq "bun") {
-        bun run prisma/seed.ts | Out-Null
+        bun run prisma/seed.ts *>&1 | Out-Null
     } else {
-        npx tsx prisma/seed.ts 2>$null | Out-Null
+        npx tsx prisma/seed.ts *>&1 | Out-Null
     }
-    Write-Host "`r  ✓  Demo workspace seeded.           " -ForegroundColor Green
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ❌ Demo workspace seeding failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+        Write-Host "     Try running 'bun run prisma/seed.ts' manually to see the error." -ForegroundColor DarkGray
+        Exit $LASTEXITCODE
+    }
+    Write-Host "  ✓  Demo workspace seeded." -ForegroundColor Green
 }
 
 Write-Host "`n  ─────────────────────────────────────────────────────────" -ForegroundColor DarkGray
@@ -208,18 +244,13 @@ Write-Host "  🌐 URL: http://localhost:3000`n" -ForegroundColor Yellow
 $launchConfirm = Read-Host "  Would you like to start Scriffle right now? [Y/n]"
 if ([string]::IsNullOrWhiteSpace($launchConfirm) -or $launchConfirm -match "^[Yy]$") {
     Write-Host "`n  🚀 Launching Scriffle...`n" -ForegroundColor Cyan
-    if ($canvasChoice -eq "2") {
-        if ($selectedRuntime -eq "bun") {
-            bun run dev --start-fresh
-        } else {
-            npm run dev
-        }
+    # Always launch with plain 'bun run dev'.
+    # The DB is already in the correct state from Step 3 above.
+    # '--start-fresh' is only for resetting an already-running instance, not needed here.
+    if ($selectedRuntime -eq "bun") {
+        bun run dev
     } else {
-        if ($selectedRuntime -eq "bun") {
-            bun run dev
-        } else {
-            npm run dev
-        }
+        npm run dev
     }
 } else {
     Write-Host "`n  All set! Run 'bun run dev' whenever you're ready. 👋`n" -ForegroundColor Gray
