@@ -10,48 +10,50 @@ Think **FigJam × n8n**, but purpose-built for the stock market:
 
 > *"Too many platforms to switch between for research. Scriffle lets you automate data fetching and brainstorm visually — all in one canvas."*
 
-Built for the **Sectors 2026 Hackathon** by **thelast10years** / [rayyanekaputra](https://github.com/rayyanekaputra).
+Built for the **Sectors 2026 Hackathon** by **thelast10years** ([@rayyanekaputra](https://github.com/rayyanekaputra) & [@artyaaryatama](https://github.com/artyaaryatama)).
 
 ---
 
-## ⚡ First Start & Quickstart
+## ⚡ 1-Step Interactive Setup & Quickstart
 
-### Prerequisites
-- [Bun](https://bun.sh) (v1.4.0+)
-- Node.js 20+
+Scriffle includes an interactive, zero-friction installer that automatically detects your environment, configures the SQLite database, and launches the app:
 
-### Installation & Setup
+### macOS / Linux
+```bash
+git clone https://github.com/rayyanekaputra/scriffle.git
+cd scriffle
+./setup.sh
+```
 
-1. **Clone and Install:**
-   ```bash
-   git clone https://github.com/rayyanekaputra/scriffle.git
-   cd scriffle
-   bun install
-   ```
+### Windows
+```cmd
+git clone https://github.com/rayyanekaputra/scriffle.git
+cd scriffle
+setup.bat
+```
+*(or run `powershell -ExecutionPolicy Bypass -File .\setup.ps1`)*
 
-2. **Initialize Database:**
-   ```bash
-   bunx prisma db push
-   bun run prisma/seed.ts
-   ```
+---
 
-3. **Start Development Server:**
-   
-   **Standard Start:**
-   ```bash
-   bun run dev
-   ```
-   
-   **Fresh Demo Mode (Recommended for first run & live pitches):**
-   ```bash
-   bun run dev --start-fresh
-   ```
-   > 💡 **What `--start-fresh` does:**
-   > - Non-destructively creates a brand-new project board in SQLite (never overwrites or deletes historical canvases).
-   > - Seeds clean starter nodes with `cycleCount: 0` and empty logs.
-   > - Resets the **Spotlight Onboarding Tour** to Step 1 and the **6 Hands-On Missions** to 0/6 pending.
+### 🎮 Starting Scriffle Later
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Once setup is complete, you can start Scriffle anytime using:
+
+```bash
+bun run dev          # Start development server
+bun run start        # Start production server (after bun run build)
+```
+
+**Want a fresh blank board for a live pitch or new project?**
+```bash
+bun run dev --start-fresh
+```
+> 💡 **What `--start-fresh` does:**
+> - Non-destructively creates a brand-new project board in SQLite (preserves historical canvases).
+> - Seeds clean starter state with `cycleCount: 0` and empty execution logs.
+> - Resets the **Spotlight Onboarding Tour** to Step 1 and the **6 Hands-On Missions** to 0/6 pending.
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -240,6 +242,9 @@ scriffle/
 
 ## 🏆 Hackathon Submission
 
-Developed for the **Sectors 2026 Hackathon**.
+Developed for the **Sectors 2026 Hackathon** by **thelast10years**:
+- [@rayyanekaputra](https://github.com/rayyanekaputra)
+- [@artyaaryatama](https://github.com/artyaaryatama)
+
 - **Problem Statement**: Market analysts and active investors are forced to juggle between disconnected platforms — terminal feeds, Excel spreadsheets, messaging groups, broker apps, and charting software.
 - **Solution**: Scriffle collapses research, screening, and automation into a single living canvas where market events trigger automatic note-taking, notifications, and workflow mutations in real time.

@@ -6,6 +6,38 @@ import { ImageConfig } from '@/types/canvas';
 import { MingIcon } from '@/components/ui/MingIcon';
 import { useTheme } from '@/context/ThemeContext';
 
+// Memoized Image Subtree to avoid re-decoding / re-rendering on every resize frame
+const ImageContent = memo(({
+  url,
+  caption,
+  width,
+  height,
+  onDoubleClick,
+}: {
+  url?: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+  onDoubleClick?: (e: React.MouseEvent) => void;
+}) => {
+  if (!url) return null;
+  return (
+    <img
+      src={url}
+      alt={caption || 'Canvas graphic asset'}
+      onDoubleClick={onDoubleClick}
+      title="Double-click to replace image"
+      className="h-full w-full select-none object-contain cursor-pointer"
+      style={{
+        maxWidth: width ? '100%' : '320px',
+        maxHeight: height ? '100%' : '320px',
+      }}
+      draggable={false}
+    />
+  );
+});
+ImageContent.displayName = 'ImageContent';
+
 export const ImageNode = memo(({ id, data, selected }: NodeProps) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -14,10 +46,29 @@ export const ImageNode = memo(({ id, data, selected }: NodeProps) => {
   const config = (data.config || {}) as ImageConfig;
   const isTransparent = config.isTransparent ?? true;
 
+  // Local live size state: source of truth during resize drag
+  const [size, setSize] = useState<{ width?: number; height?: number }>({
+    width: config.width,
+    height: config.height,
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const isResizingRef = useRef(false);
+
   const [caption, setCaption] = useState(config.caption || '');
   const [isEditingCaption, setIsEditingCaption] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const captionInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync server config to local size only when not actively resizing
+  useEffect(() => {
+    if (!isResizingRef.current) {
+      setSize({
+        width: config.width,
+        height: config.height,
+      });
+    }
+  }, [config.width, config.height]);
 
   useEffect(() => {
     setCaption(config.caption || '');
@@ -47,17 +98,41 @@ export const ImageNode = memo(({ id, data, selected }: NodeProps) => {
     }
   };
 
-  const handleResizeEnd = async (_event: any, params: { width: number; height: number }) => {
-    await persistConfig({
-      width: params.width,
-      height: params.height,
+  const handleResize = (_event: any, params: { width: number; height: number }) => {
+    isResizingRef.current = true;
+    setIsResizing(true);
+    setSize({
+      width: Math.round(params.width),
+      height: Math.round(params.height),
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleResizeEnd = (_event: any, params: { width: number; height: number }) => {
+    isResizingRef.current = false;
+    setIsResizing(false);
+    const newWidth = Math.round(params.width);
+    const newHeight = Math.round(params.height);
+    setSize({
+      width: newWidth,
+      height: newHeight,
+    });
+    // Persist once on resize end without awaiting network in resize path
+    persistConfig({
+      width: newWidth,
+      height: newHeight,
+    });
+  };
 
+  const handleResetDimensions = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSize({ width: undefined, height: undefined });
+    await persistConfig({
+      width: undefined,
+      height: undefined,
+    });
+  };
+
+  const processImageFile = (file: File) => {
     const reader = new FileReader();
     reader.onload = (uploadEvt) => {
       const dataUrl = uploadEvt.target?.result as string;
@@ -69,9 +144,39 @@ export const ImageNode = memo(({ id, data, selected }: NodeProps) => {
     reader.readAsDataURL(file);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processImageFile(file);
+  };
+
+  const handleCardDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDraggingOver(true);
+    }
+  };
+
+  const handleCardDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+  };
+
+  const handleCardDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      processImageFile(file);
+    }
+  };
+
   const commitCaption = () => {
     setIsEditingCaption(false);
-    persistConfig({ caption });
+    persistConfig({ caption: caption.trim() });
   };
 
   const toggleTransparency = (e: React.MouseEvent) => {
@@ -79,20 +184,29 @@ export const ImageNode = memo(({ id, data, selected }: NodeProps) => {
     persistConfig({ isTransparent: !isTransparent });
   };
 
+  const hasCustomDimensions = Boolean(size.width || size.height || config.width || config.height);
+
   return (
     <div
-      className={`group relative transition-all ${
-        isTransparent
+      onDragOver={handleCardDragOver}
+      onDragLeave={handleCardDragLeave}
+      onDrop={handleCardDrop}
+      className={`group relative ${
+        isResizing ? 'transition-none select-none' : 'transition-colors duration-150'
+      } ${
+        isDraggingOver
+          ? 'ring-2 ring-[#0050FF] rounded-2xl bg-[#0050FF]/10'
+          : isTransparent
           ? 'bg-transparent'
           : isDark
-          ? 'rounded-2xl border-2 border-[#282A36] bg-[#14151B] p-2'
+          ? 'rounded-2xl border-2 border-[#282A36] bg-[#14151B] p-2.5'
           : isMono
-          ? 'rounded-2xl border-2 border-[#D8D4CA] bg-[#FCFBF9] p-2'
-          : 'rounded-2xl border-2 border-slate-300 bg-white p-2'
+          ? 'rounded-2xl border-2 border-[#D8D4CA] bg-[#FCFBF9] p-2.5'
+          : 'rounded-2xl border-2 border-slate-300 bg-white p-2.5'
       } ${selected ? 'ring-2 ring-[#0050FF]/40 rounded-xl' : ''}`}
       style={{
-        width: config.width ? `${config.width}px` : 'auto',
-        height: config.height ? `${config.height}px` : 'auto',
+        width: size.width ? `${size.width}px` : 'auto',
+        height: size.height ? `${size.height}px` : 'auto',
       }}
     >
       {/* Hidden file input for image replacement */}
@@ -104,15 +218,15 @@ export const ImageNode = memo(({ id, data, selected }: NodeProps) => {
         onChange={handleFileChange}
       />
 
-      {/* Floating Action Controls on Hover / Selection */}
+      {/* Floating Action Toolbar: positioned fully above the card (8-12px gap), clear of resize handles */}
       <div
-        className={`absolute -top-3.5 right-2 z-10 flex items-center gap-1 rounded-full border px-1.5 py-0.5 shadow-sm transition-opacity duration-150 ${
-          selected
+        className={`nodrag absolute bottom-full mb-2.5 right-0 z-20 flex items-center gap-1 rounded-full border-2 px-1.5 py-0.5 shadow-none transition-opacity duration-150 ${
+          selected && !isResizing
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 group-hover:opacity-100 pointer-events-auto'
         } ${
           isDark
-            ? 'border-[#2E3140] bg-[#1E202A] text-slate-300'
+            ? 'border-[#282A36] bg-[#14151B] text-slate-300'
             : isMono
             ? 'border-[#D8D4CA] bg-[#F4F3EF] text-[#242321]'
             : 'border-slate-300 bg-white text-slate-700'
@@ -139,6 +253,17 @@ export const ImageNode = memo(({ id, data, selected }: NodeProps) => {
           <MingIcon name={isTransparent ? 'square_line' : 'ghost_line'} size={13} />
         </button>
 
+        {hasCustomDimensions && (
+          <button
+            type="button"
+            onClick={handleResetDimensions}
+            title="Reset dimensions to natural size"
+            className="flex items-center gap-1 rounded-full p-1 text-[11px] font-bold hover:text-[#0050FF] transition cursor-pointer"
+          >
+            <MingIcon name="aspect_ratio_line" size={13} />
+          </button>
+        )}
+
         {!isEditingCaption && (
           <button
             type="button"
@@ -160,21 +285,42 @@ export const ImageNode = memo(({ id, data, selected }: NodeProps) => {
         minWidth={60}
         minHeight={60}
         keepAspectRatio={true}
+        onResize={handleResize}
         onResizeEnd={handleResizeEnd}
         lineClassName="!border-[#0050FF]"
         handleClassName="!h-3 !w-3 !rounded-full !border-2 !border-white !bg-[#0050FF]"
       />
 
-      {config.url ? (
-        <img
-          src={config.url}
-          alt={config.caption || 'Canvas graphic asset'}
-          className="h-full w-full select-none object-contain pointer-events-none"
-          style={{
-            maxWidth: config.width ? '100%' : '320px',
-            maxHeight: config.height ? '100%' : '320px',
+      {/* Live Dimension Readout Badge: displayed near the card only while resizing */}
+      {isResizing && size.width && size.height && (
+        <div
+          className={`nodrag pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap rounded-md border-2 px-2 py-0.5 text-[11px] font-bold ${
+            isDark
+              ? 'border-[#282A36] bg-[#14151B] text-slate-200'
+              : isMono
+              ? 'border-[#D8D4CA] bg-[#FCFBF9] text-[#242321]'
+              : 'border-slate-800 bg-white text-slate-900'
+          }`}
+        >
+          {size.width} × {size.height}
+        </div>
+      )}
+
+      {isDraggingOver ? (
+        <div className="flex h-32 w-48 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#0050FF] bg-[#0050FF]/5 text-[#0050FF]">
+          <MingIcon name="upload_2_line" size={24} />
+          <span className="text-xs font-bold">Drop to replace image</span>
+        </div>
+      ) : config.url ? (
+        <ImageContent
+          url={config.url}
+          caption={config.caption}
+          width={size.width}
+          height={size.height}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            fileInputRef.current?.click();
           }}
-          draggable={false}
         />
       ) : (
         <button

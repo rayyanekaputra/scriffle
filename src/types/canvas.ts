@@ -109,6 +109,7 @@ export interface ImageConfig {
   width?: number;
   height?: number;
   isTransparent?: boolean;
+  aspectRatio?: number;
 }
 
 export interface StickerConfig {

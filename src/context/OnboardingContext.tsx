@@ -67,8 +67,24 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         localStorage.removeItem(LEGACY_ONBOARDING_KEY);
       }
 
-      // 2. Read startup suppression status
-      const isSuppressed = localStorage.getItem(SUPPRESS_STARTUP_TOUR_KEY) === 'true';
+      // 2. Read startup suppression status & tutorial completion status
+      // If tutorial status is done, hide the welcome modal and suppress startup tour
+      let isTutorialDone = false;
+      const savedProgress = localStorage.getItem('scriffle_sandbox_progress_v1');
+      if (savedProgress) {
+        try {
+          const parsed = JSON.parse(savedProgress);
+          const completedCount = Object.values(parsed).filter((p: any) => p?.isCompleted).length;
+          if (completedCount >= 6) {
+            isTutorialDone = true;
+          }
+        } catch {}
+      }
+      if (localStorage.getItem('scriffle_sandbox_graduated_v1') === 'true') {
+        isTutorialDone = true;
+      }
+
+      const isSuppressed = isTutorialDone || localStorage.getItem(SUPPRESS_STARTUP_TOUR_KEY) === 'true';
       setDontShowAgainState(isSuppressed);
       setHasCompleted(isSuppressed);
 
@@ -104,7 +120,26 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   const startTour = useCallback((fromStep: number = 0) => {
-    const validStep = Math.max(0, Math.min(fromStep, TOUR_STEPS.length - 1));
+    let validStep = Math.max(0, Math.min(fromStep, TOUR_STEPS.length - 1));
+    // If tutorial status is done and starting from welcome step (0), skip to step 1
+    if (validStep === 0) {
+      let isDone = false;
+      try {
+        const saved = localStorage.getItem('scriffle_sandbox_progress_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Object.values(parsed).filter((p: any) => p?.isCompleted).length >= 6) {
+            isDone = true;
+          }
+        }
+        if (localStorage.getItem('scriffle_sandbox_graduated_v1') === 'true') {
+          isDone = true;
+        }
+      } catch {}
+      if (isDone) {
+        validStep = 1;
+      }
+    }
     setCurrentStepIndex(validStep);
     setIsActive(true);
     setIsMinimized(false);
@@ -121,12 +156,11 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const skipTour = useCallback(() => {
     setIsActive(false);
-    setIsMinimized(true);
-    setResumeStepIndex(currentStepIndex);
+    setIsMinimized(false);
     try {
-      localStorage.setItem(TOUR_STEP_STORAGE_KEY, currentStepIndex.toString());
+      localStorage.removeItem(TOUR_STEP_STORAGE_KEY);
     } catch {}
-  }, [currentStepIndex]);
+  }, []);
 
   const resumeTour = useCallback(() => {
     setIsMinimized(false);

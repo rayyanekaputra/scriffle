@@ -51,6 +51,26 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **📐 Overlap-Aware Tidy Up & Minimal Displacement Spacing Engine (`tidyUpLayout.ts`, `tidyUpLayout.test.ts`, `TIDY_UP_OVERLAP_SPACING_PLAN.md`)**
+  - Replaced legacy destructive 1D sorting/grid alignment with physics-free AABB iterative constraint relaxation (`tidyDeOverlap`).
+  - Implemented distance-from-centroid weighted displacement to preserve the natural topology of user-placed clusters without scattering outer nodes.
+  - Added center-of-box geometry for heterogeneous card dimensions (e.g. 400px Radars vs 280px Notes) with generous 64px X / 48px Y handle clearance.
+  - Implemented post-relaxation centroid drift correction to ensure group centers remain stable.
+  - Non-overlapping cards maintain zero coordinate drift. All 257 unit tests green.
+- [x] **🛠️ Tutorial Popover Instructions & Short Description Text Overflow Fix (`TutorialMissionsPopover.tsx`, `MissionStepItem.tsx`, `TourCardPopover.tsx`, `CompletionCelebration.tsx`, `TUTORIAL_POPOVER_OVERFLOW_FIX_PLAN.md`)**
+  - Resolved instructions callout box and short description text overflowing outside the card boundaries in the Tutorial Missions popover modal menu.
+  - Enforced `w-full min-w-0 overflow-hidden box-border` on mission card containers and `flex-1 min-w-0 overflow-hidden` on content columns.
+  - Applied `[overflow-wrap:anywhere] break-words whitespace-normal text-pretty leading-relaxed text-[11px]` to `shortDesc` and `detailHint` across Light, Mono, Dark, and Custom themes.
+  - Enforced `min-w-0 flex-1 truncate` on popover headers, `break-words leading-snug` on mission titles, and wrapped celebration copy across all onboarding modals.
+  - Verified 100% green unit test suite (254 passing tests across 26 test files).
+- [x] **🖼️ Interactive Image Editing & Replacement (`ImageNode.tsx`, `EditNodeModal.tsx`, `canvas.ts`, `imageStudio.test.ts`, `INTERACTIVE_IMAGE_EDITING_PLAN.md`)**
+  - Implemented direct in-place drag-and-drop image file replacement on existing `ImageNode` cards with real-time dropzone feedback (`isDraggingOver` ring, dashed boundary, and `"Drop to replace image"` indicator).
+  - Added double-click image element trigger to immediately open the local image selector for rapid swapping.
+  - Added 1-click **Reset Dimensions** action (`aspect_ratio_line`) to the floating action bar to revert custom resizes to natural image proportions.
+  - Implemented inline caption editor with auto-trimming, placeholder guidance, and keyboard commits (`Enter` to save, `Escape` to revert).
+  - Enhanced theme-aware container styling (borderless transparent sticker mode vs 2px bordered card container) across **Light**, **Mono (warm-paper `#FCFBF9`)**, and **Dark (`#14151B`)**.
+  - Updated `EditNodeModal.tsx` image section with URL input, interactive file dropzone, caption editor, display style segmented toggle, and dimension reset.
+  - Added unit test suite in `imageStudio.test.ts` (239 total passing unit tests across 25 suites, 100% green).
 - [x] **🎯 Draggable Sandbox Missions Card Gesture Fix & Onboarding Theme Cohesion (`SandboxMissionsCard.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `MissionStepItem.tsx`, `draggableWidget.test.ts`, `DRAGGABLE_SANDBOX_FIX_PLAN.md`)**
   - Resolved drag initiation block caused by `target.closest('.nodrag')` matching the outer React Flow canvas guard container.
   - Implemented gesture delta thresholding (`dx > 3 || dy > 3`) on minimized pill for dual behavior: single tap/click toggles expand, dragging repositions the pill smoothly.
@@ -411,7 +431,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
   - Floating emoji picker popover on icon click.
   - Context menu & `EditNodeModal` support for sticker customization.
   - Update `.scriffle` format schema and AI generator spec (`SCRIFFLE_AI_SPEC.md`) to support arbitrary `{ emoji, label, color }` configs.
-- [ ] **In-Place Image Editor & Re-uploader (`ImageNode.tsx` & `EditNodeModal.tsx`)**:
+- [x] **In-Place Image Editor & Re-uploader (`ImageNode.tsx` & `EditNodeModal.tsx`)**:
   - Double-click / context menu to open Image property editor in `EditNodeModal`.
   - In-place image replacement button / file dropper.
   - Inline editable caption below image with `Enter`/`Esc` commit.
@@ -430,7 +450,7 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 #### 2. 🗂️ Spatial Board Organization (FigJam × Miro-inspired)
 - [ ] **Canvas Sections / Frames**: Visual colored boundaries with editable title headers (e.g., *"Banking Sector Watchers"*, *"AI Screener Pipeline"*) that enclose and move child nodes together.
-- [ ] **Tidy Up / Auto-Distribute**: 1-click button in the selection bounding box when 3+ nodes are selected to align and space nodes with equal horizontal/vertical offsets.
+- [x] **Tidy Up & Anti-Collision Auto-Distribute (`tidyUpLayout.ts`, `SelectionBoundingBox.tsx`, `MarketCanvas.tsx`)**: 1-click button in the selection bounding box (and `Ctrl+Shift+T` hotkey) when 3+ nodes are selected to distribute nodes with 48px handle clearance and zero overlaps across horizontal, vertical, and 2D grid matrix layouts.
 - [ ] **Floating Color Quick-Swatches on Sticky Notes**: Floating 5-color mini palette on hover/selection of sticky notes for 1-click color swapping.
 
 #### 3. 🔍 Navigation & Productivity (Figma × FigJam-inspired)

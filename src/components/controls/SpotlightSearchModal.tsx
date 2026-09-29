@@ -336,7 +336,7 @@ export const SpotlightSearchModal: React.FC<SpotlightSearchModalProps> = ({
                     : 'border-slate-200 bg-white text-[#0050FF] hover:bg-blue-50'
                 }`}
               >
-                <MingIcon name="magic_line" size={13} />
+                <MingIcon name="magic_1_line" size={13} />
                 <span>Product Tour</span>
               </button>
             )}
