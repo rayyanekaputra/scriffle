@@ -99,8 +99,8 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
       className={`absolute right-0 top-full mt-2 w-[380px] max-w-[calc(100vw-32px)] max-h-[calc(90vh-90px)] z-50 flex flex-col rounded-2xl border-2 select-none overflow-hidden transition-all duration-150 animate-in fade-in zoom-in-95 ${containerBg}`}
     >
       {/* Pinned Header */}
-      <div className={`flex items-center justify-between px-4 pt-3.5 pb-2.5 shrink-0 border-b ${headerBorder}`}>
-        <div className="flex items-center gap-2">
+      <div className={`flex items-center justify-between px-4 pt-3.5 pb-2.5 shrink-0 border-b gap-2 ${headerBorder}`}>
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <div
             className={`flex h-7 w-7 items-center justify-center rounded-xl border shrink-0 ${
               isAllCompleted
@@ -116,12 +116,12 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
           >
             <MingIcon name={isAllCompleted ? 'trophy_line' : 'target_line'} size={16} />
           </div>
-          <div>
-            <h3 className="text-xs font-bold leading-none">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xs font-bold leading-none truncate">
               Tutorial Missions
             </h3>
             <span
-              className={`text-[10px] font-semibold mt-1 block ${
+              className={`text-[10px] font-semibold mt-1 block truncate ${
                 isDark ? 'text-slate-400' : isMono ? 'text-[#78756D]' : 'text-slate-500'
               }`}
             >
@@ -134,7 +134,7 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
           type="button"
           onClick={onClose}
           title="Close tutorial (Esc)"
-          className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors cursor-pointer ${
+          className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${
             isDark
               ? 'text-slate-400 hover:text-white hover:bg-[#22242D]'
               : isMono
@@ -171,8 +171,8 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
               <MingIcon name="trophy_line" size={15} />
             </div>
             <div className="flex-1 min-w-0 text-pretty">
-              <h4 className="text-xs font-bold leading-tight">Tutorial Complete!</h4>
-              <p className="text-[11px] leading-relaxed mt-0.5 opacity-90">
+              <h4 className="text-xs font-bold leading-tight break-words">Tutorial Complete!</h4>
+              <p className="text-[11px] leading-relaxed mt-0.5 opacity-90 break-words whitespace-normal text-pretty">
                 You've completed all 6 whiteboard automation missions.
               </p>
             </div>
@@ -189,7 +189,7 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
             <div
               key={mission.id}
               onClick={() => setActiveMissionId(mission.id)}
-              className={`group rounded-xl text-pretty border-2 p-2.5 transition-all cursor-pointer ${
+              className={`group rounded-xl border-2 p-2.5 transition-all cursor-pointer w-full min-w-0 overflow-hidden box-border ${
                 isDone
                   ? isDark
                     ? 'bg-[#181A22]/50 border-emerald-500/30 text-slate-300'
@@ -211,7 +211,7 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
                   : 'bg-slate-50/70 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900'
               }`}
             >
-              <div className="flex items-start gap-2.5">
+              <div className="flex items-start gap-2.5 w-full min-w-0">
                 {/* Step Icon / Status Circle */}
                 <div
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 mt-0.5 transition-all ${
@@ -242,10 +242,10 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
                 </div>
 
                 {/* Mission Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5">
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex items-start justify-between gap-1.5 w-full min-w-0">
                     <h4
-                      className={`text-xs font-bold leading-tight ${
+                      className={`text-xs font-bold leading-snug break-words whitespace-normal text-pretty flex-1 min-w-0 ${
                         isDone
                           ? isDark
                             ? 'line-through text-slate-400'
@@ -259,7 +259,7 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
                     </h4>
 
                     {/* Status Pill & Action */}
-                    <div className="shrink-0 flex items-center gap-1">
+                    <div className="shrink-0 flex items-center gap-1 mt-0.5">
                       {isDone && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20">
                           <MingIcon name="check_circle_line" size={11} />
@@ -304,7 +304,7 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
                   </div>
 
                   <p
-                    className={`text-[11px] leading-relaxed mt-1 ${
+                    className={`text-[11px] leading-relaxed mt-1 break-words whitespace-normal text-pretty w-full min-w-0 overflow-hidden [overflow-wrap:anywhere] ${
                       isDone
                         ? isDark
                           ? 'text-slate-500'
@@ -322,7 +322,7 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
                   {/* Active Mission Instructions */}
                   {isActive && (
                     <div
-                      className={`mt-2.5 rounded-xl border p-2.5 text-xs leading-relaxed flex items-start gap-2 ${
+                      className={`mt-2.5 rounded-xl border p-2.5 text-xs leading-relaxed flex items-start gap-2 w-full min-w-0 overflow-hidden ${
                         isCustom && activeCustomTheme
                           ? 'bg-[var(--custom-ui-surface-muted)] border-[var(--custom-ui-border)] text-[var(--custom-ui-text)]'
                           : isDark
@@ -333,11 +333,13 @@ export const TutorialMissionsPopover: React.FC<TutorialMissionsPopoverProps> = (
                       }`}
                     >
                       <MingIcon name="lightbulb_line" size={15} className="shrink-0 mt-0.5 text-amber-500" />
-                      <div>
-                        <span className="font-bold block mb-0.5 text-[10px]">
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <span className="font-bold block mb-0.5 text-[10px] uppercase tracking-wider">
                           Instructions
                         </span>
-                        <span className="text-[11px] leading-normal">{mission.detailHint}</span>
+                        <p className="text-[11px] leading-relaxed break-words whitespace-normal text-pretty">
+                          {mission.detailHint}
+                        </p>
                       </div>
                     </div>
                   )}

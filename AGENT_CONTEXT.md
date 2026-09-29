@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **231 unit tests across 24 suites (100% green)** |
+| Master Unit Tests | **254 unit tests across 26 suites (100% green)** |
 
 ---
 
@@ -61,6 +61,9 @@
 10. **Canvas Lock & Modal Viewport Rules:**
     - Canvas lock (`isLocked`) disables all 10 card creation buttons, quick-add `+` handles, right-click canvas pane menus, and file drops while preserving full pan/zoom/card repositioning.
     - All modals must enforce `max-h-[88vh] flex flex-col overflow-hidden` with pinned header and footer action bars, and `flex-1 min-h-0 overflow-y-auto` scrollable bodies.
+11. **Popover & Card Text Containment Contracts:**
+    - All popover menus, floating drawers, and nested mission/card containers (`TutorialMissionsPopover`, `MissionStepItem`, `TourCardPopover`) must strictly enforce `w-full min-w-0 overflow-hidden box-border` on parent containers.
+    - Text elements (`shortDesc`, `detailHint`, descriptions) must include `[overflow-wrap:anywhere] break-words whitespace-normal text-pretty flex-1 min-w-0` to eliminate horizontal text protrusion across all themes and responsive viewports.
 
 ---
 
@@ -563,20 +566,20 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `CREDIT_COST_BADGES_PLAN.md` | API credit cost badges & burst warning notices |
 | `WATCHER_CLEAN_INITIAL_STATE_PLAN.md` | Watcher node clean initial state implementation |
 | `NAVIGATION_PLAN.md` | Spotlight Search (Cmd+K/Cmd+F), Keyboard Shortcuts Guide (?), and Zoom Presets (Shift+1) |
+| `TUTORIAL_POPOVER_OVERFLOW_FIX_PLAN.md` | Tutorial popover instructions and description text overflow containment plan |
 | `SCRIFFLE_AI_SPEC.md` | ⭐ Standalone AI prompt & .scriffle format specification manual for LLMs |
 | `CURRENT_ENDPOINT.md` | Active vs. planned Sectors API endpoint mapping |
 | `ENDPOINTS.md` | All 32 Sectors API v2 endpoints reference |
-| `CONTEXT.md` | Original master contracts & TypeScript interfaces |
 
 ---
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 179 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 254 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **179 tests, 0 failures, 16 suites, ~450ms runtime**
+- **254 tests, 0 failures, 26 suites, ~200ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map

@@ -241,9 +241,9 @@ export const TourCardPopover: React.FC = () => {
       </div>
 
       {/* Description Body */}
-      <div className="px-5 py-2">
+      <div className="px-5 py-2 min-w-0">
         <p
-          className={`text-xs leading-relaxed ${
+          className={`text-xs leading-relaxed break-words whitespace-normal text-pretty ${
             isDark ? 'text-slate-300' : isMono ? 'text-[#4A4741]' : 'text-slate-600'
           }`}
         >

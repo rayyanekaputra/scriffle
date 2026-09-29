@@ -51,6 +51,12 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 
 ## 🚀 Active / Completed in Recent Sprint
 
+- [x] **🛠️ Tutorial Popover Instructions & Short Description Text Overflow Fix (`TutorialMissionsPopover.tsx`, `MissionStepItem.tsx`, `TourCardPopover.tsx`, `CompletionCelebration.tsx`, `TUTORIAL_POPOVER_OVERFLOW_FIX_PLAN.md`)**
+  - Resolved instructions callout box and short description text overflowing outside the card boundaries in the Tutorial Missions popover modal menu.
+  - Enforced `w-full min-w-0 overflow-hidden box-border` on mission card containers and `flex-1 min-w-0 overflow-hidden` on content columns.
+  - Applied `[overflow-wrap:anywhere] break-words whitespace-normal text-pretty leading-relaxed text-[11px]` to `shortDesc` and `detailHint` across Light, Mono, Dark, and Custom themes.
+  - Enforced `min-w-0 flex-1 truncate` on popover headers, `break-words leading-snug` on mission titles, and wrapped celebration copy across all onboarding modals.
+  - Verified 100% green unit test suite (254 passing tests across 26 test files).
 - [x] **🖼️ Interactive Image Editing & Replacement (`ImageNode.tsx`, `EditNodeModal.tsx`, `canvas.ts`, `imageStudio.test.ts`, `INTERACTIVE_IMAGE_EDITING_PLAN.md`)**
   - Implemented direct in-place drag-and-drop image file replacement on existing `ImageNode` cards with real-time dropzone feedback (`isDraggingOver` ring, dashed boundary, and `"Drop to replace image"` indicator).
   - Added double-click image element trigger to immediately open the local image selector for rapid swapping.
