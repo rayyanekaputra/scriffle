@@ -12,7 +12,6 @@ import { ProjectSwitcherModal } from '@/components/controls/ProjectSwitcherModal
 import { SpotlightSearchModal } from '@/components/controls/SpotlightSearchModal';
 import { ShortcutsModal } from '@/components/controls/ShortcutsModal';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
-import { SandboxMissionsCard } from '@/components/tutorial/SandboxMissionsCard';
 import { ToastProvider, useToast } from '@/components/ui/ToastProvider';
 import { useLoading } from '@/context/LoadingContext';
 import { useOnboarding } from '@/context/OnboardingContext';
@@ -988,9 +987,6 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
 
       {/* Spotlight Onboarding Tour & Cutout Mask */}
       <OnboardingTour />
-
-      {/* Interactive Hands-On Sandbox Missions Card */}
-      <SandboxMissionsCard />
     </main>
   );
 }

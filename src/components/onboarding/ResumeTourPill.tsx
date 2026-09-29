@@ -55,7 +55,7 @@ export const ResumeTourPill: React.FC = () => {
       </div>
 
       <div className="flex flex-col text-left">
-        <span className="text-xs font-bold leading-none">Product Tour</span>
+        <span className="text-xs font-bold leading-none">Product sdfTour</span>
         <span
           className={`text-[10px] font-semibold ${
             isDark ? 'text-slate-400' : isMono ? 'text-[#78756D]' : 'text-slate-500'
