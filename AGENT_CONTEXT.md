@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **257 unit tests across 26 suites (100% green)** |
+| Master Unit Tests | **260 unit tests across 26 suites (100% green)** |
 
 ---
 
@@ -528,22 +528,35 @@ hackathon/
 11. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
 12. **Mock Poll Randomization:** Mock market polling in `sectorsApi.ts` applies realistic per-call randomized distributions (±0–7% price movements, volume multipliers) so nodes update dynamically during offline demos.
 13. **Turbopack `fs` warnings:** 3 pre-existing warnings about `fs.existsSync`/`fs.statSync`/`path.resolve` in `src/app/api/file/open-location/route.ts` appear in `bun run build` — not actionable, ignore.
+<<<<<<< New base: Merge pull request #27 from rayyanekaputra/finalizing-primsa
 14. **Windows Setup Script Compatibility (`setup.ps1` & `setup.bat`):** Must maintain UTF-8 with BOM (`\xef\xbb\xbf`) + CRLF line endings, 7-bit ASCII only (no emojis or multi-byte Unicode strings), `$ErrorActionPreference = "Continue"`, and TLS 1.2 enabled to ensure seamless execution on Windows 10 default PowerShell 5.1.
 
 
+||||||| Common ancestor
+
+
+=======
+14. **Turbopack `@prisma/client` External Module Resolution:** In Next.js 16 + Turbopack, Prisma Client must be declared in `serverExternalPackages: ['@prisma/client', '.prisma/client']` in `next.config.ts` so Turbopack treats Prisma's native engine binary as external rather than attempting to bundle it into hashed client chunks.
+15. **Installation & Setup Standard:** All interactive installer scripts (`setup.bat`, `setup.ps1`, `setup.sh`) have been deprecated and removed in favor of standard, reliable CLI commands (`bun install` -> `bunx prisma db push` -> `bun run prisma/seed.ts` -> `bun run dev`).
+>>>>>>> Current commit: fix: never mind. lets just do it manually
 
 ---
 
-## 12. Dev Commands
+## 12. Dev Commands & Quickstart
 
 ```bash
-bun dev                           # Start dev server → http://localhost:3000
+# Clean project setup & launch
+bun install                       # Install dependencies
+bunx prisma db push               # Push SQLite database schema (prisma/dev.db)
+bun run prisma/seed.ts            # Seed comprehensive demo workspace
+bun run dev                       # Start dev server → http://localhost:3000
+
+# Daily development workflows
+bun run dev --start-fresh         # Start clean empty board (preserves previous boards)
 bun run build                     # Production build (run to check for TS errors)
-bun run prisma/seed.ts            # Reset & seed demo canvas
 bun run src/server/test-engine.ts # Smoke test the graph engine directly
-bunx prisma db push               # Push schema changes to dev.db
 bunx prisma studio                # Visual DB browser
-bun test                          # ⚠️ Run ALL unit tests — must stay green (179 tests across 16 suites, ~450ms)
+bun test                          # ⚠️ Run ALL unit tests — must stay green (260 tests across 26 suites)
 bun run test:watch                # Run tests in watch mode during development
 bun run test:coverage             # Run tests with coverage report
 ```
@@ -584,11 +597,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 254 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 260 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **254 tests, 0 failures, 26 suites, ~200ms runtime**
+- **260 tests, 0 failures, 26 suites, ~260ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
