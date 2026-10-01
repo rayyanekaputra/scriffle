@@ -479,7 +479,7 @@ hackathon/
 > Partner QA checklist is at `context/QA_TESTING_GUIDE.md` — 22 sections covering all features + E2E demo flow + build verification sign-off.
 
 1. **🧹 Repo Cleanup** — Remove `prisma/dev.db` and `reports/` from version control. Add both to `.gitignore`. Run `git rm --cached prisma/dev.db`. Verify clean-clone `bun run prisma/seed.ts` still works.
-2. **📄 Update `README.md`** — Rewrite to reflect all 10 node types, new API endpoints, themes, Control Panel, keyboard shortcuts, unit test count (`179 tests, 16 suites`), and hackathon problem statement blurb.
+2. **📄 `README.md` restructured & `TECHNICAL_GUIDE.md` created** ✅ — README fully rewritten: user-first, zero emojis, Sectors API leading the hero, in-page anchor navigation, plain-English node guide for all 10 card types with real IDX examples, accurate preset links (`./presets/`), Quickstart with prose before code. New `TECHNICAL_GUIDE.md` created as the full developer reference: tech stack, architecture + data flow diagram, DB schema (all 5 Prisma models), REST API (13 endpoints), `.scriffle` format spec, all 10 node config schemas, DSL syntax, `.scrifflemes` theme format, test inventory (257 tests / 26 suites), dev commands, and 8-step new node type extension guide. Plans: `context/README_RESTRUCTURING_PLAN.md`, `context/TECHNICAL_GUIDE_PLAN.md`.
 3. **🎬 Product Teaser** — Hero screenshot or animated GIF for README banner. Core message: *"Too many platforms to switch between for research. Scriffle lets you automate data fetching and brainstorm visually — all in one canvas."*
 4. **🎥 Hackathon Demo Video (3 min minimum)** — 30s problem framing → 2min core demo (Watcher chain, AI Screener pipeline spawn, Radar leaderboard, Discord webhook, theme switch) → 30s close with `.scriffle` save/load. Upload to YouTube/Loom, embed in README + submission.
 
@@ -554,6 +554,8 @@ All historical plan documents are in `context/`. Key ones to reference:
 | `CHECKPOINT.md` | Implementation status snapshot (pre-session) |
 | `BACKLOG.md` | Open features & Sectors API v2 integration candidates |
 | `TESTING_PLAN.md` | ⭐ Full 3-tier testing strategy & mandate — **read before adding any new feature** |
+| `README_RESTRUCTURING_PLAN.md` | Implementation plan for README.md user-first restructure & TECHNICAL_GUIDE.md creation |
+| `TECHNICAL_GUIDE_PLAN.md` | Section-by-section blueprint for TECHNICAL_GUIDE.md |
 | `DRAGGABLE_SANDBOX_FIX_PLAN.md` | Draggable Sandbox missions widget fix, gesture thresholding, and theme color polish |
 | `GIT_CONFLICT_RESOLUTION_PLAN.md` | Merge conflict resolution plan and integration workflow between branches |
 | `CANVAS_LOCK_CURSOR_OVERFLOW_FIX_PLAN.md` | Canvas lock state, creation guard, Move/Hand cursor correction, dialog viewport constraints |

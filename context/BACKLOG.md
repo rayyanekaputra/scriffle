@@ -16,16 +16,16 @@ This backlog tracks candidate Sectors API v2 integrations and advanced automatio
 - [x] Check for any other files that shouldn't be committed (`reports/`, `node_modules/`, `.env*`)
 - [x] Add `reports/` to `.gitignore` (auto-generated report exports)
 
-### 2. 📄 Update `README.md`
-- [x] Rewrite README to reflect current full feature set (Screener, Themes, Quick-Add, Discord Webhooks, Multi-Project, etc.)
-- [x] Update "How it works" section — currently only lists 5 node types, we now have 10
-- [x] Update "Project structure" — current structure is outdated
-- [x] Update API reference table — several new endpoints missing (`/api/alert/test-webhook`, `/api/export/report`, `/api/file/open-location`, `/api/canvas/list`, `/api/canvas/restore`)
-- [x] Add "Themes" section — explain Light / Mono / Dark + `.scrifflemes` custom themes
-- [x] Add "Control Panel" section — explain streaming, presets, and project file operations
-- [x] Add "Keyboard Shortcuts" section (or reference the in-app `?` modal)
-- [x] Add "Unit Tests" section: `bun test` → 179 tests, 16 suites, ~450ms
-- [x] Add hackathon credits / problem statement blurb
+### 2. 📄 Update `README.md` & Create `TECHNICAL_GUIDE.md`
+- [x] Full README restructure — user-first, non-intimidating, zero emojis, Sectors API emphasis in hero, in-page anchor navigation
+- [x] "How It Works" 3-step mental model (Watch → Filter → Act) placed before Quickstart
+- [x] Trust signals + Sectors API key setup in hero and immediately after install step
+- [x] Plain-English node guide for all 10 card types with real IDX stock examples
+- [x] Starter templates section with relative `./presets/` links and accurate preset names/descriptions
+- [x] Keyboard shortcuts table (including `Ctrl+Shift+T` Tidy Up)
+- [x] Audience bifurcation: technical content extracted into dedicated `TECHNICAL_GUIDE.md`
+- [x] Created `TECHNICAL_GUIDE.md` — tech stack, architecture + data flow diagram, DB schema, REST API (13 endpoints), `.scriffle` format spec, all 10 node config schemas, DSL syntax, `.scrifflemes` theme format, test inventory (257 tests / 26 suites), dev commands, 8-step new node type extension guide
+- [x] Plans saved: `context/README_RESTRUCTURING_PLAN.md` and `context/TECHNICAL_GUIDE_PLAN.md`
 
 ### 3. 🎬 Product Teaser
 - [ ] Create a short teaser page / README banner image or GIF
