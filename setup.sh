@@ -162,7 +162,8 @@ echo ""
 # ------------------------------------------------------------------------------
 echo -e "  ${CYAN}${BOLD}Step 3: Setting up Scriffle...${RESET}\n"
 
-# 1. Install dependencies
+# 1. Clean stale cache & Install dependencies
+rm -rf .next 2>/dev/null || true
 echo -en "  ${BLUE}📦  Installing dependencies...${RESET}"
 if [ "$SELECTED_RUNTIME" = "bun" ]; then
   bun install --silent > /dev/null 2>&1 || bun install
