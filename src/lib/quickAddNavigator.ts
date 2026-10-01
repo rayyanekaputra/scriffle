@@ -175,12 +175,33 @@ export function getDefaultConfigForQuickAdd(
           template: '${symbol} held steady at ${price} (${price_change}%)',
         };
       }
+      if (sourceNode?.type === 'watcher') {
+        const isRadar =
+          sourceCfg.mode === 'top_gainers' ||
+          sourceCfg.mode === 'top_losers' ||
+          sourceCfg.symbol === 'TOP_GAINERS' ||
+          sourceCfg.symbol === 'TOP_LOSERS';
+        if (isRadar) {
+          return {
+            color: sourceCfg.mode === 'top_losers' ? 'pink' : 'mint',
+            content: '📊 Top Movers Leaderboard',
+          };
+        }
+        return {
+          color: 'yellow',
+          content: '${symbol} price update: ${price} (${price_change}%)',
+          template: '${symbol} price update: ${price} (${price_change}%)',
+        };
+      }
+      if (sourceNode?.type === 'screener') {
+        return {
+          color: 'blue',
+          content: '✨ AI Screener Results',
+        };
+      }
       return {
         color: 'yellow',
-        content: sourceNode?.type === 'watcher'
-          ? '${symbol} price update: ${price} (${price_change}%)'
-          : 'Dynamic market note',
-        template: '${symbol} price update: ${price} (${price_change}%)',
+        content: 'Dynamic market note',
       };
     case 'action':
       return {

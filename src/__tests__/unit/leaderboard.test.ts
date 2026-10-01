@@ -152,3 +152,60 @@ describe('radar watcher filtering isolation', () => {
     expect(isRadarWatcher(JSON.stringify({ symbol: 'GOTO', threshold: 5 }))).toBe(false);
   });
 });
+
+describe('generateFilteredLeaderboardNoteContent — filtered top movers', () => {
+  it('formats filtered top gainers with passed count and rule header', async () => {
+    const { generateFilteredLeaderboardNoteContent } = await import('@/server/services/graphEngine');
+    const filtered = MOCK_GAINERS.slice(0, 2);
+    const content = generateFilteredLeaderboardNoteContent(filtered, 'price_change > 20', 'top_gainers', '1d', 5, true);
+
+    expect(content).toContain('🚀');
+    expect(content).toContain('FILTERED TOP GAINERS (2/5 Passed)');
+    expect(content).toContain('Rule: price_change > 20');
+    expect(content).toContain('JECX');
+    expect(content).toContain('AGII');
+    expect(content).not.toContain('MPRO');
+  });
+
+  it('formats non-matching branch with custom badge and rule header', async () => {
+    const { generateFilteredLeaderboardNoteContent } = await import('@/server/services/graphEngine');
+    const nonMatching = MOCK_GAINERS.slice(2);
+    const content = generateFilteredLeaderboardNoteContent(nonMatching, 'price_change > 20', 'top_gainers', '1d', 3, false);
+
+    expect(content).toContain('⚖️');
+    expect(content).toContain('NON-MATCHING TOP GAINERS (1/3 Non-matching)');
+    expect(content).toContain('Rule: price_change > 20');
+    expect(content).toContain('MPRO');
+  });
+
+  it('formats clean empty message when 0 movers pass the filter', async () => {
+    const { generateFilteredLeaderboardNoteContent } = await import('@/server/services/graphEngine');
+    const content = generateFilteredLeaderboardNoteContent([], 'price_change > 50', 'top_gainers', '1d', 5, true);
+
+    expect(content).toContain('RULE FILTER: "price_change > 50"');
+    expect(content).toContain('No companies passed the condition (0/5 passed)');
+    expect(content).toContain('Evaluated: 5 stocks');
+  });
+
+  it('formats filtered top losers properly with 🔻 icon', async () => {
+    const { generateFilteredLeaderboardNoteContent } = await import('@/server/services/graphEngine');
+    const filteredLosers = MOCK_LOSERS.slice(0, 1);
+    const content = generateFilteredLeaderboardNoteContent(filteredLosers, 'price_change < -5', 'top_losers', '1d', 5, true);
+
+    expect(content).toContain('🔻');
+    expect(content).toContain('FILTERED TOP LOSERS');
+    expect(content).toContain('BKSL');
+    expect(content).toContain('-8.96%');
+  });
+
+  it('guarantees direct radar watcher notes render the full list of ranked movers and not single top1', async () => {
+    const { generateLeaderboardNoteContent } = await import('@/server/services/graphEngine');
+    const content = generateLeaderboardNoteContent(MOCK_GAINERS, 'top_gainers', '1d');
+
+    expect(content).toContain('TOP GAINERS LEADERBOARD');
+    expect(content).toContain('• #1 JECX:');
+    expect(content).toContain('• #2 AGII:');
+    expect(content).toContain('• #3 MPRO:');
+  });
+});
+

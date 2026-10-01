@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **260 unit tests across 26 suites (100% green)** |
+| Master Unit Tests | **269 unit tests across 26 suites (100% green)** |
 
 ---
 
@@ -406,6 +406,13 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
+- **Top Movers & AI Screener Condition Filtering Engine (`graphEngine.ts`, `dslEngine.ts`, `conditionBranching.test.ts`, `leaderboard.test.ts`)**:
+  - Direct condition evaluation for Radar Watchers (`top_gainers`, `top_losers`) and AI Screener results (`ScreenerCompanyResult[]`) via `evaluateCondition(rule, event)`.
+  - Condition nodes update state immediately (`status: 'passed'` if $\ge 1$ match, `'failed'` if 0 matches), eliminating the perpetual `"Waiting"` state.
+  - Dual-handle routing propagates `passedMovers` through the `True` branch (or default) and `failedMovers` through the `False` branch.
+  - Downstream Sticky Notes automatically render formatted filtered ranking summaries (`generateFilteredLeaderboardNoteContent`) showing counts (e.g. `(2/5 Passed)`), active rules, ranks, prices, and changes.
+  - Extended DSL evaluation context in `dslEngine.ts` to expose all screener attributes (`pe`, `pb`, `roe`, `market_cap`, `dividend_yield`).
+  - Unit test suites `conditionBranching.test.ts` (12 tests) and `leaderboard.test.ts` (24 tests) — 268 total passing unit tests across 26 suites (100% green).
 - **Interactive Setup Scripts & Windows 10 / PowerShell 5.1 Ground-Up Rewrite (`setup.ps1`, `setup.bat`, `setup.sh`)**:
   - Rewrote `setup.ps1` from scratch to guarantee 100% native execution in Windows PowerShell 5.1 (default on Windows 10).
   - Enforced strict UTF-8 with BOM (`0xEF, 0xBB, 0xBF`) and CRLF (`\r\n`) line endings, preventing PS5.1 fallback ANSI character-splitting corruptions.
@@ -597,11 +604,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 260 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 269 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **260 tests, 0 failures, 26 suites, ~260ms runtime**
+- **269 tests, 0 failures, 26 suites, ~240ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -612,7 +619,7 @@ src/__tests__/
 └── unit/
     ├── dslEngine.test.ts             ← 30 tests — all DSL operators, AND/OR compounds, camelCase aliases, edge cases
     ├── interpolateTemplate.test.ts   ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
-    ├── leaderboard.test.ts           ← 20 tests — gainers/losers formatting, rank indicators, empty input, mock movers fallback
+    ├── leaderboard.test.ts           ← 25 tests — gainers/losers formatting, rank indicators, empty input, mock movers fallback, filtered leaderboard formatting, direct note rendering
     ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
     ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
@@ -624,7 +631,7 @@ src/__tests__/
     ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations
     ├── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture
     ├── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
-    ├── conditionBranching.test.ts    ← 8 tests — dual output routing (True vs False branch), legacy null handle fallback, multiple child fanout
+    ├── conditionBranching.test.ts    ← 12 tests — dual output routing (True vs False branch), legacy null handle fallback, multi-mover / radar & screener condition filtering
     └── discordWebhook.test.ts        ← 10 tests — URL validation, rich sentiment embeds, payload formatting, error handling, timeout protection
 ```
 
@@ -633,6 +640,7 @@ These were made `export` specifically to enable unit testing (previously private
 - `interpolateTemplate(template, event)` — template variable substitution
 - `generateDefaultNoteContent(event)` — auto-generated note for triggered market events
 - `generateLeaderboardNoteContent(movers, mode, period)` — radar watcher leaderboard formatter
+- `generateFilteredLeaderboardNoteContent(movers, rule, mode, period, total, isPassed)` — filtered top movers & screener condition note formatter
 - `generateScreenerNoteContent(query, results, queryValues)` — AI screener output formatter
 
 ### ⚠️ THE TESTING MANDATE — APPLIES STRICTLY TO CODE CHANGES

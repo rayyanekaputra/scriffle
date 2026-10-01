@@ -189,3 +189,112 @@ describe('Condition Node Dual Outputs & False Branching Engine', () => {
     expect(failResult.triggeredNodes).toEqual(['cond-1', 'note-steady']);
   });
 });
+
+describe('Radar Movers & Screener Condition Filtering Engine', () => {
+  const MOCK_MOVERS: MarketEvent[] = [
+    { symbol: 'PTRO', price: 18200, prevPrice: 15900, price_change: 14.46, volume: 55000000, avg_volume: 20000000, rank: 1, timestamp: '14:30:00' },
+    { symbol: 'BUMI', price: 140, prevPrice: 129, price_change: 8.52, volume: 850000000, avg_volume: 300000000, rank: 2, timestamp: '14:30:00' },
+    { symbol: 'BBCA', price: 10200, prevPrice: 10000, price_change: 2.00, volume: 45000000, avg_volume: 50000000, rank: 3, timestamp: '14:30:00' },
+    { symbol: 'TLKM', price: 2900, prevPrice: 2880, price_change: 0.69, volume: 30000000, avg_volume: 40000000, rank: 4, timestamp: '14:30:00' },
+  ];
+
+  function simulateMoverConditionFiltering(
+    rule: string,
+    movers: MarketEvent[],
+    edges: MockEdge[],
+    condNodeId: string = 'cond-1'
+  ) {
+    const passedMovers = movers.filter((m) => evaluateCondition(rule, m));
+    const failedMovers = movers.filter((m) => !evaluateCondition(rule, m));
+    const isPassed = passedMovers.length > 0;
+    const status = isPassed ? 'passed' : 'failed';
+
+    const triggeredNodes: string[] = [condNodeId];
+    const executedEdges: string[] = [];
+    const trueBranchMovers: MarketEvent[] = [];
+    const falseBranchMovers: MarketEvent[] = [];
+
+    const outgoing = edges.filter((e) => e.fromId === condNodeId);
+    for (const edge of outgoing) {
+      const handle = edge.fromHandle || 'true';
+      if (handle === 'true') {
+        triggeredNodes.push(edge.toId);
+        executedEdges.push(edge.id);
+        trueBranchMovers.push(...passedMovers);
+      } else if (handle === 'false') {
+        triggeredNodes.push(edge.toId);
+        executedEdges.push(edge.id);
+        falseBranchMovers.push(...failedMovers);
+      }
+    }
+
+    return {
+      status,
+      passedCount: passedMovers.length,
+      failedCount: failedMovers.length,
+      passedMovers,
+      failedMovers,
+      triggeredNodes,
+      executedEdges,
+      trueBranchMovers,
+      falseBranchMovers,
+    };
+  }
+
+  it('filters movers list and sets condition status to passed when matching stocks exist', () => {
+    const edges: MockEdge[] = [
+      { id: 'edge-true', fromId: 'cond-1', toId: 'note-passed', fromHandle: 'true' },
+      { id: 'edge-false', fromId: 'cond-1', toId: 'note-failed', fromHandle: 'false' },
+    ];
+
+    const result = simulateMoverConditionFiltering('price_change > 5', MOCK_MOVERS, edges);
+    expect(result.status).toBe('passed');
+    expect(result.passedCount).toBe(2);
+    expect(result.failedCount).toBe(2);
+    expect(result.passedMovers.map((m) => m.symbol)).toEqual(['PTRO', 'BUMI']);
+    expect(result.failedMovers.map((m) => m.symbol)).toEqual(['BBCA', 'TLKM']);
+    expect(result.triggeredNodes).toEqual(['cond-1', 'note-passed', 'note-failed']);
+  });
+
+  it('sets condition status to failed when 0 movers pass the rule', () => {
+    const edges: MockEdge[] = [
+      { id: 'edge-true', fromId: 'cond-1', toId: 'note-passed', fromHandle: 'true' },
+      { id: 'edge-false', fromId: 'cond-1', toId: 'note-failed', fromHandle: 'false' },
+    ];
+
+    const result = simulateMoverConditionFiltering('price_change > 50', MOCK_MOVERS, edges);
+    expect(result.status).toBe('failed');
+    expect(result.passedCount).toBe(0);
+    expect(result.failedCount).toBe(4);
+    expect(result.passedMovers).toHaveLength(0);
+    expect(result.failedMovers).toHaveLength(4);
+  });
+
+  it('supports volume and combined multi-metric condition rules on movers', () => {
+    const edges: MockEdge[] = [
+      { id: 'edge-true', fromId: 'cond-1', toId: 'alert-breakout', fromHandle: 'true' },
+    ];
+
+    const result = simulateMoverConditionFiltering('price_change > 5 AND volume > 100000000', MOCK_MOVERS, edges);
+    expect(result.status).toBe('passed');
+    expect(result.passedCount).toBe(1);
+    expect(result.passedMovers[0].symbol).toBe('BUMI');
+  });
+
+  it('evaluates screener properties like pe and market_cap in conditions', () => {
+    const screenerStocks: MarketEvent[] = [
+      { symbol: 'BBCA', price: 10000, price_change: 2.0, volume: 50000000, pe: 22.5, market_cap: 1200000000000000 } as any,
+      { symbol: 'BBRI', price: 5000, price_change: 1.5, volume: 80000000, pe: 11.2, market_cap: 750000000000000 } as any,
+    ];
+
+    const edges: MockEdge[] = [
+      { id: 'edge-true', fromId: 'cond-1', toId: 'note-low-pe', fromHandle: 'true' },
+    ];
+
+    const result = simulateMoverConditionFiltering('pe < 15', screenerStocks, edges);
+    expect(result.status).toBe('passed');
+    expect(result.passedCount).toBe(1);
+    expect(result.passedMovers[0].symbol).toBe('BBRI');
+  });
+});
+

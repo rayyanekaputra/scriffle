@@ -100,6 +100,38 @@ export function generateLeaderboardNoteContent(movers: MarketEvent[], mode?: str
   return `${icon} ${title}${periodStr}\n${rows.join('\n')}\n• Updated: ${new Date().toLocaleTimeString()}`;
 }
 
+export function generateFilteredLeaderboardNoteContent(
+  movers: MarketEvent[],
+  rule: string,
+  mode?: string,
+  period?: string,
+  totalEvaluated?: number,
+  isPassedBranch: boolean = true
+): string {
+  const total = typeof totalEvaluated === 'number' ? totalEvaluated : movers.length;
+  const count = movers.length;
+  const isGainer = mode === 'top_gainers' || mode === 'Top Gainers' || (movers[0] && movers[0].price_change >= 0);
+  const icon = isPassedBranch ? (isGainer ? '🚀' : '🔻') : '⚖️';
+  const categoryTitle = isGainer ? 'TOP GAINERS' : 'TOP LOSERS';
+  const branchTitle = isPassedBranch ? `FILTERED ${categoryTitle}` : `NON-MATCHING ${categoryTitle}`;
+  const countStr = total > 0 ? ` (${count}/${total} ${isPassedBranch ? 'Passed' : 'Non-matching'})` : ` (${count} stocks)`;
+  const periodStr = period ? ` (${period.toUpperCase()})` : '';
+
+  if (!movers || movers.length === 0) {
+    return `📊 RULE FILTER: "${rule}"\n• No companies ${isPassedBranch ? 'passed' : 'failed'} the condition (${count}/${total} passed)\n• Evaluated: ${total} stocks\n• Updated: ${new Date().toLocaleTimeString()}`;
+  }
+
+  const rows = movers.map((m, idx) => {
+    const rank = m.rank ? `#${m.rank}` : `#${idx + 1}`;
+    const sym = m.symbol;
+    const priceStr = m.price ? `Rp ${m.price.toLocaleString('id-ID')}` : 'N/A';
+    const changeStr = `${m.price_change >= 0 ? '+' : ''}${m.price_change}%`;
+    return `• ${rank} ${sym}: ${priceStr} (${changeStr})`;
+  });
+
+  return `${icon} ${branchTitle}${countStr}${periodStr}\n• Rule: ${rule}\n${rows.join('\n')}\n• Updated: ${new Date().toLocaleTimeString()}`;
+}
+
 export interface FundamentalMutationInput {
   canvasId: string;
   canvasName: string;
@@ -876,11 +908,8 @@ export async function executeGraphForRadarWatcher(
         updatedContent = rawText
           .replace(/\$\{rankings_table\}/g, tableStr)
           .replace(/\$\{rankings_list\}/g, tableStr);
-      } else if (rawText.includes('${') && !rawText.startsWith('🚀') && !rawText.startsWith('🔻')) {
-        // Interpolate using top #1 mover details
-        updatedContent = interpolateTemplate(rawText, top1);
       } else {
-        // Default: Clean structured leaderboard note content
+        // Default: Always output the complete ranked leaderboard list
         updatedContent = generateLeaderboardNoteContent(movers, watcherCfg.mode, watcherCfg.period);
       }
 
@@ -1146,9 +1175,332 @@ export async function executeGraphForRadarWatcher(
       });
       logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
     } else if (targetNode.type === 'condition') {
-      // Evaluate condition for each mover and propagate
-      for (const mover of movers) {
-        await executeGraphForEvent(canvasId, mover);
+      triggeredNodes.push(targetNode.id);
+      const rule = targetCfg.rule || 'price_change > 0';
+      const passedMovers = movers.filter((m) => evaluateCondition(rule, m));
+      const failedMovers = movers.filter((m) => !evaluateCondition(rule, m));
+      const isPassed = passedMovers.length > 0;
+      const topPassed = isPassed ? passedMovers[0] : (movers[0] || null);
+
+      await prisma.node.update({
+        where: { id: targetNode.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: isPassed ? 'passed' : 'failed',
+            lastValue: topPassed,
+            passedCount: passedMovers.length,
+            totalCount: movers.length,
+            lastTriggeredAt: new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+
+      logs.push(
+        isPassed
+          ? `Condition matched: "${rule}" for ${passedMovers.length}/${movers.length} top movers (routing True branch)`
+          : `Condition not met: "${rule}" (0/${movers.length} top movers matched, routing False branch)`
+      );
+
+      const condEdges = canvas.edges.filter((e) => e.fromId === targetNode.id);
+      for (const condEdge of condEdges) {
+        const handle = condEdge.fromHandle || 'true'; // null/legacy defaults to 'true'
+        const isTrueBranch = handle === 'true';
+        const branchMovers = isTrueBranch ? passedMovers : failedMovers;
+
+        const childNode = canvas.nodes.find((n) => n.id === condEdge.toId);
+        if (!childNode) continue;
+
+        let childCfg: any = {};
+        try {
+          if (childNode.configJson) childCfg = JSON.parse(childNode.configJson);
+        } catch {}
+
+        if (childNode.type === 'note') {
+          triggeredNodes.push(childNode.id);
+          const rawText = childCfg.template || childCfg.content || '';
+          let updatedContent = '';
+
+          if (rawText.includes('${rankings_table}') || rawText.includes('${rankings_list}')) {
+            const tableStr = generateFilteredLeaderboardNoteContent(
+              branchMovers,
+              rule,
+              watcherCfg.mode,
+              watcherCfg.period,
+              movers.length,
+              isTrueBranch
+            );
+            updatedContent = rawText
+              .replace(/\$\{rankings_table\}/g, tableStr)
+              .replace(/\$\{rankings_list\}/g, tableStr);
+          } else {
+            updatedContent = generateFilteredLeaderboardNoteContent(
+              branchMovers,
+              rule,
+              watcherCfg.mode,
+              watcherCfg.period,
+              movers.length,
+              isTrueBranch
+            );
+          }
+
+          await prisma.node.update({
+            where: { id: childNode.id },
+            data: {
+              configJson: JSON.stringify({
+                ...childCfg,
+                content: updatedContent,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+          mutationsCount++;
+          logs.push(`Sticky note updated with filtered Top Movers (${branchMovers.length}/${movers.length} ${isTrueBranch ? 'Passed' : 'Non-matching'})`);
+        } else if (childNode.type === 'alert') {
+          if (branchMovers.length > 0) {
+            triggeredNodes.push(childNode.id);
+            const topMover = branchMovers[0];
+            const defaultAlertTemplate = `Filter Alert: \${symbol} (\${price_change}%) passed rule "${rule}"`;
+            const rawAlertTemplate = childCfg.template || childCfg.messageTemplate || defaultAlertTemplate;
+            const alertMsg = interpolateTemplate(rawAlertTemplate, topMover);
+
+            let webhookStatus: 'success' | 'failed' | undefined;
+            let webhookError: string | undefined;
+
+            if (childCfg.channel === 'discord' && childCfg.discordWebhookUrl) {
+              try {
+                const res = await sendDiscordAlert({
+                  webhookUrl: childCfg.discordWebhookUrl,
+                  customMessage: alertMsg,
+                  marketEvent: topMover,
+                  canvasName: canvas.name,
+                  botName: childCfg.botName,
+                  includeMarketStats: childCfg.includeMarketStats !== false,
+                });
+                webhookStatus = res.success ? 'success' : 'failed';
+                webhookError = res.error;
+              } catch (err: any) {
+                webhookStatus = 'failed';
+                webhookError = err.message;
+              }
+            }
+
+            await prisma.node.update({
+              where: { id: childNode.id },
+              data: {
+                stateJson: JSON.stringify({
+                  status: 'passed',
+                  lastTriggeredAt: new Date().toLocaleTimeString(),
+                  lastWebhookStatus: webhookStatus,
+                  lastWebhookError: webhookError,
+                }),
+              },
+            });
+
+            await prisma.log.create({
+              data: {
+                canvasId,
+                eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
+                triggeredNodes: JSON.stringify([childNode.id]),
+                detailsJson: JSON.stringify({ movers: branchMovers, webhookStatus, webhookError }),
+              },
+            });
+            logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
+          }
+        } else if (childNode.type === 'action') {
+          triggeredNodes.push(childNode.id);
+          await prisma.node.update({
+            where: { id: childNode.id },
+            data: {
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+
+          if (childCfg.action === 'create_note') {
+            const existingSpawned = canvas.edges.filter((e) => e.fromId === childNode.id);
+            const baseSpawnIndex = existingSpawned.length;
+
+            for (let i = 0; i < branchMovers.length; i++) {
+              const mover = branchMovers[i];
+              const rawContent =
+                childCfg.template ||
+                childCfg.noteTemplate ||
+                childCfg.params?.template ||
+                childCfg.params?.noteTemplate;
+              const noteContent = rawContent
+                ? interpolateTemplate(rawContent, mover)
+                : generateDefaultNoteContent(mover, { isRadar: true });
+
+              const spawnIdx = baseSpawnIndex + i;
+              const newX = childNode.positionX + 280 + (spawnIdx % 2 === 1 ? 25 : 0);
+              const newY = childNode.positionY + spawnIdx * 190 - 40;
+
+              const newNode = await prisma.node.create({
+                data: {
+                  canvasId,
+                  type: 'note',
+                  positionX: newX,
+                  positionY: newY,
+                  configJson: JSON.stringify({
+                    content: noteContent,
+                    color: (mover.price_change || 0) >= 0 ? 'mint' : 'pink',
+                    width: 300,
+                    height: 160,
+                  }),
+                  stateJson: JSON.stringify({
+                    status: 'passed',
+                    lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+                  }),
+                },
+              });
+
+              await prisma.edge.create({
+                data: {
+                  canvasId,
+                  fromId: childNode.id,
+                  toId: newNode.id,
+                },
+              });
+
+              mutationsCount++;
+            }
+            logs.push(`Spawned ${branchMovers.length} individual sticky notes for filtered Top Movers`);
+          } else if (childCfg.action === 'fundamental_report') {
+            for (let i = 0; i < branchMovers.length; i++) {
+              const mover = branchMovers[i];
+              const res = await handleFundamentalReportMutation({
+                canvasId,
+                canvasName: canvas.name,
+                canvasNodes: canvas.nodes,
+                canvasEdges: canvas.edges,
+                actionNode: childNode,
+                symbol: mover.symbol,
+                sessionApiKey,
+                triggerContextText: `Filtered Rank #${mover.rank || i + 1} (${mover.price_change >= 0 ? '+' : ''}${mover.price_change}%)`,
+                spawnIndex: i,
+                marketEvent: mover,
+              });
+              mutationsCount += res.mutationsCount;
+            }
+            logs.push(`Processed fundamental reports for ${branchMovers.length} filtered top movers`);
+          } else if (childCfg.action === 'create_watcher') {
+            const existingSpawned = canvas.edges.filter((e) => e.fromId === childNode.id);
+            const baseSpawnIndex = existingSpawned.length;
+            let spawnedCount = 0;
+
+            for (let i = 0; i < branchMovers.length; i++) {
+              const mover = branchMovers[i];
+              const targetSymbol = (childCfg.targetSymbol || childCfg.params?.symbol || mover.symbol).toUpperCase();
+
+              const alreadyExists = canvas.nodes.some((n) => {
+                if (n.type !== 'watcher') return false;
+                try {
+                  const cfg = JSON.parse(n.configJson);
+                  return cfg.symbol?.toUpperCase() === targetSymbol;
+                } catch {
+                  return false;
+                }
+              });
+
+              if (!alreadyExists) {
+                const spawnIdx = baseSpawnIndex + spawnedCount;
+                const newX = childNode.positionX + 280;
+                const newY = childNode.positionY + spawnIdx * 200 - 20;
+
+                const newWatcher = await prisma.node.create({
+                  data: {
+                    canvasId,
+                    type: 'watcher',
+                    positionX: newX,
+                    positionY: newY,
+                    configJson: JSON.stringify({
+                      symbol: targetSymbol,
+                      metric: 'price_change',
+                      interval: childCfg.interval || 300,
+                    }),
+                    stateJson: JSON.stringify({
+                      status: 'passed',
+                      cycleCount: 1,
+                      lastValue: mover,
+                      lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+                    }),
+                  },
+                });
+
+                await prisma.edge.create({
+                  data: {
+                    canvasId,
+                    fromId: childNode.id,
+                    toId: newWatcher.id,
+                  },
+                });
+
+                const downstreamCond = await prisma.node.create({
+                  data: {
+                    canvasId,
+                    type: 'condition',
+                    positionX: newX + 260,
+                    positionY: newY,
+                    configJson: JSON.stringify({
+                      rule: 'price_change > 0',
+                    }),
+                    stateJson: JSON.stringify({
+                      status: (mover.price_change || 0) > 0 ? 'passed' : 'idle',
+                      lastValue: mover.price_change,
+                      lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+                    }),
+                  },
+                });
+
+                await prisma.edge.create({
+                  data: {
+                    canvasId,
+                    fromId: newWatcher.id,
+                    toId: downstreamCond.id,
+                  },
+                });
+
+                const noteNode = await prisma.node.create({
+                  data: {
+                    canvasId,
+                    type: 'note',
+                    positionX: newX + 520,
+                    positionY: newY - 20,
+                    configJson: JSON.stringify({
+                      content: `🚀 Auto-Tracked: ${targetSymbol}\n• Price: Rp ${(mover.price || 0).toLocaleString()}\n• Change: ${mover.price_change >= 0 ? '+' : ''}${mover.price_change}%\n• Filtered mover`,
+                      template: `🚀 Auto-Tracked: \${symbol}\n• Price: Rp \${price}\n• Change: \${price_change}%\n• Updated: \${timestamp}`,
+                      color: (mover.price_change || 0) >= 0 ? 'mint' : 'pink',
+                      width: 280,
+                      height: 150,
+                    }),
+                    stateJson: JSON.stringify({
+                      status: 'passed',
+                      lastTriggeredAt: mover.timestamp || new Date().toLocaleTimeString(),
+                    }),
+                  },
+                });
+
+                await prisma.edge.create({
+                  data: {
+                    canvasId,
+                    fromId: downstreamCond.id,
+                    toId: noteNode.id,
+                    fromHandle: 'true',
+                  },
+                });
+
+                mutationsCount += 3;
+                spawnedCount++;
+              }
+            }
+            logs.push(`Auto-spawned ${spawnedCount} breakout watchers for filtered movers`);
+          }
+        }
       }
     } else if (targetNode.type === 'watcher') {
       triggeredNodes.push(targetNode.id);
@@ -1564,6 +1916,180 @@ export async function executeGraphForScreener(
           }
         }
         logs.push(`Spawned ${spawnedCount} automated watcher pipelines from AI Screener`);
+      }
+    } else if (targetNode.type === 'condition') {
+      triggeredNodes.push(targetNode.id);
+      const screenerMovers: MarketEvent[] = results.map((c, idx) => ({
+        symbol: c.symbol,
+        name: c.company_name,
+        price: c.price || 0,
+        prevPrice: c.price || 0,
+        price_change: c.price_change !== undefined ? c.price_change : 0,
+        volume: c.volume || 0,
+        avg_volume: 0,
+        rank: idx + 1,
+        timestamp: new Date().toLocaleTimeString(),
+        pe: c.pe,
+        pb: c.pb,
+        roe: c.roe,
+        market_cap: c.market_cap,
+        dividend_yield: c.dividend_yield,
+        revenue: c.revenue,
+      } as any));
+
+      const rule = targetCfg.rule || 'price_change > 0';
+      const passedMovers = screenerMovers.filter((m) => evaluateCondition(rule, m));
+      const failedMovers = screenerMovers.filter((m) => !evaluateCondition(rule, m));
+      const isPassed = passedMovers.length > 0;
+      const topPassed = isPassed ? passedMovers[0] : (screenerMovers[0] || null);
+
+      await prisma.node.update({
+        where: { id: targetNode.id },
+        data: {
+          stateJson: JSON.stringify({
+            status: isPassed ? 'passed' : 'failed',
+            lastValue: topPassed,
+            passedCount: passedMovers.length,
+            totalCount: screenerMovers.length,
+            lastTriggeredAt: new Date().toLocaleTimeString(),
+          }),
+        },
+      });
+
+      logs.push(
+        isPassed
+          ? `Condition matched: "${rule}" for ${passedMovers.length}/${screenerMovers.length} screened companies (routing True branch)`
+          : `Condition not met: "${rule}" (0/${screenerMovers.length} screened companies matched, routing False branch)`
+      );
+
+      const condEdges = canvas.edges.filter((e) => e.fromId === targetNode.id);
+      for (const condEdge of condEdges) {
+        const handle = condEdge.fromHandle || 'true';
+        const isTrueBranch = handle === 'true';
+        const branchMovers = isTrueBranch ? passedMovers : failedMovers;
+
+        const childNode = canvas.nodes.find((n) => n.id === condEdge.toId);
+        if (!childNode) continue;
+
+        let childCfg: any = {};
+        try {
+          if (childNode.configJson) childCfg = JSON.parse(childNode.configJson);
+        } catch {}
+
+        if (childNode.type === 'note') {
+          triggeredNodes.push(childNode.id);
+          const rawText = childCfg.template || childCfg.content || '';
+          let updatedContent = '';
+
+          if (rawText.includes('${rankings_table}') || rawText.includes('${rankings_list}')) {
+            const tableStr = generateFilteredLeaderboardNoteContent(
+              branchMovers,
+              rule,
+              'screener',
+              undefined,
+              screenerMovers.length,
+              isTrueBranch
+            );
+            updatedContent = rawText
+              .replace(/\$\{rankings_table\}/g, tableStr)
+              .replace(/\$\{rankings_list\}/g, tableStr);
+          } else {
+            const branchCompanyResults: ScreenerCompanyResult[] = results.filter((r) =>
+              branchMovers.some((bm) => bm.symbol.toUpperCase() === r.symbol.toUpperCase())
+            );
+            if (branchCompanyResults.length === 0) {
+              updatedContent = `📊 RULE FILTER: "${rule}"\n• No companies ${isTrueBranch ? 'passed' : 'failed'} the condition (0/${results.length} passed)\n• Evaluated: ${results.length} screened companies\n• Updated: ${new Date().toLocaleTimeString()}`;
+            } else {
+              const rows = branchCompanyResults.map((c, idx) => {
+                const rank = `#${idx + 1}`;
+                const sym = c.symbol;
+                const metrics: string[] = [];
+                if (c.price) metrics.push(`Rp ${c.price.toLocaleString('id-ID')}`);
+                if (c.market_cap) {
+                  const mcapStr =
+                    c.market_cap >= 1_000_000_000_000_000
+                      ? `Mcap Rp ${(c.market_cap / 1_000_000_000_000_000).toFixed(2)} Q`
+                      : c.market_cap >= 1_000_000_000_000
+                      ? `Mcap Rp ${(c.market_cap / 1_000_000_000_000).toFixed(1)} T`
+                      : `Mcap Rp ${(c.market_cap / 1_000_000_000).toFixed(0)} B`;
+                  metrics.push(mcapStr);
+                }
+                if (c.pe !== undefined && c.pe !== null) metrics.push(`P/E ${c.pe}x`);
+                if (c.dividend_yield !== undefined && c.dividend_yield !== null) metrics.push(`Div ${c.dividend_yield}%`);
+                if (metrics.length === 0 && (c.sub_sector || c.sector)) {
+                  metrics.push(c.sub_sector || c.sector || 'Listed');
+                }
+                return `• ${rank} ${sym} (${c.company_name}): ${metrics.join(' | ')}`;
+              });
+              const title = isTrueBranch ? '✨ FILTERED AI SCREENER' : '⚖️ NON-MATCHING SCREENER';
+              updatedContent = `${title} (${branchCompanyResults.length}/${results.length} ${isTrueBranch ? 'Passed' : 'Filtered'})\n• Rule: ${rule}\n${rows.join('\n')}\n• Updated: ${new Date().toLocaleTimeString()}`;
+            }
+          }
+
+          await prisma.node.update({
+            where: { id: childNode.id },
+            data: {
+              configJson: JSON.stringify({
+                ...childCfg,
+                content: updatedContent,
+              }),
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: new Date().toLocaleTimeString(),
+              }),
+            },
+          });
+          mutationsCount++;
+          logs.push(`Sticky note updated with filtered Screener results (${branchMovers.length}/${results.length})`);
+        } else if (childNode.type === 'alert') {
+          if (branchMovers.length > 0) {
+            triggeredNodes.push(childNode.id);
+            const alertMsg = `✨ Filtered Screener: ${branchMovers.length} stocks passed rule "${rule}"`;
+
+            let webhookStatus: 'success' | 'failed' | undefined;
+            let webhookError: string | undefined;
+
+            if (childCfg.channel === 'discord' && childCfg.discordWebhookUrl) {
+              try {
+                const res = await sendDiscordAlert({
+                  webhookUrl: childCfg.discordWebhookUrl,
+                  customMessage: alertMsg,
+                  marketEvent: branchMovers[0],
+                  canvasName: canvas.name,
+                  botName: childCfg.botName,
+                  includeMarketStats: childCfg.includeMarketStats !== false,
+                });
+                webhookStatus = res.success ? 'success' : 'failed';
+                webhookError = res.error;
+              } catch (err: any) {
+                webhookStatus = 'failed';
+                webhookError = err.message;
+              }
+            }
+
+            await prisma.node.update({
+              where: { id: childNode.id },
+              data: {
+                stateJson: JSON.stringify({
+                  status: 'passed',
+                  lastTriggeredAt: new Date().toLocaleTimeString(),
+                  lastWebhookStatus: webhookStatus,
+                  lastWebhookError: webhookError,
+                }),
+              },
+            });
+
+            await prisma.log.create({
+              data: {
+                canvasId,
+                eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
+                triggeredNodes: JSON.stringify([childNode.id]),
+                detailsJson: JSON.stringify({ results: branchMovers, webhookStatus, webhookError }),
+              },
+            });
+            logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
+          }
+        }
       }
     } else if (targetNode.type === 'alert') {
       triggeredNodes.push(targetNode.id);

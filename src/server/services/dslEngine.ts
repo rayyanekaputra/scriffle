@@ -23,11 +23,12 @@ export function evaluateCondition(ruleStr: string, event: MarketEvent): boolean 
 
     // Provide sanitized context mapping with defined fallback values
     const context: Record<string, any> = {
+      ...(event as any),
       symbol: event.symbol,
       price: event.price || 0,
       prevPrice: event.prevPrice || 0,
-      price_change: event.price_change || 0,
-      priceChange: event.price_change || 0,
+      price_change: event.price_change !== undefined ? event.price_change : 0,
+      priceChange: event.price_change !== undefined ? event.price_change : 0,
       volume: event.volume || 0,
       avg_volume: event.avg_volume || 0,
       avgVolume: event.avg_volume || 0,
