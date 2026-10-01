@@ -56,6 +56,67 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     updateCanvasSnapshot(canvas, logs);
   }, [canvas, logs, updateCanvasSnapshot]);
 
+  // Track seen log IDs to fire in-app toasts for newly executed alert nodes
+  const seenLogIdsRef = useRef<Set<string>>(new Set());
+  const isLogsInitializedRef = useRef(false);
+
+  // When canvasId changes, reset log tracking
+  useEffect(() => {
+    seenLogIdsRef.current.clear();
+    isLogsInitializedRef.current = false;
+  }, [currentCanvasId]);
+
+  // Listen for new alert logs and fire real-time in-app toasts
+  useEffect(() => {
+    if (!logs || logs.length === 0) return;
+
+    if (!isLogsInitializedRef.current) {
+      logs.forEach((l) => seenLogIdsRef.current.add(l.id));
+      isLogsInitializedRef.current = true;
+      return;
+    }
+
+    const newLogs = logs.filter((l) => !seenLogIdsRef.current.has(l.id));
+    if (newLogs.length === 0) return;
+
+    newLogs.forEach((l) => seenLogIdsRef.current.add(l.id));
+
+    newLogs.forEach((log) => {
+      const triggeredNodes = Array.isArray(log.triggeredNodes) ? log.triggeredNodes : [];
+      const alertNode = canvas?.nodes?.find(
+        (n) => n.type === 'alert' && triggeredNodes.includes(n.id)
+      );
+
+      const isAlertLog =
+        Boolean(alertNode) ||
+        log.eventSummary?.startsWith('[Discord]') ||
+        (log.eventSummary && (
+          log.eventSummary.toLowerCase().includes('alert') ||
+          log.eventSummary.toLowerCase().includes('breakout') ||
+          log.eventSummary.toLowerCase().includes('passed') ||
+          log.eventSummary.toLowerCase().includes('failed')
+        ) && triggeredNodes.length > 0);
+
+      if (isAlertLog) {
+        const rawMsg = log.eventSummary || 'Market alert triggered';
+        const cleanMsg = rawMsg.replace(/^\[Discord\]\s*/, '');
+
+        let toastType: 'rising' | 'crashing' | 'alert' | 'info' = 'alert';
+        if (cleanMsg.includes('+') || cleanMsg.toLowerCase().includes('surge') || cleanMsg.toLowerCase().includes('gainer') || cleanMsg.toLowerCase().includes('passed')) {
+          toastType = 'rising';
+        } else if (cleanMsg.includes('-') || cleanMsg.toLowerCase().includes('drop') || cleanMsg.toLowerCase().includes('crash') || cleanMsg.toLowerCase().includes('loser') || cleanMsg.toLowerCase().includes('failed')) {
+          toastType = 'crashing';
+        }
+
+        const title = alertNode?.config?.channel === 'discord'
+          ? 'Market Alert (Discord)'
+          : 'Market Alert';
+
+        showToast(title, cleanMsg, toastType);
+      }
+    });
+  }, [logs, canvas?.nodes, showToast]);
+
   // Panels visibility state (hideable Left Panel & Activity Feed)
   const [isFeedOpen, setIsFeedOpen] = useState(true);
   const [isControlsOpen, setIsControlsOpen] = useState(true);
@@ -374,6 +435,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
         method: 'DELETE',
       });
       if (res.ok) {
+        seenLogIdsRef.current.clear();
         mutateLogs([], false); // Instant optimistic update
         mutateLogs();
         mutate(); // Revalidate canvas to show 0 runs on watcher cards
