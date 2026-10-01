@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 #  Scriffle — Interactive Setup & Onboarding Script (Windows PowerShell)
 # ==============================================================================
 
@@ -26,7 +26,7 @@ function Print-Banner {
 # ------------------------------------------------------------------------------
 # Re-Run Detection: Check if Scriffle is already set up
 # ------------------------------------------------------------------------------
-if ((Test-Path "node_modules") -and (Test-Path "prisma\dev.db")) {
+if ((Test-Path "node_modules") -and (Test-Path "prisma\dev.db") -and (Test-Path "node_modules\.prisma\client")) {
     Print-Banner
     Write-Host "  ✓ Scriffle is already set up on this machine!" -ForegroundColor Green
     Write-Host "  ─────────────────────────────────────────────────────────`n" -ForegroundColor DarkGray
@@ -174,27 +174,32 @@ Write-Host "  ✓  Dependencies installed." -ForegroundColor Green
 # 2. Prisma Generate
 Write-Host "  ⚙️   Generating database client..." -ForegroundColor Cyan
 if ($selectedRuntime -eq "bun") {
-    bunx prisma generate *>&1 | Out-Null
+    bun x --bun prisma generate *>&1 | Out-Null
 } else {
     npx prisma generate *>&1 | Out-Null
 }
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  ❌ Prisma client generation failed (exit code $LASTEXITCODE)." -ForegroundColor Red
-    Write-Host "     Try running 'bunx prisma generate' manually to see the error." -ForegroundColor DarkGray
+    Write-Host "     Try running 'bun x --bun prisma generate' manually to see the error." -ForegroundColor DarkGray
     Exit $LASTEXITCODE
+}
+if (-not (Test-Path "node_modules\.prisma\client")) {
+    Write-Host "  ❌ Prisma client generation reported success but client files are missing." -ForegroundColor Red
+    Write-Host "     Try deleting node_modules and running setup again." -ForegroundColor DarkGray
+    Exit 1
 }
 Write-Host "  ✓  Database client generated." -ForegroundColor Green
 
 # 3. Prisma DB Push (create SQLite database)
 Write-Host "  🗄️   Configuring SQLite database..." -ForegroundColor Cyan
 if ($selectedRuntime -eq "bun") {
-    bunx prisma db push --skip-generate *>&1 | Out-Null
+    bun x --bun prisma db push --skip-generate *>&1 | Out-Null
 } else {
     npx prisma db push --skip-generate *>&1 | Out-Null
 }
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  ❌ Database setup failed (exit code $LASTEXITCODE)." -ForegroundColor Red
-    Write-Host "     Try running 'bunx prisma db push' manually to see the error." -ForegroundColor DarkGray
+    Write-Host "     Try running 'bun x --bun prisma db push' manually to see the error." -ForegroundColor DarkGray
     Exit $LASTEXITCODE
 }
 Write-Host "  ✓  SQLite database configured." -ForegroundColor Green
