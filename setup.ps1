@@ -160,9 +160,9 @@ Write-Host "  Step 3: Setting up Scriffle...`n" -ForegroundColor Cyan
 # 1. Install dependencies
 Write-Host "  📦  Installing dependencies..." -ForegroundColor Cyan
 if ($selectedRuntime -eq "bun") {
-    bun install *>&1 | Out-Null
+    bun install *> $null
 } else {
-    npm install *>&1 | Out-Null
+    npm install *> $null
 }
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  ❌ Dependency installation failed (exit code $LASTEXITCODE)." -ForegroundColor Red
@@ -174,9 +174,9 @@ Write-Host "  ✓  Dependencies installed." -ForegroundColor Green
 # 2. Prisma Generate
 Write-Host "  ⚙️   Generating database client..." -ForegroundColor Cyan
 if ($selectedRuntime -eq "bun") {
-    bun x --bun prisma generate *>&1 | Out-Null
+    bun x --bun prisma generate *> $null
 } else {
-    npx prisma generate *>&1 | Out-Null
+    npx prisma generate *> $null
 }
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  ❌ Prisma client generation failed (exit code $LASTEXITCODE)." -ForegroundColor Red
@@ -193,9 +193,9 @@ Write-Host "  ✓  Database client generated." -ForegroundColor Green
 # 3. Prisma DB Push (create SQLite database)
 Write-Host "  🗄️   Configuring SQLite database..." -ForegroundColor Cyan
 if ($selectedRuntime -eq "bun") {
-    bun x --bun prisma db push --skip-generate *>&1 | Out-Null
+    bun x --bun prisma db push --skip-generate *> $null
 } else {
-    npx prisma db push --skip-generate *>&1 | Out-Null
+    npx prisma db push --skip-generate *> $null
 }
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  ❌ Database setup failed (exit code $LASTEXITCODE)." -ForegroundColor Red
@@ -212,9 +212,9 @@ if ($canvasChoice -eq "2") {
 } else {
     Write-Host "  🌱  Seeding demo workspace..." -ForegroundColor Cyan
     if ($selectedRuntime -eq "bun") {
-        bun run prisma/seed.ts *>&1 | Out-Null
+        bun run prisma/seed.ts *> $null
     } else {
-        npx tsx prisma/seed.ts *>&1 | Out-Null
+        npx tsx prisma/seed.ts *> $null
     }
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  ❌ Demo workspace seeding failed (exit code $LASTEXITCODE)." -ForegroundColor Red
