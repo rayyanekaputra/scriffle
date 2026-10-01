@@ -45,7 +45,7 @@ full fundamental research brief from Sectors — without you clicking anything.
 
 ## Quickstart
 
-Scriffle runs on [Bun](https://bun.sh) (recommended) or Node.js (v18+). Setting it up takes three quick terminal commands — dependencies are installed, a local SQLite database is provisioned and seeded, and the app starts on your machine.
+Scriffle runs on [Bun](https://bun.sh) (recommended) or Node.js (v18+). Setting it up takes three quick terminal commands — dependencies are installed, a local SQLite database is provisioned and seeded, and the app is built and started on your machine.
 
 ### 1. Clone and install dependencies
 
@@ -64,10 +64,11 @@ bun run prisma/seed.ts
 
 *(This creates your local SQLite database at `prisma/dev.db` and loads the starter IDX workspace.)*
 
-### 3. Start Scriffle
+### 3. Build and start Scriffle
 
 ```bash
-bun run dev
+bun run build
+bun run start
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -84,7 +85,8 @@ If you prefer npm over Bun:
 npm install
 npx prisma db push
 npx tsx prisma/seed.ts
-npm run dev
+npm run build
+npm run start
 ```
 
 ---
@@ -92,8 +94,10 @@ npm run dev
 ### Starting a fresh canvas for a presentation or demo
 
 ```bash
-bun run dev --start-fresh
+bun run start --start-fresh
 ```
+
+*(Or `bun run dev --start-fresh` if running the dev server.)*
 
 This creates a clean new canvas without deleting any of your previous projects. It also resets the onboarding tour and guided sandbox missions back to the beginning.
 

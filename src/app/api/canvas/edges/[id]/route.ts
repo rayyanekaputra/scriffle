@@ -7,7 +7,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.edge.delete({
+    await prisma.edge.deleteMany({
       where: { id },
     });
 

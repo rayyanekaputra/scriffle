@@ -46,7 +46,7 @@ export async function DELETE(
       },
     });
 
-    await prisma.node.delete({
+    await prisma.node.deleteMany({
       where: { id },
     });
 
