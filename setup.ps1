@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 #  Scriffle - Interactive Setup and Onboarding Script (Windows PowerShell)
 # ==============================================================================
 
@@ -174,7 +174,11 @@ Write-Host ""
 Write-Host "  Step 3 - Installing Scriffle..." -ForegroundColor Cyan
 Write-Host ""
 
-# --- 3a. Install dependencies ---
+# --- 3a. Clean stale build cache & Install dependencies ---
+if (Test-Path ".next") {
+    Remove-Item -Recurse -Force ".next" -ErrorAction SilentlyContinue
+}
+
 Write-Host "  [1/3] Installing dependencies..." -ForegroundColor White
 if ($selectedRuntime -eq "bun") {
     & bun install
@@ -278,10 +282,18 @@ if ([string]::IsNullOrWhiteSpace($launchConfirm) -or $launchConfirm -match "^[Yy
     Write-Host ""
     Write-Host "  Launching Scriffle..." -ForegroundColor Cyan
     Write-Host ""
-    if ($selectedRuntime -eq "bun") {
-        & bun run dev
+    if ($canvasChoice -eq "2") {
+        if ($selectedRuntime -eq "bun") {
+            & bun run dev --start-fresh
+        } else {
+            & npm run dev -- --start-fresh
+        }
     } else {
-        & npm run dev
+        if ($selectedRuntime -eq "bun") {
+            & bun run dev
+        } else {
+            & npm run dev
+        }
     }
 } else {
     Write-Host ""
