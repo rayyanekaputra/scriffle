@@ -1,5 +1,5 @@
 # ==============================================================================
-#  Scriffle — Interactive Setup & Onboarding Script (Windows PowerShell)
+#  Scriffle — Interactive Setup and Onboarding Script (Windows PowerShell)
 # ==============================================================================
 
 # Require PowerShell 3+ (needed for [string]::IsNullOrWhiteSpace, -match regex, etc.)
@@ -19,7 +19,7 @@ function Print-Banner {
     Write-Host "███████║╚██████╗██║  ██║██║██║     ██║     ███████╗███████╗" -ForegroundColor Cyan
     Write-Host "╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝     ╚══════╝╚══════╝" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  Visual Market Automation & Research Whiteboard" -ForegroundColor White
+    Write-Host "  Visual Market Automation and Research Whiteboard" -ForegroundColor White
     Write-Host "  ─────────────────────────────────────────────────────────" -ForegroundColor DarkGray
 }
 
@@ -69,7 +69,7 @@ Write-Host "  Welcome! Let's get Scriffle set up on your machine." -ForegroundCo
 Write-Host "  This will take less than a minute.`n" -ForegroundColor DarkGray
 
 # ------------------------------------------------------------------------------
-# Step 1: Runtime Detection & Choice
+# Step 1: Runtime Detection and Choice
 # ------------------------------------------------------------------------------
 Write-Host "  Step 1: Choose your runtime" -ForegroundColor Cyan
 Write-Host "  A runtime is the engine that powers Scriffle on your computer.`n" -ForegroundColor DarkGray
@@ -153,7 +153,7 @@ if ([string]::IsNullOrWhiteSpace($canvasChoice)) { $canvasChoice = "1" }
 Write-Host ""
 
 # ------------------------------------------------------------------------------
-# Step 3: Automated Installation & Database Initialization
+# Step 3: Automated Installation and Database Initialization
 # ------------------------------------------------------------------------------
 Write-Host "  Step 3: Setting up Scriffle...`n" -ForegroundColor Cyan
 
