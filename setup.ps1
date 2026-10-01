@@ -12,10 +12,14 @@ $ErrorActionPreference = "Continue"
 
 function Print-Banner {
     Clear-Host
+    Write-Host "  ____            _  __  __ _      " -ForegroundColor Cyan
+    Write-Host " / ___|  ___ _ __(_)/ _|/ _| | ___ " -ForegroundColor Cyan
+    Write-Host " \___ \ / __| '__| | |_| |_| |/ _ \" -ForegroundColor Cyan
+    Write-Host "  ___) | (__| |  | |  _|  _| |  __/" -ForegroundColor Cyan
+    Write-Host " |____/ \___|_|  |_|_| |_| |_|\___|" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  =============================================================" -ForegroundColor Cyan
-    Write-Host "    SCRIFFLE  -  Visual Market Automation and Research Board" -ForegroundColor Cyan
-    Write-Host "  =============================================================" -ForegroundColor Cyan
+    Write-Host "  Visual Market Automation and Research Board" -ForegroundColor White
+    Write-Host "  -------------------------------------------------------------" -ForegroundColor DarkGray
     Write-Host ""
 }
 
