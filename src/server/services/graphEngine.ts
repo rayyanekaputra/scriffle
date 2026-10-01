@@ -8,7 +8,7 @@ import {
   MOCK_TOP_LOSERS,
 } from './sectorsApi';
 import { exportReportToDisk } from './reportExporter';
-import { sendDiscordAlert } from './discordWebhook';
+import { sendDiscordAlert, sendDiscordLeaderboardAlert } from './discordWebhook';
 
 export interface GraphExecutionResult {
   triggeredNodes: string[];
@@ -130,6 +130,50 @@ export function generateFilteredLeaderboardNoteContent(
   });
 
   return `${icon} ${branchTitle}${countStr}${periodStr}\n• Rule: ${rule}\n${rows.join('\n')}\n• Updated: ${new Date().toLocaleTimeString()}`;
+}
+
+export function generateLeaderboardAlertSummary(
+  movers: MarketEvent[],
+  mode?: string,
+  period?: string
+): string {
+  if (!movers || movers.length === 0) {
+    return '📊 Top Movers Alert: No active movers data';
+  }
+  const isGainer = mode === 'top_gainers' || mode === 'Top Gainers' || (movers[0] && movers[0].price_change >= 0);
+  const icon = isGainer ? '🚀' : '🔻';
+  const title = isGainer ? 'Top Gainers' : 'Top Losers';
+  const periodStr = period ? ` (${period.toUpperCase()})` : '';
+  const topList = movers
+    .map((m, idx) => `#${m.rank || idx + 1} ${m.symbol} (${m.price_change >= 0 ? '+' : ''}${m.price_change}%)`)
+    .join(', ');
+
+  return `${icon} ${title}${periodStr}: ${topList}`;
+}
+
+export function generateFilteredLeaderboardAlertSummary(
+  movers: MarketEvent[],
+  rule: string,
+  mode?: string,
+  totalEvaluated?: number,
+  isPassedBranch: boolean = true
+): string {
+  const total = typeof totalEvaluated === 'number' ? totalEvaluated : movers.length;
+  const count = movers.length;
+  const isGainer = mode === 'top_gainers' || mode === 'Top Gainers' || (movers[0] && mode !== 'screener' && movers[0].price_change >= 0);
+  const icon = isPassedBranch ? (mode === 'screener' ? '✨' : isGainer ? '🚀' : '🔻') : '⚖️';
+  const category = mode === 'screener' ? 'Screened Stocks' : isGainer ? 'Top Gainers' : 'Top Losers';
+  const branchWord = isPassedBranch ? 'passed' : 'failed';
+
+  if (!movers || movers.length === 0) {
+    return `📊 Filter Alert: 0/${total} ${category} ${branchWord} "${rule}"`;
+  }
+
+  const topList = movers
+    .map((m, idx) => `#${m.rank || idx + 1} ${m.symbol} (${m.price_change >= 0 ? '+' : ''}${m.price_change}%)`)
+    .join(', ');
+
+  return `${icon} ${count}/${total} ${category} ${branchWord} "${rule}": ${topList}`;
 }
 
 export interface FundamentalMutationInput {
@@ -1127,23 +1171,21 @@ export async function executeGraphForRadarWatcher(
       }
     } else if (targetNode.type === 'alert') {
       triggeredNodes.push(targetNode.id);
-      const isGainer = (top1.price_change || 0) >= 0;
-      const defaultRadarAlertTemplate = `Leaderboard Alert: Top 1 ${isGainer ? 'Gainer' : 'Loser'} is \${symbol} (\${price_change}%)`;
-      const rawRadarTemplate = targetCfg.template || targetCfg.messageTemplate || defaultRadarAlertTemplate;
-      const alertMsg = interpolateTemplate(rawRadarTemplate, top1);
+      const alertMsg = generateLeaderboardAlertSummary(movers, watcherCfg.mode, watcherCfg.period);
 
       let webhookStatus: 'success' | 'failed' | undefined;
       let webhookError: string | undefined;
 
       if (targetCfg.channel === 'discord' && targetCfg.discordWebhookUrl) {
         try {
-          const res = await sendDiscordAlert({
+          const res = await sendDiscordLeaderboardAlert({
             webhookUrl: targetCfg.discordWebhookUrl,
-            customMessage: alertMsg,
-            marketEvent: top1,
+            movers,
+            mode: watcherCfg.mode,
+            period: watcherCfg.period,
             canvasName: canvas.name,
             botName: targetCfg.botName,
-            includeMarketStats: targetCfg.includeMarketStats !== false,
+            customMessage: targetCfg.template || targetCfg.messageTemplate,
           });
           webhookStatus = res.success ? 'success' : 'failed';
           webhookError = res.error;
@@ -1259,56 +1301,61 @@ export async function executeGraphForRadarWatcher(
           mutationsCount++;
           logs.push(`Sticky note updated with filtered Top Movers (${branchMovers.length}/${movers.length} ${isTrueBranch ? 'Passed' : 'Non-matching'})`);
         } else if (childNode.type === 'alert') {
-          if (branchMovers.length > 0) {
-            triggeredNodes.push(childNode.id);
-            const topMover = branchMovers[0];
-            const defaultAlertTemplate = `Filter Alert: \${symbol} (\${price_change}%) passed rule "${rule}"`;
-            const rawAlertTemplate = childCfg.template || childCfg.messageTemplate || defaultAlertTemplate;
-            const alertMsg = interpolateTemplate(rawAlertTemplate, topMover);
+          triggeredNodes.push(childNode.id);
+          const alertMsg = generateFilteredLeaderboardAlertSummary(
+            branchMovers,
+            rule,
+            watcherCfg.mode,
+            movers.length,
+            isTrueBranch
+          );
 
-            let webhookStatus: 'success' | 'failed' | undefined;
-            let webhookError: string | undefined;
+          let webhookStatus: 'success' | 'failed' | undefined;
+          let webhookError: string | undefined;
 
-            if (childCfg.channel === 'discord' && childCfg.discordWebhookUrl) {
-              try {
-                const res = await sendDiscordAlert({
-                  webhookUrl: childCfg.discordWebhookUrl,
-                  customMessage: alertMsg,
-                  marketEvent: topMover,
-                  canvasName: canvas.name,
-                  botName: childCfg.botName,
-                  includeMarketStats: childCfg.includeMarketStats !== false,
-                });
-                webhookStatus = res.success ? 'success' : 'failed';
-                webhookError = res.error;
-              } catch (err: any) {
-                webhookStatus = 'failed';
-                webhookError = err.message;
-              }
+          if (childCfg.channel === 'discord' && childCfg.discordWebhookUrl) {
+            try {
+              const res = await sendDiscordLeaderboardAlert({
+                webhookUrl: childCfg.discordWebhookUrl,
+                movers: branchMovers,
+                mode: watcherCfg.mode,
+                period: watcherCfg.period,
+                rule,
+                totalEvaluated: movers.length,
+                isPassedBranch: isTrueBranch,
+                canvasName: canvas.name,
+                botName: childCfg.botName,
+                customMessage: childCfg.template || childCfg.messageTemplate,
+              });
+              webhookStatus = res.success ? 'success' : 'failed';
+              webhookError = res.error;
+            } catch (err: any) {
+              webhookStatus = 'failed';
+              webhookError = err.message;
             }
-
-            await prisma.node.update({
-              where: { id: childNode.id },
-              data: {
-                stateJson: JSON.stringify({
-                  status: 'passed',
-                  lastTriggeredAt: new Date().toLocaleTimeString(),
-                  lastWebhookStatus: webhookStatus,
-                  lastWebhookError: webhookError,
-                }),
-              },
-            });
-
-            await prisma.log.create({
-              data: {
-                canvasId,
-                eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
-                triggeredNodes: JSON.stringify([childNode.id]),
-                detailsJson: JSON.stringify({ movers: branchMovers, webhookStatus, webhookError }),
-              },
-            });
-            logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
           }
+
+          await prisma.node.update({
+            where: { id: childNode.id },
+            data: {
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: new Date().toLocaleTimeString(),
+                lastWebhookStatus: webhookStatus,
+                lastWebhookError: webhookError,
+              }),
+            },
+          });
+
+          await prisma.log.create({
+            data: {
+              canvasId,
+              eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
+              triggeredNodes: JSON.stringify([childNode.id]),
+              detailsJson: JSON.stringify({ movers: branchMovers, rule, isTrueBranch, webhookStatus, webhookError }),
+            },
+          });
+          logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
         } else if (childNode.type === 'action') {
           triggeredNodes.push(childNode.id);
           await prisma.node.update({
@@ -2042,82 +2089,96 @@ export async function executeGraphForScreener(
           mutationsCount++;
           logs.push(`Sticky note updated with filtered Screener results (${branchMovers.length}/${results.length})`);
         } else if (childNode.type === 'alert') {
-          if (branchMovers.length > 0) {
-            triggeredNodes.push(childNode.id);
-            const alertMsg = `✨ Filtered Screener: ${branchMovers.length} stocks passed rule "${rule}"`;
+          triggeredNodes.push(childNode.id);
+          const alertMsg = generateFilteredLeaderboardAlertSummary(
+            branchMovers,
+            rule,
+            'screener',
+            screenerMovers.length,
+            isTrueBranch
+          );
 
-            let webhookStatus: 'success' | 'failed' | undefined;
-            let webhookError: string | undefined;
+          let webhookStatus: 'success' | 'failed' | undefined;
+          let webhookError: string | undefined;
 
-            if (childCfg.channel === 'discord' && childCfg.discordWebhookUrl) {
-              try {
-                const res = await sendDiscordAlert({
-                  webhookUrl: childCfg.discordWebhookUrl,
-                  customMessage: alertMsg,
-                  marketEvent: branchMovers[0],
-                  canvasName: canvas.name,
-                  botName: childCfg.botName,
-                  includeMarketStats: childCfg.includeMarketStats !== false,
-                });
-                webhookStatus = res.success ? 'success' : 'failed';
-                webhookError = res.error;
-              } catch (err: any) {
-                webhookStatus = 'failed';
-                webhookError = err.message;
-              }
+          if (childCfg.channel === 'discord' && childCfg.discordWebhookUrl) {
+            try {
+              const res = await sendDiscordLeaderboardAlert({
+                webhookUrl: childCfg.discordWebhookUrl,
+                movers: branchMovers,
+                mode: 'screener',
+                rule,
+                totalEvaluated: screenerMovers.length,
+                isPassedBranch: isTrueBranch,
+                canvasName: canvas.name,
+                botName: childCfg.botName,
+                customMessage: childCfg.template || childCfg.messageTemplate,
+              });
+              webhookStatus = res.success ? 'success' : 'failed';
+              webhookError = res.error;
+            } catch (err: any) {
+              webhookStatus = 'failed';
+              webhookError = err.message;
             }
-
-            await prisma.node.update({
-              where: { id: childNode.id },
-              data: {
-                stateJson: JSON.stringify({
-                  status: 'passed',
-                  lastTriggeredAt: new Date().toLocaleTimeString(),
-                  lastWebhookStatus: webhookStatus,
-                  lastWebhookError: webhookError,
-                }),
-              },
-            });
-
-            await prisma.log.create({
-              data: {
-                canvasId,
-                eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
-                triggeredNodes: JSON.stringify([childNode.id]),
-                detailsJson: JSON.stringify({ results: branchMovers, webhookStatus, webhookError }),
-              },
-            });
-            logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
           }
+
+          await prisma.node.update({
+            where: { id: childNode.id },
+            data: {
+              stateJson: JSON.stringify({
+                status: 'passed',
+                lastTriggeredAt: new Date().toLocaleTimeString(),
+                lastWebhookStatus: webhookStatus,
+                lastWebhookError: webhookError,
+              }),
+            },
+          });
+
+          await prisma.log.create({
+            data: {
+              canvasId,
+              eventSummary: webhookStatus === 'success' ? `[Discord] ${alertMsg}` : alertMsg,
+              triggeredNodes: JSON.stringify([childNode.id]),
+              detailsJson: JSON.stringify({ results: branchMovers, rule, isTrueBranch, webhookStatus, webhookError }),
+            },
+          });
+          logs.push(`Notification fired: ${alertMsg}${webhookStatus === 'success' ? ' (Sent to Discord)' : ''}`);
         }
       }
     } else if (targetNode.type === 'alert') {
       triggeredNodes.push(targetNode.id);
-      const alertMsg = `✨ AI Screener found ${results.length} companies matching "${screenerCfg.query || 'query'}"`;
+      const screenerMovers: MarketEvent[] = results.map((c, idx) => ({
+        symbol: c.symbol,
+        name: c.company_name,
+        price: c.price || 0,
+        prevPrice: c.price || 0,
+        price_change: c.price_change !== undefined ? c.price_change : 0,
+        volume: c.volume || 0,
+        avg_volume: 0,
+        rank: idx + 1,
+        timestamp: new Date().toLocaleTimeString(),
+        pe: c.pe,
+        pb: c.pb,
+        roe: c.roe,
+        market_cap: c.market_cap,
+        dividend_yield: c.dividend_yield,
+        revenue: c.revenue,
+      } as any));
+
+      const alertMsg = generateLeaderboardAlertSummary(screenerMovers, 'screener');
 
       let webhookStatus: 'success' | 'failed' | undefined;
       let webhookError: string | undefined;
 
       if (targetCfg.channel === 'discord' && targetCfg.discordWebhookUrl) {
         try {
-          const topComp = results[0];
-          const topEvent: MarketEvent | undefined = topComp ? {
-            symbol: topComp.symbol,
-            price: topComp.price || 0,
-            prevPrice: topComp.price || 0,
-            price_change: 0,
-            volume: 0,
-            avg_volume: 0,
-            timestamp: new Date().toLocaleTimeString(),
-          } : undefined;
-
-          const res = await sendDiscordAlert({
+          const res = await sendDiscordLeaderboardAlert({
             webhookUrl: targetCfg.discordWebhookUrl,
-            customMessage: alertMsg,
-            marketEvent: topEvent,
+            movers: screenerMovers,
+            mode: 'screener',
             canvasName: canvas.name,
             botName: targetCfg.botName,
-            includeMarketStats: targetCfg.includeMarketStats !== false,
+            customMessage: targetCfg.template || targetCfg.messageTemplate,
           });
           webhookStatus = res.success ? 'success' : 'failed';
           webhookError = res.error;

@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **269 unit tests across 26 suites (100% green)** |
+| Master Unit Tests | **277 unit tests across 26 suites (100% green)** |
 
 ---
 
@@ -631,8 +631,8 @@ src/__tests__/
     ├── creditCosts.test.ts           ← 7 tests — centralized pricing registry, burst calculations
     ├── topMoversApi.test.ts          ← 3 tests — param builder omits 'all' classifications, structured error capture
     ├── loadingState.test.ts          ← 7 tests — LoadingContext idle state, single/concurrent tasks, update, runTracked resolve/throw, 12s timeout
-    ├── conditionBranching.test.ts    ← 12 tests — dual output routing (True vs False branch), legacy null handle fallback, multi-mover / radar & screener condition filtering
-    └── discordWebhook.test.ts        ← 10 tests — URL validation, rich sentiment embeds, payload formatting, error handling, timeout protection
+    ├── conditionBranching.test.ts    ← 16 tests — dual output routing (True vs False branch), legacy null handle fallback, multi-mover / radar & screener condition filtering, leaderboard alert summary text generators
+    └── discordWebhook.test.ts        ← 14 tests — URL validation, single-event embeds, multi-asset leaderboard embeds, filter rule ratio header, error handling, timeout protection
 ```
 
 ### Exported Test-Friendly Functions in `graphEngine.ts`
@@ -640,7 +640,9 @@ These were made `export` specifically to enable unit testing (previously private
 - `interpolateTemplate(template, event)` — template variable substitution
 - `generateDefaultNoteContent(event)` — auto-generated note for triggered market events
 - `generateLeaderboardNoteContent(movers, mode, period)` — radar watcher leaderboard formatter
+- `generateLeaderboardAlertSummary(movers, mode, period)` — radar watcher & screener direct multi-stock alert message formatter
 - `generateFilteredLeaderboardNoteContent(movers, rule, mode, period, total, isPassed)` — filtered top movers & screener condition note formatter
+- `generateFilteredLeaderboardAlertSummary(movers, rule, mode, total, isPassed)` — filtered top movers & screener condition alert message formatter
 - `generateScreenerNoteContent(query, results, queryValues)` — AI screener output formatter
 
 ### ⚠️ THE TESTING MANDATE — APPLIES STRICTLY TO CODE CHANGES

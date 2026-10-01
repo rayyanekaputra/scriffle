@@ -175,3 +175,149 @@ export async function sendDiscordAlert({
     };
   }
 }
+
+export interface SendDiscordLeaderboardAlertParams {
+  webhookUrl: string;
+  movers: MarketEvent[];
+  mode?: string;
+  period?: string;
+  rule?: string;
+  totalEvaluated?: number;
+  isPassedBranch?: boolean;
+  canvasName?: string;
+  botName?: string;
+  customMessage?: string;
+}
+
+/**
+ * Dispatches a formatted multi-asset leaderboard or filtered rule alert to a Discord webhook.
+ */
+export async function sendDiscordLeaderboardAlert({
+  webhookUrl,
+  movers,
+  mode,
+  period,
+  rule,
+  totalEvaluated,
+  isPassedBranch = true,
+  canvasName,
+  botName = 'Scriffle Market Bot',
+  customMessage,
+}: SendDiscordLeaderboardAlertParams): Promise<{ success: boolean; statusCode: number; error?: string }> {
+  const cleanUrl = webhookUrl?.trim();
+  if (!isValidDiscordWebhookUrl(cleanUrl)) {
+    return {
+      success: false,
+      statusCode: 400,
+      error: 'Invalid Discord webhook URL format. Must start with https://discord.com/api/webhooks/...',
+    };
+  }
+
+  const isGainer = mode === 'top_gainers' || mode === 'Top Gainers' || (movers[0] && movers[0].price_change >= 0);
+  const color = !isPassedBranch ? 0x8b5cf6 : isGainer ? 0x10b981 : 0xff5b79;
+  const icon = isPassedBranch ? (isGainer ? '🚀' : '🔻') : '⚖️';
+  const categoryTitle = isGainer ? 'Top Gainers' : 'Top Losers';
+  const periodStr = period ? ` (${period.toUpperCase()})` : '';
+  const total = typeof totalEvaluated === 'number' ? totalEvaluated : movers.length;
+
+  let title = '';
+  if (rule) {
+    title = isPassedBranch
+      ? `${icon} Filtered ${categoryTitle}: ${movers.length}/${total} Passed`
+      : `${icon} Non-Matching ${categoryTitle}: ${movers.length}/${total} Filtered`;
+  } else {
+    title = `${icon} ${categoryTitle} Leaderboard${periodStr}`;
+  }
+
+  const fields: DiscordEmbedField[] = [];
+
+  // Limit to top 10 movers for Discord embed limits
+  const displayMovers = movers.slice(0, 10);
+  for (let i = 0; i < displayMovers.length; i++) {
+    const m = displayMovers[i];
+    const rank = m.rank ? `#${m.rank}` : `#${i + 1}`;
+    const priceStr = m.price ? `Rp ${m.price.toLocaleString('id-ID')}` : 'N/A';
+    const changeStr = `${m.price_change >= 0 ? '+' : ''}${m.price_change}%`;
+    const volStr = m.volume
+      ? m.volume >= 1_000_000_000
+        ? `${(m.volume / 1_000_000_000).toFixed(1)}B`
+        : m.volume >= 1_000_000
+        ? `${(m.volume / 1_000_000).toFixed(1)}M`
+        : `${(m.volume / 1_000).toFixed(0)}K`
+      : '';
+
+    fields.push({
+      name: `${rank} ${m.symbol}${m.name ? ` (${m.name})` : ''}`,
+      value: `${priceStr} (${changeStr})${volStr ? ` • Vol: ${volStr}` : ''}`,
+      inline: true,
+    });
+  }
+
+  if (canvasName) {
+    fields.push({
+      name: 'Canvas Board',
+      value: `📋 ${canvasName}`,
+      inline: true,
+    });
+  }
+
+  let description = customMessage || '';
+  if (rule) {
+    const ruleLine = `**Filter Rule:** \`${rule}\``;
+    description = description ? `${description}\n${ruleLine}` : ruleLine;
+  }
+  if (movers.length === 0) {
+    const emptyNotice = `• No companies ${isPassedBranch ? 'passed' : 'failed'} the condition (0/${total} matched).`;
+    description = description ? `${description}\n${emptyNotice}` : emptyNotice;
+  }
+
+  const payload: DiscordWebhookPayload = {
+    username: botName || 'Scriffle Market Bot',
+    avatar_url: 'https://raw.githubusercontent.com/rayyanekaputra/scriffle/main/public/favicon.ico',
+    embeds: [
+      {
+        title,
+        description: description || undefined,
+        color,
+        fields: fields.length > 0 ? fields : undefined,
+        footer: {
+          text: 'Scriffle • Autonomous Financial Canvas for IDX',
+        },
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  };
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+  try {
+    const res = await fetch(cleanUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (res.ok || res.status === 204) {
+      return { success: true, statusCode: res.status };
+    }
+
+    const errText = await res.text();
+    return {
+      success: false,
+      statusCode: res.status,
+      error: `Discord responded with HTTP ${res.status}: ${errText.slice(0, 120)}`,
+    };
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    return {
+      success: false,
+      statusCode: 500,
+      error: err.name === 'AbortError' ? 'Webhook request timed out after 6 seconds' : (err.message || 'Network dispatch failure'),
+    };
+  }
+}
+

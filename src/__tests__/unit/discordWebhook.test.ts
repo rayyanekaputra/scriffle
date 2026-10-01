@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   isValidDiscordWebhookUrl,
   sendDiscordAlert,
+  sendDiscordLeaderboardAlert,
 } from '@/server/services/discordWebhook';
 import { MarketEvent } from '@/types/canvas';
 
@@ -183,6 +184,139 @@ describe('Discord Webhook Service (discordWebhook.ts)', () => {
       expect(result.success).toBe(false);
       expect(result.statusCode).toBe(500);
       expect(result.error).toContain('Connection refused to discord.com');
+    });
+  });
+
+  describe('sendDiscordLeaderboardAlert multi-asset payload generation', () => {
+    const validUrl = 'https://discord.com/api/webhooks/123456789/test-token';
+
+    const testMovers: MarketEvent[] = [
+      {
+        symbol: 'PTRO',
+        price: 18500,
+        prevPrice: 16150,
+        price_change: 14.5,
+        volume: 24500000,
+        avg_volume: 12000000,
+        rank: 1,
+        timestamp: '14:30:00',
+      },
+      {
+        symbol: 'BUMI',
+        price: 142,
+        prevPrice: 131,
+        price_change: 8.2,
+        volume: 180000000,
+        avg_volume: 95000000,
+        rank: 2,
+        timestamp: '14:30:00',
+      },
+    ];
+
+    it('formats direct Top Gainers leaderboard alert with all stocks in 3-column fields', async () => {
+      let capturedBody: any = null;
+
+      globalThis.fetch = vi.fn().mockImplementation(async (url, opts) => {
+        capturedBody = JSON.parse(opts.body);
+        return new Response(null, { status: 204 });
+      });
+
+      const result = await sendDiscordLeaderboardAlert({
+        webhookUrl: validUrl,
+        movers: testMovers,
+        mode: 'top_gainers',
+        period: '1d',
+        canvasName: 'Daily Movers Canvas',
+      });
+
+      expect(result.success).toBe(true);
+      expect(capturedBody).toBeDefined();
+
+      const embed = capturedBody.embeds[0];
+      expect(embed.title).toBe('🚀 Top Gainers Leaderboard (1D)');
+      expect(embed.color).toBe(0x10b981); // Mint green for gainers
+
+      const stock1Field = embed.fields.find((f: any) => f.name.includes('PTRO'));
+      expect(stock1Field).toBeDefined();
+      expect(stock1Field.value).toContain('Rp 18.500');
+      expect(stock1Field.value).toContain('+14.5%');
+
+      const stock2Field = embed.fields.find((f: any) => f.name.includes('BUMI'));
+      expect(stock2Field).toBeDefined();
+      expect(stock2Field.value).toContain('+8.2%');
+
+      const canvasField = embed.fields.find((f: any) => f.name === 'Canvas Board');
+      expect(canvasField?.value).toBe('📋 Daily Movers Canvas');
+    });
+
+    it('formats filtered Condition True branch leaderboard alert with rule header and count ratio', async () => {
+      let capturedBody: any = null;
+
+      globalThis.fetch = vi.fn().mockImplementation(async (url, opts) => {
+        capturedBody = JSON.parse(opts.body);
+        return new Response(null, { status: 204 });
+      });
+
+      const result = await sendDiscordLeaderboardAlert({
+        webhookUrl: validUrl,
+        movers: [testMovers[0]],
+        mode: 'top_gainers',
+        rule: 'price_change > 10',
+        totalEvaluated: 5,
+        isPassedBranch: true,
+      });
+
+      expect(result.success).toBe(true);
+      const embed = capturedBody.embeds[0];
+      expect(embed.title).toContain('1/5 Passed');
+      expect(embed.description).toContain('price_change > 10');
+      expect(embed.color).toBe(0x10b981);
+    });
+
+    it('formats filtered Condition False branch leaderboard alert with Lavender color', async () => {
+      let capturedBody: any = null;
+
+      globalThis.fetch = vi.fn().mockImplementation(async (url, opts) => {
+        capturedBody = JSON.parse(opts.body);
+        return new Response(null, { status: 204 });
+      });
+
+      const result = await sendDiscordLeaderboardAlert({
+        webhookUrl: validUrl,
+        movers: [testMovers[1]],
+        mode: 'top_gainers',
+        rule: 'price_change > 10',
+        totalEvaluated: 5,
+        isPassedBranch: false,
+      });
+
+      expect(result.success).toBe(true);
+      const embed = capturedBody.embeds[0];
+      expect(embed.title).toContain('1/5 Filtered');
+      expect(embed.color).toBe(0x8b5cf6); // Lavender/purple for filtered branch
+    });
+
+    it('formats 0-match condition alert gracefully without crashing', async () => {
+      let capturedBody: any = null;
+
+      globalThis.fetch = vi.fn().mockImplementation(async (url, opts) => {
+        capturedBody = JSON.parse(opts.body);
+        return new Response(null, { status: 204 });
+      });
+
+      const result = await sendDiscordLeaderboardAlert({
+        webhookUrl: validUrl,
+        movers: [],
+        mode: 'top_losers',
+        rule: 'price_change < -20',
+        totalEvaluated: 5,
+        isPassedBranch: true,
+      });
+
+      expect(result.success).toBe(true);
+      const embed = capturedBody.embeds[0];
+      expect(embed.title).toContain('0/5 Passed');
+      expect(embed.description).toContain('No companies passed');
     });
   });
 });

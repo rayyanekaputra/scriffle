@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { evaluateCondition } from '@/server/services/dslEngine';
+import {
+  generateLeaderboardAlertSummary,
+  generateFilteredLeaderboardAlertSummary,
+} from '@/server/services/graphEngine';
 import { MarketEvent } from '@/types/canvas';
 
 interface MockEdge {
@@ -295,6 +299,52 @@ describe('Radar Movers & Screener Condition Filtering Engine', () => {
     expect(result.status).toBe('passed');
     expect(result.passedCount).toBe(1);
     expect(result.passedMovers[0].symbol).toBe('BBRI');
+  });
+
+  describe('Leaderboard & Filtered Alert Summary text generators', () => {
+    it('generates multi-stock direct alert summary with rank numbers and percentages', () => {
+      const summary = generateLeaderboardAlertSummary(MOCK_MOVERS, 'top_gainers', '1d');
+      expect(summary).toContain('🚀 Top Gainers (1D)');
+      expect(summary).toContain('#1 PTRO (+14.46%)');
+      expect(summary).toContain('#2 BUMI (+8.52%)');
+      expect(summary).toContain('#3 BBCA (+2%)');
+      expect(summary).toContain('#4 TLKM (+0.69%)');
+    });
+
+    it('generates filtered True branch alert summary with matching ratio', () => {
+      const passed = [MOCK_MOVERS[0], MOCK_MOVERS[1]];
+      const summary = generateFilteredLeaderboardAlertSummary(
+        passed,
+        'price_change > 5',
+        'top_gainers',
+        4,
+        true
+      );
+      expect(summary).toBe('🚀 2/4 Top Gainers passed "price_change > 5": #1 PTRO (+14.46%), #2 BUMI (+8.52%)');
+    });
+
+    it('generates filtered False branch alert summary with non-matching ratio', () => {
+      const failed = [MOCK_MOVERS[2], MOCK_MOVERS[3]];
+      const summary = generateFilteredLeaderboardAlertSummary(
+        failed,
+        'price_change > 5',
+        'top_gainers',
+        4,
+        false
+      );
+      expect(summary).toBe('⚖️ 2/4 Top Gainers failed "price_change > 5": #3 BBCA (+2%), #4 TLKM (+0.69%)');
+    });
+
+    it('generates graceful summary when 0 stocks pass filter', () => {
+      const summary = generateFilteredLeaderboardAlertSummary(
+        [],
+        'price_change > 50',
+        'top_gainers',
+        4,
+        true
+      );
+      expect(summary).toBe('📊 Filter Alert: 0/4 Top Gainers passed "price_change > 50"');
+    });
   });
 });
 
