@@ -45,36 +45,49 @@ full fundamental research brief from Sectors — without you clicking anything.
 
 ## Quickstart
 
-Download Scriffle and run the installer. It detects your environment, configures the local
-database, and opens the app in your browser automatically. No configuration files to edit.
+Scriffle runs on [Bun](https://bun.sh) (recommended) or Node.js (v18+). Setting it up takes three quick terminal commands — dependencies are installed, a local SQLite database is provisioned and seeded, and the app starts on your machine.
 
-**macOS / Linux**
+### 1. Clone and install dependencies
+
 ```bash
 git clone https://github.com/rayyanekaputra/scriffle.git
 cd scriffle
-./setup.sh
+bun install
 ```
 
-**Windows**
-```cmd
-git clone https://github.com/rayyanekaputra/scriffle.git
-cd scriffle
-setup.bat
+### 2. Set up the local database
+
+```bash
+bunx prisma db push
+bun run prisma/seed.ts
 ```
 
-*(PowerShell alternative: `powershell -ExecutionPolicy Bypass -File .\setup.ps1`)*
+*(This creates your local SQLite database at `prisma/dev.db` and loads the starter IDX workspace.)*
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-Once the app opens, paste your Sectors API key into the toolbar at the top of the screen to
-enable live market data. Get a free key at [sectors.app](https://sectors.app). Without a key,
-the app runs on simulated data so you can explore the interface before going live.
-
-### Starting Scriffle later
+### 3. Start Scriffle
 
 ```bash
 bun run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+Once the app opens, paste your Sectors API key into the toolbar at the top of the screen to enable live market data. Get a free key at [sectors.app](https://sectors.app). Without a key, Scriffle runs seamlessly on simulated data so you can explore the interface before going live.
+
+---
+
+### Using npm / Node.js instead?
+
+If you prefer npm over Bun:
+
+```bash
+npm install
+npx prisma db push
+npx tsx prisma/seed.ts
+npm run dev
+```
+
+---
 
 ### Starting a fresh canvas for a presentation or demo
 
@@ -82,8 +95,7 @@ bun run dev
 bun run dev --start-fresh
 ```
 
-This creates a clean new canvas without deleting any of your previous projects. It also resets
-the onboarding tour and guided missions back to the beginning.
+This creates a clean new canvas without deleting any of your previous projects. It also resets the onboarding tour and guided sandbox missions back to the beginning.
 
 ---
 
