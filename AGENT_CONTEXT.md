@@ -406,6 +406,12 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
+- **Interactive Setup Scripts & Windows 10 / PowerShell 5.1 Ground-Up Rewrite (`setup.ps1`, `setup.bat`, `setup.sh`)**:
+  - Rewrote `setup.ps1` from scratch to guarantee 100% native execution in Windows PowerShell 5.1 (default on Windows 10).
+  - Enforced strict UTF-8 with BOM (`0xEF, 0xBB, 0xBF`) and CRLF (`\r\n`) line endings, preventing PS5.1 fallback ANSI character-splitting corruptions.
+  - Replaced all non-BMP emojis and multi-byte Unicode characters with pure 7-bit ASCII and standard ASCII art banner (`_`, `/`, `\`, `|`), eliminating string quotation breaks and rogue syntax errors.
+  - Switched `$ErrorActionPreference` to `"Continue"` and removed fragile stream-merging pipelines (`*> $null`, `*>&1 | Out-Null`) that previously swallowed `$LASTEXITCODE` or caused `NativeCommandError` failures on CLI tool warnings.
+  - Enabled TLS 1.2 support (`[SecurityProtocolType]::Tls12`) and updated `Invoke-RestMethod` with `-Uri "https://bun.sh/install.ps1" -UseBasicParsing` for automated Bun runtime installations on Windows.
 - **Unified Interactive Spotlight Onboarding Tour & Hands-On Sandbox Bridge (`OnboardingContext.tsx`, `SpotlightOverlay.tsx`, `TourCardPopover.tsx`, `ResumeTourPill.tsx`, `tourStepsConfig.ts`, `onboarding.test.ts`)**:
   - Implemented 6-step interactive onboarding tour: Welcome Intro, Node Library & Curated 150+ IDX Stocks discovery, Auto-Wiring & True/False logic branching, Live Engine & Market Streaming, Spotlight Search (`Ctrl+K`) & Themes, and Step 6 Sandbox Tutorial Bridge spotlighting `[data-tour="tutorial-btn"]` with direct `openTutorial()` launching.
   - Added *"Don't show this on startup"* persistent opt-out checkbox on Step 6 (`scriffle_suppress_startup_tour`) with automatic one-time migration for legacy `scriffle_onboarded_v1` users.
@@ -522,6 +528,7 @@ hackathon/
 11. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
 12. **Mock Poll Randomization:** Mock market polling in `sectorsApi.ts` applies realistic per-call randomized distributions (±0–7% price movements, volume multipliers) so nodes update dynamically during offline demos.
 13. **Turbopack `fs` warnings:** 3 pre-existing warnings about `fs.existsSync`/`fs.statSync`/`path.resolve` in `src/app/api/file/open-location/route.ts` appear in `bun run build` — not actionable, ignore.
+14. **Windows Setup Script Compatibility (`setup.ps1` & `setup.bat`):** Must maintain UTF-8 with BOM (`\xef\xbb\xbf`) + CRLF line endings, 7-bit ASCII only (no emojis or multi-byte Unicode strings), `$ErrorActionPreference = "Continue"`, and TLS 1.2 enabled to ensure seamless execution on Windows 10 default PowerShell 5.1.
 
 
 

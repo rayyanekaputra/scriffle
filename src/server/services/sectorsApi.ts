@@ -73,7 +73,6 @@ function generateMockMarketEvent(symbol: string): MarketEvent {
     price_change,
     volume,
     avg_volume: base.avg_volume,
-    rank: base.rank,
     timestamp: new Date().toLocaleTimeString(),
   };
 }
@@ -116,7 +115,6 @@ export async function getMarketDataForSymbol(
             price_change: parseFloat(priceChange.toFixed(2)),
             volume: latest.volume ?? 1000000,
             avg_volume: 10000000,
-            rank: 1,
             timestamp: new Date().toLocaleTimeString(),
           },
           isLive: true,
@@ -137,7 +135,6 @@ export async function getMarketDataForSymbol(
             price_change: parseFloat(Number(priceChange).toFixed(2)),
             volume: data.volume ?? 1000000,
             avg_volume: data.avg_volume ?? 10000000,
-            rank: data.market_cap_rank ?? data.rank ?? 1,
             timestamp: new Date().toLocaleTimeString(),
           },
           isLive: true,

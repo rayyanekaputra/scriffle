@@ -802,8 +802,14 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                 <div>
                   <label className={`font-bold block mb-1 ${labelColor}`}>Dynamic Note Template</label>
                   <textarea
-                    value={config.noteTemplate || ''}
-                    onChange={(e) => setConfig({ ...config, noteTemplate: e.target.value })}
+                    value={config.noteTemplate ?? config.template ?? ''}
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        noteTemplate: e.target.value,
+                        template: e.target.value,
+                      })
+                    }
                     rows={3}
                     placeholder="e.g. 📈 ${symbol} Thesis Triggered at Rp${price} (${timestamp})"
                     className={`w-full rounded-xl border-2 p-2.5 font-medium leading-relaxed focus:outline-none ${inputBg}`}

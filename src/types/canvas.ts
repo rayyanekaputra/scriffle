@@ -80,6 +80,7 @@ export interface ActionConfig {
   params?: Record<string, any>;
   targetSymbol?: string;
   template?: string;
+  noteTemplate?: string;
   interval?: number;
 }
 
