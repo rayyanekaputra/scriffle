@@ -237,6 +237,33 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                   <label className={`font-bold block ${labelColor}`}>Polling Interval (Seconds)</label>
                   <span className={`text-[10px] font-mono ${secondaryColor}`}>Display cadence</span>
                 </div>
+                <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                  {[
+                    { label: '5s', val: 5 },
+                    { label: '15s', val: 15 },
+                    { label: '30s', val: 30 },
+                    { label: '1m', val: 60 },
+                    { label: '5m', val: 300 },
+                    { label: '15m', val: 900 },
+                  ].map((chip) => (
+                    <button
+                      key={chip.val}
+                      type="button"
+                      onClick={() => setConfig({ ...config, interval: chip.val })}
+                      className={`px-2 py-1 rounded-lg border text-[10px] font-semibold transition cursor-pointer ${
+                        (config.interval || 300) === chip.val
+                          ? 'bg-[#0050FF] text-white border-[#0050FF]'
+                          : isDark
+                          ? 'bg-[#1C1E26] border-[#292B38] text-[#BAC0D0] hover:border-[#383B4A]'
+                          : isMono
+                          ? 'bg-[#F4F3EF] border-[#D8D4CA] text-[#242321] hover:border-[#B5B0A2]'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
                 <input
                   type="number"
                   min={1}
@@ -342,12 +369,53 @@ export const EditNodeModal: React.FC<EditNodeModalProps> = ({
                     onChange={(e) => setConfig({ ...config, interval: parseInt(e.target.value, 10) })}
                     className={`w-full rounded-xl border-2 p-2.5 font-semibold focus:outline-none ${inputBg}`}
                   >
-                    <option value={60}>Every 1 min</option>
-                    <option value={300}>Every 5 mins</option>
-                    <option value={900}>Every 15 mins</option>
+                    <option value={5}>Every 5 seconds</option>
+                    <option value={10}>Every 10 seconds</option>
+                    <option value={15}>Every 15 seconds</option>
+                    <option value={30}>Every 30 seconds</option>
+                    <option value={60}>Every 1 minute</option>
+                    <option value={300}>Every 5 minutes</option>
+                    <option value={900}>Every 15 minutes</option>
                     <option value={3600}>Every 1 hour</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <span className={`font-bold block mb-1 text-[11px] ${secondaryColor}`}>Quick Cadence Presets</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { label: '5s', val: 5 },
+                    { label: '10s', val: 10 },
+                    { label: '15s', val: 15 },
+                    { label: '30s', val: 30 },
+                    { label: '1m', val: 60 },
+                    { label: '5m', val: 300 },
+                  ].map((chip) => (
+                    <button
+                      key={chip.val}
+                      type="button"
+                      onClick={() => setConfig({ ...config, interval: chip.val })}
+                      className={`px-2 py-1 rounded-lg border text-[10px] font-semibold transition cursor-pointer ${
+                        (config.interval || 300) === chip.val
+                          ? 'bg-[#0050FF] text-white border-[#0050FF]'
+                          : isDark
+                          ? 'bg-[#1C1E26] border-[#292B38] text-[#BAC0D0] hover:border-[#383B4A]'
+                          : isMono
+                          ? 'bg-[#F4F3EF] border-[#D8D4CA] text-[#242321] hover:border-[#B5B0A2]'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={`mt-1.5 rounded-lg p-2 text-[11px] leading-relaxed border ${
+                isDark ? 'bg-[#191A22] border-[#252732] text-[#8C90A0]' : isMono ? 'bg-[#F4F3EF] border-[#E2DFD6] text-[#78756D]' : 'bg-slate-50 border-slate-200 text-slate-500'
+              }`}>
+                💡 <strong>Per-Node Cadence:</strong> When Stream Data / Auto-Polling is active, this AI Screener will re-screen the market every <strong>{config.interval || 300}s</strong> independently.
               </div>
 
               <div className={`rounded-xl p-3 border space-y-1.5 ${

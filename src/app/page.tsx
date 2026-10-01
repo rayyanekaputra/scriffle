@@ -342,7 +342,14 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     }
   };
 
-  // Per-Watcher Node Auto-Polling Engine
+  // Keep session API key synchronized on window for manual triggers
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__sectorsSessionApiKey = sectorsApiKey;
+    }
+  }, [sectorsApiKey]);
+
+  // Per-Node Auto-Polling & Streaming Engine (Watchers + Screeners)
   const nodeTimersRef = useRef<{ [nodeId: string]: NodeJS.Timeout }>({});
 
   useEffect(() => {
@@ -355,8 +362,11 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
     }
 
     const watcherNodes = canvas.nodes.filter((n) => n.type === 'watcher');
-    if (watcherNodes.length === 0) return;
+    const screenerNodes = canvas.nodes.filter((n) => n.type === 'screener');
 
+    if (watcherNodes.length === 0 && screenerNodes.length === 0) return;
+
+    // 1. Schedule Watcher nodes
     watcherNodes.forEach((node) => {
       const cfg = (node.config || {}) as any;
       const symbol = (cfg.symbol || 'BBCA').toUpperCase();
@@ -379,6 +389,7 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
                 body: JSON.stringify({
                   canvasId: canvas.id,
                   apiKey: sectorsApiKey.trim(),
+                  nodeId: node.id,
                   symbol,
                 }),
               });
@@ -397,6 +408,45 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
       nodeTimersRef.current[node.id] = setInterval(pollWatcher, intervalSec * 1000);
     });
 
+    // 2. Schedule Screener nodes
+    screenerNodes.forEach((node) => {
+      const cfg = (node.config || {}) as any;
+      const queryPrompt = cfg.query || 'top 5 banks by market cap';
+      const intervalSec = Math.max(1, Number(cfg.interval) || 300);
+
+      const pollScreener = async () => {
+        try {
+          await runTracked(
+            {
+              label: `Screening IDX universe: "${queryPrompt}"`,
+              category: 'screener',
+              nodeId: node.id,
+            },
+            async () => {
+              const res = await fetch('/api/engine/trigger', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  canvasId: canvas.id,
+                  apiKey: sectorsApiKey.trim(),
+                  nodeId: node.id,
+                }),
+              });
+              if (res.ok) {
+                mutate();
+                mutateLogs();
+              }
+            }
+          );
+        } catch (err) {
+          console.error(`Auto-screening failed for node ${node.id}:`, err);
+        }
+      };
+
+      // Set recurring interval for this screener
+      nodeTimersRef.current[node.id] = setInterval(pollScreener, intervalSec * 1000);
+    });
+
     return () => {
       Object.values(nodeTimersRef.current).forEach((timer) => clearInterval(timer));
       nodeTimersRef.current = {};
@@ -406,14 +456,20 @@ export function WhiteboardContent({ canvasId }: { canvasId?: string }) {
   const handleToggleAutoTick = (active: boolean, intervalSec?: number) => {
     setAutoTickActive(active);
     if (active) {
-      const count = canvas?.nodes?.filter((n) => n.type === 'watcher').length || 0;
+      const watcherCount = canvas?.nodes?.filter((n) => n.type === 'watcher').length || 0;
+      const screenerCount = canvas?.nodes?.filter((n) => n.type === 'screener').length || 0;
+      const parts: string[] = [];
+      if (watcherCount > 0) parts.push(`${watcherCount} Watcher node${watcherCount !== 1 ? 's' : ''}`);
+      if (screenerCount > 0) parts.push(`${screenerCount} AI Screener node${screenerCount !== 1 ? 's' : ''}`);
+      const summary = parts.length > 0 ? parts.join(' and ') : '0 automated nodes';
+
       showToast(
         'Auto-Polling Started',
-        `Active on ${count} Watcher node${count !== 1 ? 's' : ''}, polling each at its configured interval.`,
+        `Active on ${summary}, running each at its configured interval.`,
         'rising'
       );
     } else {
-      showToast('Auto-Polling Paused', 'All watcher node polling schedules stopped', 'info');
+      showToast('Auto-Polling Paused', 'All automated polling and screening schedules stopped', 'info');
     }
   };
 

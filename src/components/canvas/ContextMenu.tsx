@@ -257,7 +257,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
           <button
             onClick={() => {
-              onAddElement('screener', { query: 'top 5 banks by market cap', limit: 5 });
+              onAddElement('screener', { query: 'top 5 banks by market cap', limit: 5, interval: 300 });
               onClose();
             }}
             className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 font-semibold transition cursor-pointer ${buttonHover}`}

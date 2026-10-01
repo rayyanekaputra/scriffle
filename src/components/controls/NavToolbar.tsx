@@ -265,7 +265,7 @@ export const NavToolbar: React.FC<NavToolbarProps> = ({
 
         {/* Screener Node */}
         <button
-          onClick={() => handleAddAtCenter('screener', { query: 'top 5 banks by market cap', limit: 5 })}
+          onClick={() => handleAddAtCenter('screener', { query: 'top 5 banks by market cap', limit: 5, interval: 300 })}
           disabled={isLocked}
           title={isLocked ? 'Canvas is locked' : 'Add AI Screener'}
           className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all active:scale-95 ${creationButtonClass}`}

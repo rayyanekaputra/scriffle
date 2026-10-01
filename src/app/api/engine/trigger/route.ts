@@ -32,123 +32,136 @@ export async function POST(req: Request) {
     }
 
     const watcherNodes = targetCanvas.nodes.filter((n) => n.type === 'watcher');
+    const screenerNodes = targetCanvas.nodes.filter((n) => n.type === 'screener');
     const allEvents = [];
     let isOverallLive = true;
     const results = [];
 
+    const isTargetingScreener = targetNodeId && screenerNodes.some((s) => s.id === targetNodeId);
+    const isTargetingWatcher = (targetNodeId && watcherNodes.some((w) => w.id === targetNodeId)) || (requestedSymbols && requestedSymbols.length > 0);
+
     const upperRequested = requestedSymbols?.map((s) => s.toUpperCase().replace(/\s+/g, '_'));
 
-    // 1. Process each Radar Watcher (Top Gainers / Top Losers)
-    for (const watcher of watcherNodes) {
-      try {
-        const cfg = JSON.parse(watcher.configJson || '{}');
-        const sym = cfg.symbol?.toUpperCase();
-        const isGainers = cfg.mode === 'top_gainers' || sym === 'TOP_GAINERS' || sym === 'TOP GAINERS';
-        const isLosers = cfg.mode === 'top_losers' || sym === 'TOP_LOSERS' || sym === 'TOP LOSERS';
+    // 1. Process each Radar Watcher (Top Gainers / Top Losers) - skip if explicitly targeting a screener
+    if (!isTargetingScreener) {
+      for (const watcher of watcherNodes) {
+        if (targetNodeId && targetNodeId !== watcher.id) continue;
+        try {
+          const cfg = JSON.parse(watcher.configJson || '{}');
+          const sym = cfg.symbol?.toUpperCase();
+          const isGainers = cfg.mode === 'top_gainers' || sym === 'TOP_GAINERS' || sym === 'TOP GAINERS';
+          const isLosers = cfg.mode === 'top_losers' || sym === 'TOP_LOSERS' || sym === 'TOP LOSERS';
 
-        if (isGainers || isLosers) {
-          // If specific symbol was requested, check if this radar watcher matches
-          if (upperRequested && upperRequested.length > 0) {
-            const matchesGainers = isGainers && (upperRequested.includes('TOP_GAINERS') || upperRequested.includes('TOP GAINERS'));
-            const matchesLosers = isLosers && (upperRequested.includes('TOP_LOSERS') || upperRequested.includes('TOP LOSERS'));
-            if (!matchesGainers && !matchesLosers) continue;
-          }
-
-          const limit = typeof cfg.limit === 'number' && cfg.limit > 0 ? cfg.limit : 5;
-          const period = cfg.period || '1d';
-          const minMcapBillion = typeof cfg.minMcapBillion === 'number' ? cfg.minMcapBillion : undefined;
-          const classifications = cfg.classifications || 'all';
-
-          const { gainers, losers, isLive, error: apiError } = await getTopMarketMovers(apiKey, {
-            nStock: limit,
-            periods: period,
-            minMcapBillion,
-            classifications,
-          });
-
-          if (!isLive) isOverallLive = false;
-
-          // If in live mode (apiKey provided) and API call errored, log to Activity Feed
-          if (apiError && apiKey && apiKey.trim().length > 0) {
-            await prisma.log.create({
-              data: {
-                canvasId: targetCanvas.id,
-                eventSummary: `⚠️ Sectors API Error (${apiError.code}): ${apiError.message}`,
-                triggeredNodes: JSON.stringify([watcher.id]),
-                detailsJson: JSON.stringify({
-                  endpoint: '/v2/companies/top-changes/',
-                  error: apiError,
-                  watcherId: watcher.id,
-                }),
-              },
-            });
-          }
-
-          const selectedMovers = isGainers ? gainers : losers;
-          if (selectedMovers.length > 0) {
-            allEvents.push(...selectedMovers);
-            const radarRes = await executeGraphForRadarWatcher(
-              targetCanvas.id,
-              watcher.id,
-              selectedMovers,
-              apiKey,
-              isLive,
-              apiError
-            );
-            results.push({ watcherId: watcher.id, type: isGainers ? 'top_gainers' : 'top_losers', ...radarRes });
-          }
-        }
-      } catch (err) {
-        console.error('Error processing radar watcher:', err);
-      }
-    }
-
-    // 2. Extract and process standard single monitored symbols
-    let singleSymbols = Array.from(
-      new Set(
-        watcherNodes
-          .map((n) => {
-            try {
-              const cfg = JSON.parse(n.configJson || '{}');
-              const sym = cfg.symbol?.toUpperCase();
-              if (cfg.mode === 'top_gainers' || cfg.mode === 'top_losers') return null;
-              if (sym === 'TOP_GAINERS' || sym === 'TOP_LOSERS' || sym === 'TOP GAINERS' || sym === 'TOP LOSERS') return null;
-              return cfg.symbol?.toUpperCase();
-            } catch {
-              return null;
+          if (isGainers || isLosers) {
+            // If specific symbol was requested, check if this radar watcher matches
+            if (upperRequested && upperRequested.length > 0) {
+              const matchesGainers = isGainers && (upperRequested.includes('TOP_GAINERS') || upperRequested.includes('TOP GAINERS'));
+              const matchesLosers = isLosers && (upperRequested.includes('TOP_LOSERS') || upperRequested.includes('TOP LOSERS'));
+              if (!matchesGainers && !matchesLosers) continue;
             }
-          })
-          .filter(Boolean)
-      )
-    ) as string[];
 
-    if (requestedSymbols && requestedSymbols.length > 0) {
-      const upperReq = requestedSymbols.map((s) => s.toUpperCase());
-      singleSymbols = singleSymbols.filter((s) => upperReq.includes(s));
-    }
+            const limit = typeof cfg.limit === 'number' && cfg.limit > 0 ? cfg.limit : 5;
+            const period = cfg.period || '1d';
+            const minMcapBillion = typeof cfg.minMcapBillion === 'number' ? cfg.minMcapBillion : undefined;
+            const classifications = cfg.classifications || 'all';
 
-    // 3. Process Screener nodes
-    const screenerNodes = targetCanvas.nodes.filter((n) => n.type === 'screener');
-    for (const screener of screenerNodes) {
-      if (targetNodeId && targetNodeId !== screener.id) continue;
-      try {
-        const screenerRes = await executeGraphForScreener(targetCanvas.id, screener.id, apiKey);
-        results.push({ screenerId: screener.id, type: 'screener', ...screenerRes });
-      } catch (err) {
-        console.error('Error executing screener node:', err);
+            const { gainers, losers, isLive, error: apiError } = await getTopMarketMovers(apiKey, {
+              nStock: limit,
+              periods: period,
+              minMcapBillion,
+              classifications,
+            });
+
+            if (!isLive) isOverallLive = false;
+
+            // If in live mode (apiKey provided) and API call errored, log to Activity Feed
+            if (apiError && apiKey && apiKey.trim().length > 0) {
+              await prisma.log.create({
+                data: {
+                  canvasId: targetCanvas.id,
+                  eventSummary: `⚠️ Sectors API Error (${apiError.code}): ${apiError.message}`,
+                  triggeredNodes: JSON.stringify([watcher.id]),
+                  detailsJson: JSON.stringify({
+                    endpoint: '/v2/companies/top-changes/',
+                    error: apiError,
+                    watcherId: watcher.id,
+                  }),
+                },
+              });
+            }
+
+            const selectedMovers = isGainers ? gainers : losers;
+            if (selectedMovers.length > 0) {
+              allEvents.push(...selectedMovers);
+              const radarRes = await executeGraphForRadarWatcher(
+                targetCanvas.id,
+                watcher.id,
+                selectedMovers,
+                apiKey,
+                isLive,
+                apiError
+              );
+              results.push({ watcherId: watcher.id, type: isGainers ? 'top_gainers' : 'top_losers', ...radarRes });
+            }
+          }
+        } catch (err) {
+          console.error('Error processing radar watcher:', err);
+        }
       }
     }
 
-    if (singleSymbols.length > 0) {
-      const { events, isLive } = await syncMarketSnapshots(singleSymbols, apiKey);
-      if (!isLive) isOverallLive = false;
-      allEvents.push(...events);
+    // 2. Extract and process standard single monitored symbols - skip if explicitly targeting a screener
+    if (!isTargetingScreener) {
+      let singleSymbols = Array.from(
+        new Set(
+          watcherNodes
+            .filter((n) => !targetNodeId || n.id === targetNodeId)
+            .map((n) => {
+              try {
+                const cfg = JSON.parse(n.configJson || '{}');
+                const sym = cfg.symbol?.toUpperCase();
+                if (cfg.mode === 'top_gainers' || cfg.mode === 'top_losers') return null;
+                if (sym === 'TOP_GAINERS' || sym === 'TOP_LOSERS' || sym === 'TOP GAINERS' || sym === 'TOP LOSERS') return null;
+                return cfg.symbol?.toUpperCase();
+              } catch {
+                return null;
+              }
+            })
+            .filter(Boolean)
+        )
+      ) as string[];
 
-      for (const ev of events) {
-        const res = await executeGraphForEvent(targetCanvas.id, ev, apiKey);
-        results.push({ symbol: ev.symbol, ...res });
+      if (requestedSymbols && requestedSymbols.length > 0) {
+        const upperReq = requestedSymbols.map((s) => s.toUpperCase());
+        singleSymbols = singleSymbols.filter((s) => upperReq.includes(s));
       }
-    } else if (allEvents.length === 0 && (!requestedSymbols || requestedSymbols.length === 0) && watcherNodes.length === 0 && screenerNodes.length === 0) {
+
+      if (singleSymbols.length > 0) {
+        const { events, isLive } = await syncMarketSnapshots(singleSymbols, apiKey);
+        if (!isLive) isOverallLive = false;
+        allEvents.push(...events);
+
+        for (const ev of events) {
+          const res = await executeGraphForEvent(targetCanvas.id, ev, apiKey);
+          results.push({ symbol: ev.symbol, ...res });
+        }
+      }
+    }
+
+    // 3. Process Screener nodes - skip if explicitly targeting a watcher
+    if (!isTargetingWatcher) {
+      for (const screener of screenerNodes) {
+        if (targetNodeId && targetNodeId !== screener.id) continue;
+        try {
+          const screenerRes = await executeGraphForScreener(targetCanvas.id, screener.id, apiKey);
+          results.push({ screenerId: screener.id, type: 'screener', ...screenerRes });
+        } catch (err) {
+          console.error('Error executing screener node:', err);
+        }
+      }
+    }
+
+    if (!isTargetingScreener && allEvents.length === 0 && (!requestedSymbols || requestedSymbols.length === 0) && watcherNodes.length === 0 && screenerNodes.length === 0) {
       const { events, isLive } = await syncMarketSnapshots(['BBCA'], apiKey);
       if (!isLive) isOverallLive = false;
       allEvents.push(...events);

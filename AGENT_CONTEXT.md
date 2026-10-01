@@ -31,7 +31,7 @@
 | Runtime | **Bun** (v1.4.0) exclusively — use `bun add`, `bunx`, `bun dev` |
 | DSL Evaluator | `expr-eval` — NEVER use raw `eval()` |
 | Financial Data | Sectors.app API v2 (live) + realistic offline mock fallback |
-| Master Unit Tests | **277 unit tests across 26 suites (100% green)** |
+| Master Unit Tests | **287 unit tests across 28 suites (100% green)** |
 
 ---
 
@@ -406,6 +406,12 @@ hackathon/
 
 ## 10. Open Backlog (Prioritized)
 
+- **AI Screener Stream Data & Sub-Minute Cadence Engine (`src/app/page.tsx`, `src/app/api/engine/trigger/route.ts`, `EditNodeModal.tsx`, `ScreenerNode.tsx`, `screenerStream.test.ts`)**:
+  - Extended client-side auto-stream engine (`page.tsx`) to register independent interval timers for both `watcherNodes` and `screenerNodes` (`pollScreener`), resolving the issue where boards with only Screener nodes (or mixed boards) did not trigger Screeners during continuous Stream Data.
+  - Implemented route targeting in `/api/engine/trigger` ensuring targeted Screener runs (`targetNodeId`) bypass Watcher and Radar loops, while targeted Watcher ticks bypass Screener runs, and global "Do Once" synchronizes all cards.
+  - Added sub-minute interval options (`Every 5 seconds`, `Every 10 seconds`, `Every 15 seconds`, `Every 30 seconds`, `Every 1 minute`, `Every 5 minutes`, `Every 15 minutes`, `Every 1 hour`) and quick-select preset chips (`5s`, `10s`, `15s`, `30s`, `1m`, `5m`) in `EditNodeModal.tsx` for both Watcher and Screener cards.
+  - Added footer cadence transparency badge (`Cadence: 15s`) to `ScreenerNode.tsx`.
+  - Added unit test suite `screenerStream.test.ts` — 287 total passing unit tests across 28 suites (100% green).
 - **Top Movers & AI Screener Condition Filtering Engine (`graphEngine.ts`, `dslEngine.ts`, `conditionBranching.test.ts`, `leaderboard.test.ts`)**:
   - Direct condition evaluation for Radar Watchers (`top_gainers`, `top_losers`) and AI Screener results (`ScreenerCompanyResult[]`) via `evaluateCondition(rule, event)`.
   - Condition nodes update state immediately (`status: 'passed'` if $\ge 1$ match, `'failed'` if 0 matches), eliminating the perpetual `"Waiting"` state.
@@ -534,18 +540,9 @@ hackathon/
 10. **No WebSockets:** Short-polling via SWR only (2s). Intentional — simpler and robust enough for demo scale.
 11. **Bun only:** Do not use `npm` or `yarn`. All commands use `bun`, `bunx`, `bun run`.
 12. **Mock Poll Randomization:** Mock market polling in `sectorsApi.ts` applies realistic per-call randomized distributions (±0–7% price movements, volume multipliers) so nodes update dynamically during offline demos.
-13. **Turbopack `fs` warnings:** 3 pre-existing warnings about `fs.existsSync`/`fs.statSync`/`path.resolve` in `src/app/api/file/open-location/route.ts` appear in `bun run build` — not actionable, ignore.
-<<<<<<< New base: Merge pull request #27 from rayyanekaputra/finalizing-primsa
-14. **Windows Setup Script Compatibility (`setup.ps1` & `setup.bat`):** Must maintain UTF-8 with BOM (`\xef\xbb\xbf`) + CRLF line endings, 7-bit ASCII only (no emojis or multi-byte Unicode strings), `$ErrorActionPreference = "Continue"`, and TLS 1.2 enabled to ensure seamless execution on Windows 10 default PowerShell 5.1.
-
-
-||||||| Common ancestor
-
-
-=======
 14. **Turbopack `@prisma/client` External Module Resolution:** In Next.js 16 + Turbopack, Prisma Client must be declared in `serverExternalPackages: ['@prisma/client', '.prisma/client']` in `next.config.ts` so Turbopack treats Prisma's native engine binary as external rather than attempting to bundle it into hashed client chunks.
-15. **Installation & Setup Standard:** All interactive installer scripts (`setup.bat`, `setup.ps1`, `setup.sh`) have been deprecated and removed in favor of standard, reliable CLI commands (`bun install` -> `bunx prisma db push` -> `bun run prisma/seed.ts` -> `bun run dev`).
->>>>>>> Current commit: fix: never mind. lets just do it manually
+15. **Installation & Setup Standard:** Standard reliable CLI commands (`bun install` -> `bunx prisma db push` -> `bun run prisma/seed.ts` -> `bun run dev`).
+16. **AI Screener & Watcher Auto-Stream Cadence:** Both Watcher and Screener nodes operate independent timers in `page.tsx` with sub-minute interval options down to 5s.
 
 ---
 
@@ -604,11 +601,11 @@ All historical plan documents are in `context/`. Key ones to reference:
 
 ## 14. Testing Architecture (Implemented)
 
-> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 269 tests must stay green.
+> **IMPORTANT FOR ALL AGENTS:** The project has a live unit test suite. Run `bun test` before and after any change. All 287 tests must stay green.
 
 ### Current State
 - **Tool:** Vitest v5 (`bun test` / `bun run test:watch` / `bun run test:coverage`)
-- **269 tests, 0 failures, 26 suites, ~240ms runtime**
+- **287 tests, 0 failures, 28 suites, ~250ms runtime**
 - **Config:** `vitest.config.ts` at project root (has `@` path alias wired to `./src`)
 
 ### Test File Map
@@ -621,6 +618,7 @@ src/__tests__/
     ├── interpolateTemplate.test.ts   ← 20 tests — all ${variables}, volume formatting (K/M/B), edge cases
     ├── leaderboard.test.ts           ← 25 tests — gainers/losers formatting, rank indicators, empty input, mock movers fallback, filtered leaderboard formatting, direct note rendering
     ├── screenerNote.test.ts          ← 15 tests — screener output structure, company rows, fallbacks
+    ├── screenerStream.test.ts        ← 6 tests — sub-minute cadence validation (5s, 10s, 15s, 30s) and route targeting logic
     ├── searchIndexer.test.ts         ← 15 tests — fuzzy node search indexing, ticker, rule & sticker emoji matching
     ├── spatialNavigator.test.ts      ← 8 tests — Tab / Shift+Tab non-oscillating spatial & connected traversal with wrap-around
     ├── quickAddNavigator.test.ts     ← 10 tests — spatial offset collision calculation, node recommendations, inherited config & false-branch defaults, standardized zap icon

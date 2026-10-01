@@ -386,7 +386,7 @@ export const SimulationBar: React.FC<SimulationBarProps> = ({
 
           <p className={`text-[10px] leading-tight ${textMuted}`}>
             {autoTickActive
-              ? 'Continuous stream active across watcher nodes.'
+              ? 'Continuous stream active across watcher and screener nodes.'
               : isLiveMode
               ? 'Sync live market data once or start auto-polling.'
               : 'Sync mock market data once or stream continuous simulation.'}

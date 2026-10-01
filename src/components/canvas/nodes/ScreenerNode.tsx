@@ -409,9 +409,22 @@ export const ScreenerNode = memo(({ id, data, selected }: NodeProps) => {
           <MingIcon name="time_line" size={12} />
           {state.lastTriggeredAt || 'Not executed yet'}
         </span>
-        <span className="font-medium text-[#0050FF]">
-          {results.length > 0 ? `${results.length} stocks` : 'Ready'}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`font-mono px-1.5 py-0.5 rounded border text-[9px] ${
+              isDark
+                ? 'bg-[#1C1E26] border-[#292B38] text-[#8C90A0]'
+                : isMono
+                ? 'bg-[#F4F3EF] border-[#D8D4CA] text-[#78756D]'
+                : 'bg-slate-50 border-slate-200 text-slate-500'
+            }`}
+          >
+            Cadence: {config.interval || 300}s
+          </span>
+          <span className="font-semibold text-[#0050FF]">
+            {results.length > 0 ? `${results.length} stocks` : 'Ready'}
+          </span>
+        </div>
       </div>
 
       {/* Flow Handles with Quick-Add [+] Connector */}
