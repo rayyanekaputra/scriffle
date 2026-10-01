@@ -60,10 +60,13 @@ export function interpolateTemplate(template: string, event: MarketEvent): strin
   });
 }
 
-export function generateDefaultNoteContent(event: MarketEvent): string {
+export function generateDefaultNoteContent(event: MarketEvent, options?: { isRadar?: boolean }): string {
   const isGainer = (event.price_change || 0) >= 0;
   const icon = isGainer ? '🚀' : '🔻';
-  const category = event.rank ? `${isGainer ? 'TOP GAINER' : 'TOP LOSER'} #${event.rank}` : `${event.symbol} MARKET TICK`;
+  const isRadar = options?.isRadar || (typeof event.rank === 'number' && event.rank > 0 && Boolean((event as any).isRadar));
+  const category = (isRadar && event.rank)
+    ? `${isGainer ? 'TOP GAINER' : 'TOP LOSER'} #${event.rank}`
+    : `${event.symbol} ${isGainer ? 'SURGE' : 'UPDATE'}`;
   const formattedPrice = event.price ? `Rp ${event.price.toLocaleString('id-ID')}` : 'N/A';
   const formattedChange = `${isGainer ? '+' : ''}${event.price_change}%`;
   const formattedVolume = event.volume
@@ -488,7 +491,7 @@ export async function executeGraphForEvent(
         updatedContent = interpolateTemplate(rawText, curEvent);
       } else {
         // Natural sticky note update: generate clean structured financial summary
-        updatedContent = generateDefaultNoteContent(curEvent);
+        updatedContent = generateDefaultNoteContent(curEvent, { isRadar: false });
       }
 
       await prisma.node.update({
@@ -567,10 +570,14 @@ export async function executeGraphForEvent(
       });
 
       if (nodeConfig.action === 'create_note') {
-        const rawContent = nodeConfig.params?.template || nodeConfig.template;
+        const rawContent =
+          nodeConfig.template ||
+          nodeConfig.noteTemplate ||
+          nodeConfig.params?.template ||
+          nodeConfig.params?.noteTemplate;
         const noteContent = rawContent
           ? interpolateTemplate(rawContent, curEvent)
-          : generateDefaultNoteContent(curEvent);
+          : generateDefaultNoteContent(curEvent, { isRadar: false });
 
         // Count how many children this action node has already spawned to cascade cleanly
         const existingSpawned = canvas.edges.filter((e) => e.fromId === node.id);
@@ -912,10 +919,14 @@ export async function executeGraphForRadarWatcher(
 
         for (let i = 0; i < movers.length; i++) {
           const mover = movers[i];
-          const rawContent = targetCfg.params?.template || targetCfg.template;
+          const rawContent =
+            targetCfg.template ||
+            targetCfg.noteTemplate ||
+            targetCfg.params?.template ||
+            targetCfg.params?.noteTemplate;
           const noteContent = rawContent
             ? interpolateTemplate(rawContent, mover)
-            : generateDefaultNoteContent(mover);
+            : generateDefaultNoteContent(mover, { isRadar: true });
 
           const spawnIdx = baseSpawnIndex + i;
           const newX = targetNode.positionX + 280 + (spawnIdx % 2 === 1 ? 25 : 0);

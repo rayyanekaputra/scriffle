@@ -121,3 +121,28 @@ describe('interpolateTemplate — edge cases', () => {
     expect(result).toBe('Rank: ');
   });
 });
+
+describe('generateDefaultNoteContent — single watcher vs radar mode isolation', () => {
+  it('formats single stock watcher update as SURGE/UPDATE without TOP GAINER #X badge', () => {
+    const { generateDefaultNoteContent } = require('@/server/services/graphEngine');
+    const result = generateDefaultNoteContent(BBCA_SURGE);
+    expect(result).toContain('BBCA SURGE');
+    expect(result).not.toContain('TOP GAINER');
+    expect(result).toContain('Price:');
+  });
+
+  it('formats single stock watcher drop as DROP/UPDATE without TOP LOSER #X badge', () => {
+    const { generateDefaultNoteContent } = require('@/server/services/graphEngine');
+    const result = generateDefaultNoteContent(TLKM_DROP);
+    expect(result).toContain('TLKM UPDATE');
+    expect(result).not.toContain('TOP LOSER');
+  });
+
+  it('formats radar leaderboard movers with TOP GAINER / TOP LOSER #X when isRadar is true', () => {
+    const { generateDefaultNoteContent } = require('@/server/services/graphEngine');
+    const moverEvent = { ...BBCA_SURGE, rank: 1 };
+    const result = generateDefaultNoteContent(moverEvent, { isRadar: true });
+    expect(result).toContain('TOP GAINER #1');
+    expect(result).toContain('BBCA');
+  });
+});
