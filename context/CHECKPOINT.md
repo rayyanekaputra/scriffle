@@ -11,7 +11,7 @@
 * **Typography:** Strict **`Stack Sans Text`** loaded directly from Google Fonts. Zero all-caps, zero spaced-out letters. Clean sentence/title case.
 * **Icons:** **MingCute Icons** loaded locally from `public/mingcute/Mingcute.css` (e.g. `MingIcon name="..."`).
 * **Runtime & Package Manager:** **Bun** (v1.4.0) exclusively.
-* **Master Unit Test Suite:** **239 unit tests across 25 test suites (100% green).**
+* **Master Unit Test Suite:** **257 unit tests across 26 test suites (100% green).**
 
 ---
 
@@ -228,8 +228,25 @@ hackathon/
 ## ⚡ 5. Verification & Common Commands
 
 * **Run Dev Server:** `bun dev` (runs on `http://localhost:3000`)
-* **Run Unit Tests:** `bun test` (**169 tests across 15 suites, 100% green, ~520ms**)
+* **Run Dev (fresh board):** `bun run dev --start-fresh`
+* **Run Unit Tests:** `bun test` (**257 tests across 26 suites, 100% green, ~200ms**)
 * **Run Production Build:** `bun run build`
 * **Reset & Seed Demo Canvas:** `bun run prisma/seed.ts`
-* **Run Engine Smoke Test:** `bun run src/server/test-engine.ts`
 * **Push DB Schema Changes:** `bunx prisma db push`
+* **Open DB Browser:** `bunx prisma studio`
+
+---
+
+## 📄 6. Documentation Files
+
+| File | Purpose |
+|---|---|
+| `README.md` | User-facing product guide — non-intimidating, zero emojis, Sectors API emphasis, anchor nav, plain-English node guide, preset links |
+| `TECHNICAL_GUIDE.md` | Full developer reference — architecture, DB schema, REST API (13 endpoints), `.scriffle` format, all 10 node config schemas, DSL syntax, `.scrifflemes` theme format, test inventory, dev commands, extension guide |
+| `SCRIFFLE_AI_SPEC.md` | LLM system prompt + exhaustive `.scriffle` format spec for AI-generated canvas boards |
+| `context/BACKLOG.md` | Open tasks, sprint history, Saturday freeze launch checklist |
+| `context/CHECKPOINT.md` | This file — implementation status snapshot for agent handover |
+| `context/QA_TESTING_GUIDE.md` | Partner QA checklist — 22 sections, full E2E demo flow, build verification sign-off |
+| `context/TESTING_PLAN.md` | Full 3-tier testing strategy and mandate |
+| `context/README_RESTRUCTURING_PLAN.md` | Implementation plan for README.md + TECHNICAL_GUIDE.md restructuring |
+| `context/TECHNICAL_GUIDE_PLAN.md` | Section-by-section blueprint for TECHNICAL_GUIDE.md |

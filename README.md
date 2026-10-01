@@ -1,250 +1,156 @@
 # Scriffle
 
-**Scriffle** is an event-driven visual workflow whiteboard designed for financial market research on **Indonesian stocks** (IDX), powered by the [Sectors.app API](https://sectors.app).
+A visual research workspace for Indonesian stocks, powered by the
+[Sectors.app API](https://sectors.app).
 
-Think **FigJam × n8n**, but purpose-built for the stock market:
-- Build a whiteboard of connected nodes (market data triggers, rule evaluators, automated sticky notes, rich Discord alerts, research files, and self-spawning pipelines).
-- The background engine monitors IDX market data and **auto-mutates the canvas in real time** without user interaction.
-- Presentation & control drawers let presenters stream live ticks or realistic mock market distributions for seamless live pitch demonstrations.
-- Interactive **Spotlight Tour & 6-Mission Guided Sandbox Tutorial** teaches you every capability through live canvas action detection.
+> Too many platforms to switch between for research. Scriffle lets you automate data fetching
+> and brainstorm visually — all in one canvas.
 
-> *"Too many platforms to switch between for research. Scriffle lets you automate data fetching and brainstorm visually — all in one canvas."*
+Scriffle connects to the [Sectors.app API](https://sectors.app) to pull live IDX price data,
+run AI-powered stock screener queries, and generate institutional research briefs on demand.
+Get your free API key at [sectors.app](https://sectors.app) and paste it into the top toolbar
+when you open the app.
 
-Built for the **Sectors 2026 Hackathon** by **thelast10years** ([@rayyanekaputra](https://github.com/rayyanekaputra) & [@artyaaryatama](https://github.com/artyaaryatama)).
+If you don't have a key yet, Scriffle runs on realistic simulated IDX data so you can explore
+the canvas, load example templates, and follow the guided tour without waiting.
+
+Built for the **Sectors 2026 Hackathon** by **thelast10years**
+([@rayyanekaputra](https://github.com/rayyanekaputra) & [@artyaaryatama](https://github.com/artyaaryatama)).
+The API key is held in memory for your session only and is never saved to disk.
 
 ---
 
-## ⚡ 1-Step Interactive Setup & Quickstart
+[How It Works](#how-it-works) · [Quickstart](#quickstart) · [Nodes](#the-nodes) · [Example Templates](#example-templates) · [Shortcuts](#keyboard-shortcuts) · [For Developers](./TECHNICAL_GUIDE.md)
 
-Scriffle includes an interactive, zero-friction installer that automatically detects your environment, configures the SQLite database, and launches the app:
+---
 
-### macOS / Linux
+## How It Works
+
+Scriffle is a canvas of connected cards. Each card has a job. Together, they form a live
+automation pipeline that runs in the background while you think, present, or do other work.
+
+**1. Watch** — Drop a Watcher card onto the canvas. Point it at any Indonesian stock (e.g. BBCA)
+or ask it to track today's top gainers across the entire IDX. It polls live price data from
+Sectors on a timer you set.
+
+**2. Filter** — Connect a Condition card and write a plain rule, like *"if the price moved more
+than 3.5% today and volume was above average"*. The canvas routes data down the True path or
+the False path depending on the result.
+
+**3. Act** — Connect the output to a Sticky Note, a Discord Alert, or a Research Action.
+Scriffle executes automatically — updating your notes, notifying your team, or generating a
+full fundamental research brief from Sectors — without you clicking anything.
+
+---
+
+## Quickstart
+
+Download Scriffle and run the installer. It detects your environment, configures the local
+database, and opens the app in your browser automatically. No configuration files to edit.
+
+**macOS / Linux**
 ```bash
 git clone https://github.com/rayyanekaputra/scriffle.git
 cd scriffle
 ./setup.sh
 ```
 
-### Windows
+**Windows**
 ```cmd
 git clone https://github.com/rayyanekaputra/scriffle.git
 cd scriffle
 setup.bat
 ```
-*(or run `powershell -ExecutionPolicy Bypass -File .\setup.ps1`)*
 
----
-
-### 🎮 Starting Scriffle Later
-
-Once setup is complete, you can start Scriffle anytime using:
-
-```bash
-bun run dev          # Start development server
-bun run start        # Start production server (after bun run build)
-```
-
-**Want a fresh blank board for a live pitch or new project?**
-```bash
-bun run dev --start-fresh
-```
-> 💡 **What `--start-fresh` does:**
-> - Non-destructively creates a brand-new project board in SQLite (preserves historical canvases).
-> - Seeds clean starter state with `cycleCount: 0` and empty execution logs.
-> - Resets the **Spotlight Onboarding Tour** to Step 1 and the **6 Hands-On Missions** to 0/6 pending.
+*(PowerShell alternative: `powershell -ExecutionPolicy Bypass -File .\setup.ps1`)*
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
----
+Once the app opens, paste your Sectors API key into the toolbar at the top of the screen to
+enable live market data. Get a free key at [sectors.app](https://sectors.app). Without a key,
+the app runs on simulated data so you can explore the interface before going live.
 
-## 🎯 Key Capabilities
-
-- **10 Distinct Node Types**: 6 automated graph nodes (`watcher`, `condition`, `note`, `alert`, `action`, `screener`) and 4 visual annotation nodes (`text`, `sticker`, `image`, `file`).
-- **Interactive Spotlight Tour & 6-Mission Sandbox Challenge**: Guided onboarding with live DOM spotlight masking, *"Don't show on startup"* preferences, and real-time task detection checking off missions as you build on canvas.
-- **Curated 150+ IDX Stock Chooser**: Instant `<0.3ms` token & keyword matcher across Indonesian listed companies (`popularIdxCompanies.ts`), surfacing top 12 blue chips (`BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, `GOTO`, `ADRO`, etc.) with AI screener fallback.
-- **AI Natural Language Company Screener**: Plain English queries (e.g. *"top 5 banks by market cap"*, *"coal mining companies with high dividend"*) dynamically resolving to IDX company rankings and streaming downstream.
-- **Top Movers Leaderboard & Radar**: Live ranked Top Gainers & Losers from `/v2/companies/top-changes/` with theme-aware rank badges (#1 gold, #2 silver, #3 bronze).
-- **Dual-Branching Condition Nodes**: Upper **True** (Emerald) and lower **False** (Rose) ports with branch-aware BFS traversal.
-- **Native Discord Webhook Alerts**: Formatted financial embed cards with dynamic sentiment colors (Mint for gains, Coral for drops), volume statistics, and 1-click test ping.
-- **Institutional Fundamental Briefs**: Action nodes auto-generate and export HTML/PDF briefs directly to disk (`reports/`) with dynamic in-place `Rev 2+` revision updates.
-- **Quick-Add Flow Auto-Wiring**: Floating `[+]` port handles and drag-to-empty-canvas drop popover with spatial collision avoidance.
-- **Multi-Theme Engine**: Built-in Light, Mono (warm-paper `#F4F3EF`), and Dark (soft charcoal `#0F1014`) modes, plus plain-text `.scrifflemes` custom themes (Bloomberg Terminal, Nord, Gruvbox, Tokyo Night, Solarized Dark).
-- **Multi-Project Workspace**: URL-based project tabs (`/b/[id]`), project switcher modal, and atomic `.scriffle` file export/restore.
-- **Figma-Style Canvas Ergonomics**: 8-point multi-selection bounding box, grouping (`Ctrl+G` / `Ctrl+Shift+G`), isolation focus mode, Spotlight Search (`Ctrl+K`), and spacious Keyboard Shortcuts modal (`?`).
-- **Institutional Design System**: 2px flat outline system, zero drop shadows, MingCute icons, and `Stack Sans Text` typography (zero all-caps, zero spaced letters).
-
----
-
-## 🧩 The Node System
-
-| Category | Node Type | Description & Purpose |
-|---|---|---|
-| **Engine** | **AI Screener** (`screener`) | Natural language IDX screener (`/v2/companies/?q=...`) with stat capsules and 3 AI credit badge. |
-| **Engine** | **Watcher** (`watcher`) | Radar sticker monitoring individual tickers or ranked Top Gainers / Losers leaderboard. |
-| **Engine** | **Condition** (`condition`) | Yellow rule capsule evaluating safe boolean expressions via `expr-eval` with dual True/False output handles. |
-| **Engine** | **Sticky Note** (`note`) | Tactile FigJam sticky note (5 pastel colors) with direct inline editing and `${variable}` interpolation. |
-| **Engine** | **Alert** (`alert`) | Real-time notification sticker delivering UI toasts and rich financial embeds to Discord Webhooks. |
-| **Engine** | **Action** (`action`) | Canvas mutation capsule auto-spawning sticky notes, peer watchers, or generating fundamental research briefs. |
-| **Annotation** | **Text Block** (`text`) | Freeform WYSIWYG markdown text with formatting toolbar, font scale (`Title`, `Header`, `Body`, `Caption`), and `T` hotkey. |
-| **Annotation** | **Sticker** (`sticker`) | Badge stickers with inline quick emoji popovers, 32-emoji grid picker, and 7-color palette. |
-| **Annotation** | **Image Studio** (`image`) | Aspect-ratio locked transparent PNG node with `<NodeResizer />` and `Ctrl+V` clipboard paste. |
-| **Annotation** | **File / PDF** (`file`) | File attachment with category icons, browser preview, copy link, OS folder reveal, and `✓ Saved` indicators. |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Framework** | [Next.js 16](https://nextjs.org) (App Router, Turbopack), [React 19](https://react.dev), TypeScript |
-| **Interactive Canvas** | [@xyflow/react](https://reactflow.dev) (React Flow v12) |
-| **Styling & System** | [Tailwind CSS v4](https://tailwindcss.com), 2px flat outline system (zero drop shadows) |
-| **Typography & Icons** | **Stack Sans Text** (Google Fonts) & **MingCute Icons** (local webfont) |
-| **Database & ORM** | SQLite (`prisma/dev.db`) + [Prisma 5.22.0](https://www.prisma.io) |
-| **Sync & State** | [SWR](https://swr.vercel.app) short-polling (2s cadence) |
-| **Expression Evaluator** | [expr-eval](https://github.com/silentmatt/expr-eval) (safe boolean DSL, zero insecure `eval()`) |
-| **Market Data** | [Sectors.app API v2](https://sectors.app) + randomized realistic offline mock fallback |
-| **Runtime & Testing** | [Bun](https://bun.sh) (v1.4.0+), [Vitest](https://vitest.dev) |
-
----
-
-## 🔑 API Key & Dual Modes
-
-- **Mock / Offline Mode (Default)**: No API key or `.env` configuration required. Realistic randomized distributions are generated for `BBCA`, `BBRI`, `BMRI`, `TLKM`, `ASII`, and Top Movers. Perfect for offline development and stage demos without consuming live API credits.
-- **Live Sectors API Mode**: Enter your `SECTORS_API_KEY` into the top toolbar or Control Panel. The key is strictly **session-only** (held in React memory) and is never persisted to SQLite, localStorage, or export files.
-- **Credit Cost Awareness**: Built-in credit badges display Sectors API token rates (e.g. `🪙 10 credits / poll` for Top Movers, `🪙 8 credits` for fundamental briefs, `🪙 3 credits` for AI screener queries).
-
----
-
-## 🎛️ Control Panel & Data Streaming
-
-Open the **Control Panel** drawer from the top navbar:
-- **Market Data Stream**:
-  - **Do Once**: Executes a single market poll tick across active watcher nodes.
-  - **Stream Data**: Starts continuous per-node interval polling with live TopNav hairline progress indication.
-- **Project Files**:
-  - **New File**: Instantly creates a clean, independent `/b/[uuid]` whiteboard.
-  - **Open File**: Native file picker accepting `.scriffle` and `.json` files.
-  - **Save File**: Downloads `<canvas_name>.scriffle` (UTF-8 JSON formatted) containing all nodes, edges, and configurations.
-- **Examples**: One-click starter workflow presets (*Rotation Engine*, *Momentum Breakout Loop*, *Banking Sector Trio*).
-
----
-
-## ⌨️ Keyboard Shortcuts
-
-Press `?` anywhere on the whiteboard to view the full cheat sheet:
-
-| Shortcut | Action |
-|---|---|
-| `V` / `H` | Switch between Move (Select) and Hand (Pan) tool |
-| `T` | Drop freeform Text block at mouse cursor |
-| `Ctrl+K` / `Ctrl+F` | Open Spotlight Quick Search with smooth camera fly-to-node |
-| `Ctrl+G` | Group selected nodes into a cohesive container |
-| `Ctrl+Shift+G` | Ungroup container |
-| `Ctrl+C` / `Ctrl+V` | Copy and paste nodes (with internal edge preservation) |
-| `Ctrl+D` | Duplicate selection in-place with offset |
-| `Ctrl+Z` / `Ctrl+Shift+Z` | Undo / Redo canvas operations |
-| `Shift+1` | Fit all nodes to screen |
-| `Shift+0` / `Ctrl+0` | Reset zoom to 100% |
-| `Tab` / `Shift+Tab` | Spatial and graph edge keyboard traversal |
-| `?` or `Shift+/` | Open Keyboard Shortcuts Guide modal |
-
----
-
-## 📡 REST API Reference
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/canvas?id=<id>` | Fetch full canvas graph (nodes, edges, logs) |
-| `POST` | `/api/canvas/nodes` | Create a new node on the active canvas |
-| `PATCH` | `/api/canvas/nodes/:id` | Update node coordinates, dimensions, or config |
-| `DELETE` | `/api/canvas/nodes/:id` | Delete node and automatically prune connected edges |
-| `POST` | `/api/canvas/edges` | Create connector edge with custom `fromHandle` |
-| `DELETE` | `/api/canvas/edges/:id` | Delete edge |
-| `GET` | `/api/canvas/list` | List all saved canvas projects with node counts |
-| `POST` | `/api/canvas/restore?id=<id>` | Atomic replace canvas from `.scriffle` with collision-safe ID remapping |
-| `POST` | `/api/engine/trigger` | Trigger live Sectors API poll or randomized mock run |
-| `GET` | `/api/logs` | Fetch real-time engine activity execution logs |
-| `POST` | `/api/alert/test-webhook` | Test ping Discord webhook with live status response |
-| `GET` | `/api/export/report?symbol=<sym>` | Institutional borderless fundamental HTML report |
-| `POST` | `/api/file/open-location` | Reveal exported report folder in OS file manager (local dev) |
-
----
-
-## 🧪 Automated Test Suite
-
-Scriffle maintains a comprehensive unit test suite with 100% pass rate:
+### Starting Scriffle later
 
 ```bash
-bun test
+bun run dev
 ```
 
-- **229 unit tests across 24 test suites** executing in ~215ms.
-- Covers safe DSL evaluation (`dslEngine`), template interpolation, Top Movers leaderboard generation, AI Screener formatting, Indonesian company fuzzy search (`companySearch`), spatial navigation, `.scrifflemes` theme parser, dual Condition output branching, Discord Webhooks, Onboarding Spotlight Tour, Hands-On Sandbox Missions validation, and `--start-fresh` CLI reset engine.
+### Starting a fresh canvas for a presentation or demo
+
+```bash
+bun run dev --start-fresh
+```
+
+This creates a clean new canvas without deleting any of your previous projects. It also resets
+the onboarding tour and guided missions back to the beginning.
 
 ---
 
-## 📂 Project Structure
+## The Nodes
 
-```
-scriffle/
-├── context/                        # Historical specs, architecture & QA plans
-├── prisma/
-│   ├── schema.prisma               # Prisma SQLite schema (Canvas, Node, Edge, Log)
-│   └── seed.ts                     # Comprehensive demo canvas seeder
-├── presets/                        # Starter .scriffle preset blueprints
-├── public/mingcute/                # MingCute icon font & styles
-├── reports/                        # Auto-exported fundamental HTML/PDF briefs (git-ignored)
-├── scripts/
-│   ├── dev.ts                      # Dev runner supporting --start-fresh flag
-│   └── start.ts                    # Production runner supporting --start-fresh flag
-├── themes/                         # Plain-text .scrifflemes theme presets
-└── src/
-    ├── app/
-    │   ├── api/                    # REST API routes (canvas, engine, export, alert)
-    │   ├── b/[id]/page.tsx         # Multi-project URL routing
-    │   ├── globals.css             # Stack Sans Text, flat outline & theme CSS variables
-    │   └── layout.tsx              # Root HTML layout and webfont imports
-    ├── components/
-    │   ├── canvas/
-    │   │   ├── MarketCanvas.tsx    # React Flow canvas, context menu, drop listeners
-    │   │   ├── ContextMenu.tsx     # Canvas & node right-click menus
-    │   │   ├── SelectionBoundingBox.tsx # 8-point multi-selection transform box
-    │   │   └── nodes/              # 10 node components (Watcher, Screener, Text, etc.)
-    │   ├── controls/
-    │   │   ├── TopNav.tsx          # Top header bar, search trigger, theme switcher
-    │   │   ├── NavToolbar.tsx      # Floating bottom node insertion toolbar
-    │   │   ├── SimulationBar.tsx   # Control Panel drawer (streaming, project files)
-    │   │   ├── EditNodeModal.tsx   # Comprehensive node configuration editor
-    │   │   ├── ShortcutsModal.tsx  # Keyboard shortcuts guide
-    │   │   ├── SpotlightSearchModal.tsx # Fuzzy search modal
-    │   │   └── ThemeModal.tsx      # Theme selector & .scrifflemes manager
-    │   ├── onboarding/             # Spotlight Tour (SpotlightOverlay, TourCardPopover, ResumeTourPill)
-    │   ├── tutorial/               # Guided Missions (SandboxMissionsCard, missionValidator)
-    │   └── feed/
-    │       └── ActivityFeed.tsx    # Live execution feed with camera pan & chain glow
-    ├── context/                    # React Contexts (Loading, Theme, Onboarding, SandboxTutorial)
-    ├── lib/
-    │   ├── freshProjectCreator.ts  # Non-destructive project creator for --start-fresh
-    │   ├── creditCosts.ts          # Centralized Sectors API credit registry
-    │   └── search/companySearch.ts # <0.3ms in-memory Indonesian company matcher
-    ├── server/services/
-    │   ├── dslEngine.ts            # Safe expr-eval boolean evaluator
-    │   ├── graphEngine.ts          # BFS graph traversal & canvas self-mutation engine
-    │   ├── sectorsApi.ts           # Sectors.app API v2 client + randomized mock engine
-    │   ├── discordWebhook.ts       # Discord webhook notification service
-    │   └── reportExporter.ts       # HTML fundamental report disk auto-exporter
-    └── types/
-        └── canvas.ts               # Master TypeScript interfaces
-```
+Scriffle has ten types of cards. Six run your automation logic. Four are for freeform thinking
+and annotation.
+
+### Automation cards
+
+| Card | What it does | Example |
+|---|---|---|
+| AI Screener | Searches all Indonesian listed stocks using a plain English question, via the Sectors API | *"Top 5 banks by market cap"* or *"Coal miners with dividend yield above 8%"* |
+| Watcher | Tracks a stock's live price from Sectors, or ranks today's top gainers and losers | Monitor BBCA tick by tick, or show the 5 biggest movers since market open |
+| Condition | Routes data down a True or False path based on a rule you write | *If the price moved more than 3.5% and volume was above 1 million, take the True path* |
+| Sticky Note | Updates its own text automatically when triggered, filling in live values | Writes *"BBCA surged 4.2% at 10:15 AM"* the moment the condition fires |
+| Alert | Sends a notification to your browser or a Discord channel | Posts a formatted market card to your team's Discord server when a breakout triggers |
+| Action | Creates new cards or generates a Sectors fundamental brief — automatically, on trigger | Fetches a full research report for a breakout stock and saves it to your reports folder |
+
+### Annotation and brainstorming cards
+
+| Card | What it does |
+|---|---|
+| Text block | Freeform notes with heading styles, bold, italic, and colour highlight markers |
+| Sticker | Emoji badges and label tags — useful for marking up sections of your canvas |
+| Image | Drop in screenshots or chart images. Paste directly from clipboard with Ctrl+V |
+| File | Attach a document or research brief. Preview it in the browser or open its folder |
 
 ---
 
-## 🏆 Hackathon Submission
+## Example Templates
 
-Developed for the **Sectors 2026 Hackathon** by **thelast10years**:
-- [@rayyanekaputra](https://github.com/rayyanekaputra)
-- [@artyaaryatama](https://github.com/artyaaryatama)
+The fastest way to get started is to load one of these ready-made canvases. Open the
+Control Panel, click **Open File**, and select any template below — or drag and drop the file
+directly onto the canvas.
 
-- **Problem Statement**: Market analysts and active investors are forced to juggle between disconnected platforms — terminal feeds, Excel spreadsheets, messaging groups, broker apps, and charting software.
-- **Solution**: Scriffle collapses research, screening, and automation into a single living canvas where market events trigger automatic note-taking, notifications, and workflow mutations in real time.
+| Template | What it shows |
+|---|---|
+| [IDX Big 3 Banking Comparison](./presets/banking_sector_watcher.scriffle) | Tracks BBCA, BBRI, and BMRI side by side using live Sectors data, with breakout condition routing |
+| [Bluechip Rotation & Auto-Discovery Engine](./presets/idx_bluechip_rotation_engine.scriffle) | Watches capital movement across IDX blue chips and auto-spawns tracking pipelines for breakout tickers |
+| [BBCA Momentum Breakout & Mutator Loop](./presets/idx_momentum_breakout.scriffle) | Flags high-volume price moves from Sectors and automatically fires a Discord notification |
+| [Macro & Alpha Intelligence Dashboard](./presets/idx_macro_alpha_intelligence.scriffle) | Multi-branch canvas combining macro signals with automatic Sectors fundamental research generation |
+| [Omnibus Alpha Command Center](./presets/idx_omnibus_alpha_command_center.scriffle) | A full six-sector, multi-signal trading desk layout demonstrating all ten card types working together |
+
+---
+
+## Keyboard Shortcuts
+
+Press `?` anywhere on the canvas to open the full interactive shortcuts guide.
+
+| Key | Action |
+|---|---|
+| `V` / `H` | Switch between Select and Pan tools |
+| `T` | Drop a Text block at the mouse cursor |
+| `Ctrl+K` | Spotlight search — finds any card and flies the camera to it |
+| `Ctrl+G` / `Ctrl+Shift+G` | Group / ungroup selected cards |
+| `Ctrl+Shift+T` | Tidy up — redistributes overlapping cards automatically |
+| `Ctrl+C` / `Ctrl+V` | Copy and paste cards (connectors are preserved) |
+| `Ctrl+D` | Duplicate selection |
+| `Ctrl+Z` / `Ctrl+Shift+Z` | Undo / Redo |
+| `Shift+1` | Fit all cards to screen |
+| `?` | Open the shortcuts guide |
+
+---
+
+## For Developers
+
+Full technical documentation is in [TECHNICAL_GUIDE.md](./TECHNICAL_GUIDE.md). It covers
+the system architecture, REST API reference, database schema, the `.scriffle` file format,
+DSL rule syntax, the automated test suite, and a step-by-step guide for adding new node types.
