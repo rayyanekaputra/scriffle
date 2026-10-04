@@ -1,4 +1,4 @@
-# Scriffle
+# Scriffle.
 
 A visual research and automation workspace for Indonesian stocks, powered by the
 [Sectors.app API](https://sectors.app).
