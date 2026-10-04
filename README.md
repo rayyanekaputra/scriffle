@@ -1,6 +1,6 @@
 # Scriffle
 
-A visual research workspace for Indonesian stocks, powered by the
+A visual research and automation workspace for Indonesian stocks, powered by the
 [Sectors.app API](https://sectors.app).
 
 > Too many platforms to switch between for research. Scriffle lets you automate data fetching
